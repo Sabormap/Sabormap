@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Descubre los mejores restaurantes, bares y cafés de tu ciudad con SaborMap">
+    <meta name="keywords" content="restaurantes, gastronomía, comida, bares, cafés">
+    <meta name="theme-color" content="#FF6B6B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SaborMap">
+    
+    <!-- Preconnect para performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" as="style">
+    
+    <meta property="og:title" content="SaborMap - Descubre los mejores sabores">
+    <meta property="og:description" content="Tu guía definitiva para descubrir los mejores sabores de la ciudad">
+    <meta property="og:image" content="URL-de-tu-imagen-preview">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2Fib3JNYXAiLCJzaG9ydF9uYW1lIjoiU2Fib3JNYXAiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiI0ZGNkI2QiIsImljb25zIjpbeyJzcmMiOiIvaWNvbi0xOTJ4MTkyLnBuZyIsInNpemVzIjoiMTkyeDE5MiJ9LHsic3JjIjoiL2ljb24tNTEyeDUxMi5wbmciLCJzaXplcyI6IjUxMng1MTIifV19">
+    
+    <title>SaborMap - Descubre los mejores sabores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="estilos.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        dark: '#2D3436',
+                        light: '#F7F1E3',
+                        brand: '#ff9a9e',
+                        menu: {
+                            entrees: '#FF9F43',
+                            mains: '#FF6B6B',
+                            pasta: '#FDCB6E',
+                            sandwiches: '#00B894',
+                            desserts: '#FD79A8',
+                            drinks: '#74B9FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+   
+<base target="_blank">
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-24 right-4 z-50 hidden">
+        <div class="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 toast">
+            <i class="fas fa-check-circle text-green-400"></i>
+            <span id="toastMessage">Operación exitosa</span>
+        </div>
+    </div>
+
+    <!-- ============================================
+         MODALES DE AUTENTICACIÓN
+         ============================================ -->
+
+    <!-- Modal de Login -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeAuthModal('loginModal')"></div>
+            
+            <div class="relative bg-white rounded-2xl max-w-md w-full p-8 modal-enter shadow-2xl transform transition-all">
+                <!-- Botón cerrar -->
+                <button onclick="closeAuthModal('loginModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all hover:rotate-90">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+
+                <!-- Logo y título -->
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-4 relative">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-lg animate-pulse">
+                            <defs>
+                                <linearGradient id="authLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#authLogoGrad)"/>
+                            <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                            <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                            <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                            <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-serif text-3xl font-bold text-gray-900 mb-2">Bienvenido de vuelta</h3>
+                    <p class="text-gray-500">Inicia sesión para continuar tu aventura gastronómica</p>
+                </div>
+
+                <!-- Formulario de Login -->
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                    <!-- Email -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="email" id="loginEmail" required 
+                            class="form-input w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Correo electrónico">
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="password" id="loginPassword" required 
+                            class="form-input w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Contraseña">
+                        <button type="button" onclick="togglePassword('loginPassword', this)" 
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Recordar y Olvidé -->
+                    <div class="flex items-center justify-between text-sm">
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer">
+                            <span class="text-gray-600 group-hover:text-gray-800 transition-colors">Recordarme</span>
+                        </label>
+                        <button type="button" onclick="showForgotPassword()" class="text-primary hover:text-red-600 font-medium transition-colors hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </div>
+
+                    <!-- Botón Submit -->
+                    <button type="submit" id="loginSubmitBtn"
+                        class="w-full bg-gradient-to-r from-primary to-brand text-white py-3.5 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                        <span>Iniciar Sesión</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <!-- Separador -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-gray-500">O continúa con</span>
+                    </div>
+                </div>
+
+                <!-- Login Social -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button onclick="socialLogin('google')" 
+                        class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all hover:border-gray-400 group">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google">
+                        <span class="text-sm font-medium text-gray-700">Google</span>
+                    </button>
+                    <button onclick="socialLogin('facebook')" 
+                        class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all hover:border-gray-400 group">
+                        <i class="fab fa-facebook text-blue-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-sm font-medium text-gray-700">Facebook</span>
+                    </button>
+                </div>
+
+                <!-- Link a Registro -->
+                <p class="text-center text-gray-600 text-sm">
+                    ¿No tienes cuenta? 
+                    <button onclick="switchAuthModal('register')" class="text-primary font-bold hover:text-red-600 transition-colors hover:underline">
+                        Regístrate gratis
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div id="registerModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeAuthModal('registerModal')"></div>
+            
+            <div class="relative bg-white rounded-2xl max-w-lg w-full p-8 modal-enter shadow-2xl transform transition-all max-h-[90vh] overflow-y-auto">
+                <!-- Botón cerrar -->
+                <button onclick="closeAuthModal('registerModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all hover:rotate-90 z-10">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+
+                <!-- Logo y título -->
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 mx-auto mb-3">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-md">
+                            <defs>
+                                <linearGradient id="regLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#regLogoGrad)"/>
+                            <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900 mb-1">Crea tu cuenta</h3>
+                    <p class="text-gray-500 text-sm">Únete y descubre sabores increíbles</p>
+                </div>
+
+                <!-- Formulario de Registro -->
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+                    <!-- Nombre completo -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="text" id="regName" required 
+                            class="form-input w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Nombre completo">
+                    </div>
+
+                    <!-- Email -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="email" id="regEmail" required 
+                            class="form-input w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Correo electrónico">
+                    </div>
+
+                    <!-- Teléfono (opcional) -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-phone text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="tel" id="regPhone" 
+                            class="form-input w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Teléfono (opcional)">
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="password" id="regPassword" required minlength="6"
+                            class="form-input w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Contraseña (mínimo 6 caracteres)"
+                            oninput="checkPasswordStrength(this.value)">
+                        <button type="button" onclick="togglePassword('regPassword', this)" 
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Indicador de fuerza -->
+                    <div id="passwordStrength" class="hidden">
+                        <div class="flex gap-1 h-1.5 mb-1">
+                            <div class="flex-1 bg-gray-200 rounded-full transition-colors duration-300" id="strength1"></div>
+                            <div class="flex-1 bg-gray-200 rounded-full transition-colors duration-300" id="strength2"></div>
+                            <div class="flex-1 bg-gray-200 rounded-full transition-colors duration-300" id="strength3"></div>
+                            <div class="flex-1 bg-gray-200 rounded-full transition-colors duration-300" id="strength4"></div>
+                        </div>
+                        <p class="text-xs text-gray-500" id="strengthText">Contraseña débil</p>
+                    </div>
+
+                    <!-- Confirmar Contraseña -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="password" id="regPasswordConfirm" required 
+                            class="form-input w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Confirmar contraseña">
+                        <button type="button" onclick="togglePassword('regPasswordConfirm', this)" 
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Términos -->
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="acceptTerms" required 
+                            class="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer">
+                        <label for="acceptTerms" class="text-sm text-gray-600 leading-relaxed cursor-pointer">
+                            Acepto los <button type="button" onclick="showTermsOfUse()" class="text-primary hover:underline font-medium">Términos de Uso</button> 
+                            y la <button type="button" onclick="showPrivacyPolicy()" class="text-primary hover:underline font-medium">Política de Privacidad</button>
+                        </label>
+                    </div>
+
+                    <!-- Newsletter -->
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="newsletter" 
+                            class="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer">
+                        <label for="newsletter" class="text-sm text-gray-600 leading-relaxed cursor-pointer">
+                            Quiero recibir recomendaciones gastronómicas y ofertas especiales
+                        </label>
+                    </div>
+
+                    <!-- Botón Submit -->
+                    <button type="submit" id="registerSubmitBtn"
+                        class="w-full bg-gradient-to-r from-primary to-brand text-white py-3.5 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                        <span>Crear cuenta</span>
+                        <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </form>
+
+                <!-- Separador -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-gray-500">O regístrate con</span>
+                    </div>
+                </div>
+
+                <!-- Registro Social -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button onclick="socialLogin('google')" 
+                        class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all hover:border-gray-400 group">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google">
+                        <span class="text-sm font-medium text-gray-700">Google</span>
+                    </button>
+                    <button onclick="socialLogin('facebook')" 
+                        class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all hover:border-gray-400 group">
+                        <i class="fab fa-facebook text-blue-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-sm font-medium text-gray-700">Facebook</span>
+                    </button>
+                </div>
+
+                <!-- Link a Login -->
+                <p class="text-center text-gray-600 text-sm">
+                    ¿Ya tienes cuenta? 
+                    <button onclick="switchAuthModal('login')" class="text-primary font-bold hover:text-red-600 transition-colors hover:underline">
+                        Inicia sesión
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Recuperar Contraseña -->
+    <div id="forgotPasswordModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeAuthModal('forgotPasswordModal')"></div>
+            
+            <div class="relative bg-white rounded-2xl max-w-md w-full p-8 modal-enter shadow-2xl">
+                <button onclick="closeAuthModal('forgotPasswordModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-key text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900 mb-2">Recuperar contraseña</h3>
+                    <p class="text-gray-500 text-sm">Te enviaremos un enlace para restablecer tu contraseña</p>
+                </div>
+
+                <form onsubmit="handleForgotPassword(event)" class="space-y-4">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        </div>
+                        <input type="email" id="forgotEmail" required 
+                            class="form-input w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-gray-50 focus:bg-white"
+                            placeholder="Correo electrónico">
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Enviar enlace</span>
+                    </button>
+                </form>
+
+                <button onclick="switchAuthModal('login')" class="w-full mt-4 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver al inicio de sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Perfil de Usuario (Dropdown) -->
+    <div id="userProfileDropdown" class="hidden absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 transform origin-top-right transition-all duration-200 scale-95 opacity-0">
+        <!-- Header del perfil -->
+        <div class="bg-gradient-to-r from-primary to-brand p-4 text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold truncate" id="dropdownUserName">Usuario</p>
+                    <p class="text-xs opacity-90 truncate" id="dropdownUserEmail">usuario@email.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú de opciones -->
+        <div class="p-2">
+            <button onclick="showUserProfile()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group">
+                <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-800 text-sm">Mi perfil</p>
+                    <p class="text-xs text-gray-500">Ver y editar datos</p>
+                </div>
+            </button>
+
+            <button onclick="showRewardsModal()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group">
+                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center text-yellow-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-800 text-sm">Mis recompensas</p>
+                    <p class="text-xs text-gray-500"><span id="dropdownPoints">0</span> puntos</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+            </button>
+
+            <button onclick="toggleFavorites()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-800 text-sm">Mis favoritos</p>
+                    <p class="text-xs text-gray-500"><span id="dropdownFavCount">0</span> lugares guardados</p>
+                </div>
+            </button>
+
+            <button onclick="showUserReviews()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-800 text-sm">Mis reseñas</p>
+                    <p class="text-xs text-gray-500">Ver historial</p>
+                </div>
+            </button>
+
+            <div class="border-t border-gray-100 my-2"></div>
+
+            <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors text-left group text-red-600">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <p class="font-semibold">Cerrar sesión</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 glass-effect border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-12 h-12 relative logo-bounce">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-md">
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#logoGrad)"/>
+                            <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                            <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                            <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                            <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-serif text-2xl font-bold text-gray-900 tracking-tight">SaborMap</h1>
+                        <p class="text-xs text-gray-500 font-medium">Descubre sabores únicos</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4" id="authContainer">
+                    <!-- Template: Botón de Login/Registro (cuando no está logueado) -->
+                    <div class="flex items-center gap-2" id="authButtonsTemplate">
+                        <button onclick="openAuthModal('login')" class="hidden sm:block px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+                            Iniciar sesión
+                        </button>
+                        <button onclick="openAuthModal('register')" 
+                            class="px-4 py-2 bg-primary text-white rounded-full text-sm font-bold hover:bg-red-600 transition-all hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="hidden sm:inline">Registrarse</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Template: Botón de Usuario Logueado -->
+                    <div class="hidden flex items-center gap-3 relative" id="userLoggedTemplate">
+                        <button onclick="toggleUserMenu()" class="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 px-3 py-2 rounded-full border border-orange-200 transition-all group">
+                            <div class="w-8 h-8 bg-gradient-to-br from-primary to-brand rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                <span id="userInitials">U</span>
+                            </div>
+                            <span class="hidden md:block text-sm font-semibold text-gray-700 max-w-[100px] truncate" id="headerUserName">Usuario</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:rotate-180 transition-transform"></i>
+                        </button>
+                        
+                        <!-- Dropdown se inserta aquí dinámicamente -->
+                    </div>
+
+                    <div id="userRewards" class="hidden md:flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full border border-orange-200 cursor-pointer" onclick="showRewardsModal()">
+                        <i class="fas fa-crown text-yellow-500"></i>
+                        <span class="text-sm font-semibold text-gray-700" id="userPoints">0 pts</span>
+                    </div>
+                    <button onclick="showNearbyPlaces()" class="hidden md:flex items-center gap-2 text-sm text-gray-600 hover:text-primary transition">
+                        <i class="fas fa-location-arrow"></i>
+                        <span>Cerca de ti</span>
+                    </button>
+                    <button onclick="toggleFavorites()" class="relative p-2 text-gray-600 hover:text-primary transition group">
+                        <i class="fas fa-heart text-xl group-hover:scale-110 transition-transform"></i>
+                        <span id="fav-count" class="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="relative bg-dark text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-30">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200" loading="lazy" class="w-full h-full object-cover" alt="Restaurant background">
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
+            <div class="w-24 h-24 mx-auto mb-6 slide-in">
+                <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
+                    <defs>
+                        <linearGradient id="heroLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#heroLogoGrad)"/>
+                    <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                    <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                    <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                    <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4 slide-in">Encuentra tu próximo sabor favorito</h2>
+            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto slide-in" style="animation-delay: 0.1s">Explora los mejores restaurantes, bares, heladerías y puestos de comida de tu ciudad</p>
+            
+            <div class="max-w-xl mx-auto relative slide-in" style="animation-delay: 0.2s">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, tipo de comida o ubicación..." 
+                    class="w-full px-6 py-4 rounded-full text-gray-900 shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/30 pl-14"
+                    onkeyup="filterPlaces()">
+                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                <button class="absolute right-2 top-2 bg-primary text-white p-2 rounded-full w-10 h-10 hover:bg-red-600 transition shadow-lg">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="sticky top-20 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 py-4" id="filterSection">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" id="categoryFilters">
+                <button onclick="filterCategory('all')" class="category-btn active px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary flex items-center gap-2" data-category="all">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Todos
+                </button>
+                <button onclick="filterCategory('restaurant')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="restaurant">
+                    <i class="fas fa-utensils mr-2"></i>Restaurantes
+                </button>
+                <button onclick="filterCategory('bar')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="bar">
+                    <i class="fas fa-cocktail mr-2"></i>Bares-Cafeterías
+                </button>
+                <button onclick="filterCategory('icecream')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="icecream">
+                    <i class="fas fa-ice-cream mr-2"></i>Heladerías
+                </button>
+                <button onclick="filterCategory('streetfood')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="streetfood">
+                    <i class="fas fa-hotdog mr-2"></i>Street Food
+                </button>
+            </div>
+            
+            <div id="activeFilterIndicator" class="hidden mt-2 flex items-center gap-2 text-sm text-gray-600">
+                <span>Mostrando:</span>
+                <span id="activeFilterName" class="font-semibold text-primary"></span>
+                <button onclick="resetFilters()" class="text-xs text-gray-400 hover:text-gray-600 underline ml-2">Limpiar filtro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="placesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-32 h-32 mx-auto mb-6 opacity-30">
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="#ccc"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron lugares</h3>
+            <p class="text-gray-500">Intenta con otros filtros de búsqueda</p>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full modal-enter">
+                <div id="modalContent" class="bg-white"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales de Comunidad -->
+    <div id="registerPlaceModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('registerPlaceModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-2xl w-full p-8 modal-enter">
+                <button onclick="closeCommunityModal('registerPlaceModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-store text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900">Registra tu local</h3>
+                    <p class="text-gray-600 mt-2">Únete a SaborMap y llega a miles de comensales</p>
+                </div>
+
+                <form onsubmit="submitPlaceRegistration(event)" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del local *</label>
+                            <input type="text" name="nombre" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Ej: La Parrilla de Juan">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de establecimiento *</label>
+                            <select name="tipo" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <option value="">Seleccionar...</option>
+                                <option value="restaurant">Restaurante</option>
+                                <option value="bar">Bar</option>
+                                <option value="cafe">Cafetería</option>
+                                <option value="icecream">Heladería</option>
+                                <option value="streetfood">Street Food</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección completa *</label>
+                        <input type="text" name="direccion" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Calle, número, ciudad">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono de contacto *</label>
+                        <input type="tel" name="telefono" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="+53 56578961">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del local</label>
+                        <textarea name="descripcion" rows="3" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Cuéntanos sobre tu cocina, especialidades, ambiente..."></textarea>
+                    </div>
+
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+                            <i class="fas fa-gift text-primary"></i> Beneficios incluidos:
+                        </h4>
+                        <ul class="text-sm text-orange-700 space-y-1">
+                            <li><i class="fas fa-check text-xs mr-2"></i>Perfil básico gratuito</li>
+                            <li><i class="fas fa-check text-xs mr-2"></i>Visibilidad en búsquedas</li>
+                            <li><i class="fas fa-check text-xs mr-2"></i>Sistema de reseñas</li>
+                            <li><i class="fas fa-check text-xs mr-2"></i>Estadísticas de visitas</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Enviar solicitud por WhatsApp
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 text-center">Serás redirigido a WhatsApp para completar el envío.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="criticModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('criticModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-2xl w-full p-8 modal-enter">
+                <button onclick="closeCommunityModal('criticModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-edit text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900">Conviértete en Crítico</h3>
+                    <p class="text-gray-600 mt-2">Comparte tu pasión gastronómica y gana recompensas</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-pen-fancy text-2xl text-primary mb-2"></i>
+                        <p class="text-sm font-semibold">Escribe reseñas</p>
+                        <p class="text-xs text-gray-500">Detalladas y honestas</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-camera text-2xl text-primary mb-2"></i>
+                        <p class="text-sm font-semibold">Sube fotos</p>
+                        <p class="text-xs text-gray-500">De platos y ambientes</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-coins text-2xl text-primary mb-2"></i>
+                        <p class="text-sm font-semibold">Gana puntos</p>
+                        <p class="text-xs text-gray-500">Canjeables por premios</p>
+                    </div>
+                </div>
+
+                <form onsubmit="submitCriticApplication(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                        <input type="text" name="nombre" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Tu nombre">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                        <input type="tel" name="telefono" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="+53 56578961">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">¿Por qué quieres ser crítico? *</label>
+                        <textarea name="motivo" rows="3" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Cuéntanos sobre tu experiencia gastronómica..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Redes sociales (opcional)</label>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" name="instagram" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Instagram">
+                            <input type="text" name="blog" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Blog/YouTube">
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2">
+                        <input type="checkbox" required id="criticTerms" name="terminos" class="mt-1">
+                        <label for="criticTerms" class="text-sm text-gray-600">Acepto las normas de la comunidad: reseñas honestas, sin spam, respetuosas con los establecimientos.</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp"></i> Enviar solicitud por WhatsApp
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 text-center">Serás redirigido a WhatsApp para completar el envío.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="rewardsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('rewardsModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-3xl w-full p-8 modal-enter max-h-[90vh] overflow-y-auto">
+                <button onclick="closeCommunityModal('rewardsModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <i class="fas fa-crown text-4xl text-white"></i>
+                    </div>
+                    <h3 class="font-serif text-3xl font-bold text-gray-900">Programa de Recompensas</h3>
+                    <p class="text-gray-600 mt-2">Gana puntos por cada acción y canjéalos por experiencias únicas</p>
+                </div>
+
+                <div id="userLevelSection" class="bg-gradient-to-r from-primary to-orange-400 rounded-2xl p-6 text-white mb-8 hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm opacity-90">Tu nivel actual</p>
+                            <h4 class="text-2xl font-bold" id="currentLevelName">Explorador</h4>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold" id="currentPointsDisplay">0</p>
+                            <p class="text-sm opacity-90">puntos</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/20 rounded-full h-4 overflow-hidden">
+                        <div id="levelProgressBar" class="progress-bar bg-white h-full rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p class="text-sm mt-2 text-center" id="nextLevelText">150 puntos para siguiente nivel</p>
+                </div>
+
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-green-500"></i> Cómo ganar puntos
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fas fa-user-plus text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Registro completo</p>
+                                <p class="text-sm text-gray-500">Completa tu perfil</p>
+                            </div>
+                            <span class="font-bold text-primary">+50 pts</span>
+                        </div>
+
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                <i class="fas fa-star text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Escribir reseña</p>
+                                <p class="text-sm text-gray-500">Mínimo 100 caracteres</p>
+                            </div>
+                            <span class="font-bold text-primary">+25 pts</span>
+                        </div>
+
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                <i class="fas fa-camera text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Subir foto</p>
+                                <p class="text-sm text-gray-500">De un plato o local</p>
+                            </div>
+                            <span class="font-bold text-primary">+15 pts</span>
+                        </div>
+
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
+                                <i class="fas fa-share-alt text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Compartir</p>
+                                <p class="text-sm text-gray-500">En redes sociales</p>
+                            </div>
+                            <span class="font-bold text-primary">+10 pts</span>
+                        </div>
+
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Agregar favorito</p>
+                                <p class="text-sm text-gray-500">Guarda tus lugares</p>
+                            </div>
+                            <span class="font-bold text-primary">+5 pts</span>
+                        </div>
+
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                                <i class="fas fa-check-circle text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Visita verificada</p>
+                                <p class="text-sm text-gray-500">Check-in en el local</p>
+                            </div>
+                            <span class="font-bold text-primary">+30 pts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-gift text-primary"></i> Canjea tus puntos
+                    </h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary">
+                            <i class="fas fa-coffee text-4xl text-primary mb-3"></i>
+                            <h5 class="font-bold mb-1">Café gratis</h5>
+                            <p class="text-sm text-gray-500 mb-3">En cualquier café asociado</p>
+                            <button onclick="redeemReward('coffee', 100)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">
+                                100 pts
+                            </button>
+                        </div>
+
+                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary">
+                            <i class="fas fa-utensils text-4xl text-primary mb-3"></i>
+                            <h5 class="font-bold mb-1">20% descuento</h5>
+                            <p class="text-sm text-gray-500 mb-3">En restaurantes seleccionados</p>
+                            <button onclick="redeemReward('discount', 250)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">
+                                250 pts
+                            </button>
+                        </div>
+
+                        <div class="reward-card bg-white border-2 border-primary rounded-xl p-4 text-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-primary text-white text-xs px-2 py-1 rounded-bl-lg">POPULAR</div>
+                            <i class="fas fa-crown text-4xl text-yellow-500 mb-3"></i>
+                            <h5 class="font-bold mb-1">Cena para 2</h5>
+                            <p class="text-sm text-gray-500 mb-3">Experiencia gastronómica</p>
+                            <button onclick="redeemReward('dinner', 1000)" class="w-full bg-primary text-white py-2 rounded-lg font-semibold transition text-sm hover:bg-red-600">
+                                1,000 pts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="joinRewardsSection" class="mt-8 text-center">
+                    <p class="text-gray-600 mb-4">¿Aún no participas en el programa?</p>
+                    <button onclick="joinRewardsProgram()" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition flex items-center gap-2 mx-auto">
+                        <i class="fas fa-rocket"></i> Unirme al programa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="eventsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('eventsModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-4xl w-full p-8 modal-enter max-h-[90vh] overflow-y-auto">
+                <button onclick="closeCommunityModal('eventsModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-calendar-alt text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900">Eventos Gastronómicos</h3>
+                    <p class="text-gray-600 mt-2">Descubre experiencias únicas en tu ciudad</p>
+                </div>
+
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    <button onclick="filterEvents('all')" class="event-filter active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium whitespace-nowrap" data-event-filter="all">Todos</button>
+                    <button onclick="filterEvents('tasting')" class="event-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium whitespace-nowrap" data-event-filter="tasting">Degustaciones</button>
+                    <button onclick="filterEvents('workshop')" class="event-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium whitespace-nowrap" data-event-filter="workshop">Talleres</button>
+                    <button onclick="filterEvents('festival')" class="event-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium whitespace-nowrap" data-event-filter="festival">Ferias</button>
+                </div>
+
+                <div id="eventsList" class="space-y-4"></div>
+
+                <div class="mt-8 p-4 bg-orange-50 rounded-xl border border-orange-200">
+                    <h4 class="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+                        <i class="fas fa-bullhorn text-primary"></i> ¿Organizas un evento?
+                    </h4>
+                    <p class="text-sm text-orange-700 mb-3">Publica tu evento gastronómico en SaborMap y llega a miles de foodies.</p>
+                    <button onclick="submitEventProposal()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition">
+                        Proponer evento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blogModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('blogModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-4xl w-full p-8 modal-enter max-h-[90vh] overflow-y-auto">
+                <button onclick="closeCommunityModal('blogModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-blog text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-gray-900">Blog de Gastronomía</h3>
+                    <p class="text-gray-600 mt-2">Historias, tendencias y secretos culinarios</p>
+                </div>
+
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2" id="blogCategories">
+                    <button onclick="filterBlog('all')" class="blog-filter active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium transition-all" data-filter="all">Últimos</button>
+                    <button onclick="filterBlog('trends')" class="blog-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all" data-filter="trends">Tendencias</button>
+                    <button onclick="filterBlog('recipes')" class="blog-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all" data-filter="recipes">Recetas</button>
+                    <button onclick="filterBlog('interviews')" class="blog-filter px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all" data-filter="interviews">Entrevistas</button>
+                </div>
+
+                <div id="blogArticles" class="grid md:grid-cols-2 gap-6">
+                    <article class="blog-article group cursor-pointer" data-category="trends" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Food trend">
+                            <div class="absolute top-4 left-4 bg-primary text-white text-xs px-3 py-1 rounded-full">Tendencias</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">Las 5 tendencias gastronómicas del 2024</h4>
+                        <p class="text-sm text-gray-600 mb-2">Descubre qué cocinas están revolucionando la escena foodie...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>5 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 2 días</span>
+                        </div>
+                    </article>
+
+                    <article class="blog-article group cursor-pointer" data-category="interviews" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Restaurant">
+                            <div class="absolute top-4 left-4 bg-secondary text-white text-xs px-3 py-1 rounded-full">Entrevistas</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">Entrevista con el chef más joven con estrella Michelin</h4>
+                        <p class="text-sm text-gray-600 mb-2">Conoce la historia de María González y su revolucionaria cocina...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>8 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 5 días</span>
+                        </div>
+                    </article>
+
+                    <article class="blog-article group cursor-pointer" data-category="recipes" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Cooking">
+                            <div class="absolute top-4 left-4 bg-brand text-white text-xs px-3 py-1 rounded-full">Recetas</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">Cómo hacer el asado perfecto: guía definitiva</h4>
+                        <p class="text-sm text-gray-600 mb-2">Secretos de los mejores parrilleros argentinos...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>10 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 1 semana</span>
+                        </div>
+                    </article>
+
+                    <article class="blog-article group cursor-pointer" data-category="trends" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Cocktails">
+                            <div class="absolute top-4 left-4 bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Tendencias</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">Los cócteles de autor que debes probar este verano</h4>
+                        <p class="text-sm text-gray-600 mb-2">Desde clásicos reinventados hasta creaciones vanguardistas...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>6 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 2 semanas</span>
+                        </div>
+                    </article>
+
+                    <article class="blog-article group cursor-pointer hidden" data-category="recipes" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Pizza">
+                            <div class="absolute top-4 left-4 bg-brand text-white text-xs px-3 py-1 rounded-full">Recetas</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">Pizza napolitana casera en horno común</h4>
+                        <p class="text-sm text-gray-600 mb-2">Trucos para lograr la masa perfecta sin horno de leña...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>12 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 3 semanas</span>
+                        </div>
+                    </article>
+
+                    <article class="blog-article group cursor-pointer hidden" data-category="interviews" onclick="showToast('Artículo completo próximamente')">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Baker">
+                            <div class="absolute top-4 left-4 bg-secondary text-white text-xs px-3 py-1 rounded-full">Entrevistas</div>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-primary transition">La panadería artesanal que conquistó Nueva York</h4>
+                        <p class="text-sm text-gray-600 mb-2">Historia de éxito de una familia de inmigrantes...</p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span><i class="far fa-clock mr-1"></i>7 min lectura</span>
+                            <span>•</span>
+                            <span>Hace 1 mes</span>
+                        </div>
+                    </article>
+                </div>
+
+                <button onclick="showAllArticles()" class="w-full mt-8 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 group">
+                    Ver todos los artículos
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-brand to-secondary"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-4 cursor-pointer" onclick="resetFilters(); window.scrollTo({top: 0, behavior: 'smooth'});">
+                        <div class="w-10 h-10">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <defs>
+                                    <linearGradient id="footerLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#footerLogoGrad)"/>
+                                <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                                <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                                <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                                <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-serif text-xl font-bold">SaborMap</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">Tu guía definitiva para descubrir los mejores sabores de la ciudad.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-compass text-primary"></i> Explorar
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><span onclick="filterFromFooter('restaurant')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-utensils text-xs w-4"></i> Restaurantes</span></li>
+                        <li><span onclick="filterFromFooter('bar')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-cocktail text-xs w-4"></i> Bares</span></li>
+                        <li><span onclick="filterFromFooter('icecream')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-ice-cream text-xs w-4"></i> Heladerías</span></li>
+                        <li><span onclick="filterFromFooter('streetfood')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-hotdog text-xs w-4"></i> Street Food</span></li>
+                        <li><span onclick="showTopRated()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-star text-xs w-4"></i> Mejor valorados</span></li>
+                        <li><span onclick="showNearbyPlaces()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-map-marked-alt text-xs w-4"></i> Cerca de ti</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-users text-secondary"></i> Comunidad
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>
+                            <span onclick="openCommunityModal('registerPlaceModal')" class="footer-link hover:text-white flex items-center gap-2">
+                                <i class="fas fa-store text-xs w-4"></i> ¿Tienes un local? Publica gratis
+                                <span class="ml-auto bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full">NUEVO</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="openCommunityModal('criticModal')" class="footer-link hover:text-white flex items-center gap-2">
+                                <i class="fas fa-user-plus text-xs w-4"></i> Regístrate como crítico
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="openCommunityModal('rewardsModal')" class="footer-link hover:text-white flex items-center gap-2">
+                                <i class="fas fa-gift text-xs w-4"></i> Programa de recompensas
+                                <span class="ml-auto bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">HOT</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="openCommunityModal('eventsModal')" class="footer-link hover:text-white flex items-center gap-2">
+                                <i class="fas fa-calendar-alt text-xs w-4"></i> Eventos gastronómicos
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="openCommunityModal('blogModal')" class="footer-link hover:text-white flex items-center gap-2">
+                                <i class="fas fa-blog text-xs w-4"></i> Blog de gastronomía
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-headset text-brand"></i> Soporte
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400 mb-4">
+                        <li><span onclick="showHelpModal()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-question-circle text-xs w-4"></i> Centro de ayuda</span></li>
+                        <li><span onclick="showReportModal()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-exclamation-triangle text-xs w-4"></i> Reportar un problema</span></li>
+                        <li><span onclick="showPrivacyPolicy()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-shield-alt text-xs w-4"></i>Política de Privacidad</span></li>
+                        <li><span onclick="showTermsOfUse()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-file-contract text-xs w-4"></i> Términos de uso</span></li>
+                    </ul>
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p class="text-xs text-gray-400 mb-1">¿Necesitas ayuda?</p>
+                        <a href="mailto:sabormap1@gmail.com" class="text-primary font-semibold text-sm hover:underline">sabormap1@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span>© 2026 IMPERIUM. Todos los derechos reservados.</span>
+                    <span class="hidden md:inline">•</span>
+                    <span class="flex items-center gap-1"><i class="fas fa-heart text-primary text-xs"></i> Hecho con pasión gastronómica</span>
+                </div>
+                
+                <div class="flex gap-3">
+                    <a href="https://www.instagram.com/sabormap/" target="_blank" class="social-icon w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white border border-gray-700">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.facebook.com/reinier.carreralopez" target="_blank" class="social-icon w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white border border-gray-700">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://wa.me/5356578961" target="_blank" class="social-icon w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-600 hover:text-white border border-gray-700">
+                         <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-center border-t border-gray-800 pt-8">
+                <div>
+                    <p class="text-2xl font-bold text-primary" id="statPlaces">500+</p>
+                    <p class="text-xs text-gray-500">Lugares verificados</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-secondary">50k+</p>
+                    <p class="text-xs text-gray-500">Usuarios activos</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-brand">12k+</p>
+                    <p class="text-xs text-gray-500">Reseñas</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-yellow-500">4.8</p>
+                    <p class="text-xs text-gray-500">Rating promedio</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Navegación inferior móvil -->
+    <nav class="mobile-bottom-nav">
+        <button onclick="resetFilters(); window.scrollTo({top:0, behavior:'smooth'})" class="active">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </button>
+        <button onclick="showNearbyPlaces()">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Cerca</span>
+        </button>
+        <button onclick="toggleFavorites()">
+            <i class="fas fa-heart"></i>
+            <span>Favoritos</span>
+        </button>
+        <button onclick="openCommunityModal('rewardsModal')">
+            <i class="fas fa-crown"></i>
+            <span>Rewards</span>
+        </button>
+    </nav>
+    <script src="script.js"></script>
+</body>
+</html>
