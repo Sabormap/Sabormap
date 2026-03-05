@@ -3282,6 +3282,233 @@
                 phone: "+53 59652021",
             },
 
+                {
+                id: 69,
+                name: "Helad'oro",
+                category: "icecream",
+                image: "",
+                rating: 4.9,
+                reviews: 512,
+                address: "Calle Aguiar 206btw/Empedrado y Tejadillom La Habana.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3285!2d-58.42!3d-34.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDMzJzAwLjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Helado artesanal con un toque cubano.",
+                specialties: ["Descubrelo"],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Mini Cono Degustación", price: "$1.800", desc: "3 mini porciones para probar" }
+                    ],
+                    mains: [
+                        { item: "Waffle con Helado", price: "$5.500", desc: "Con 2 sabores a elección" },
+                        { item: "Brownie Caliente", price: "$6.200", desc: "Con bola de helado vainilla" }
+                    ],
+                    pasta: [],
+                    sandwiches: [
+                        { item: "Donuts Rellenos", price: "$3.200", desc: "De crema pastelera y chocolate" },
+                        { item: "Cookie Sándwich", price: "$4.500", desc: "2 galletas con helado en medio" }
+                    ],
+                    desserts: [
+                        { item: "1/4 kg (2 sabores)", price: "$3.800", desc: "Incluye cucurucho o envase" },
+                        { item: "1/2 kg (3 sabores)", price: "$6.200", desc: "Ideal para compartir" },
+                        { item: "1 kg (4 sabores)", price: "$11.500", desc: "Familiar" },
+                        { item: "Cucurucho Gourmet", price: "$2.500", desc: "Con chocolate y almendras" },
+                        { item: "Café Affogato", price: "$4.200", desc: "Helado de vainilla con espresso" },
+                        { item: "Sundae Especial", price: "$5.800", desc: "Con salsa, crema y frutos" }
+                    ],
+                    drinks: [
+                        { item: "Smoothie de Helado", price: "$4.500", desc: "Batido cremoso de helado" },
+                        { item: "Granizado", price: "$3.200", desc: "Café o limón con helado" },
+                        { item: "Agua Mineral", price: "$1.800", desc: "Con o sin gas" }
+                    ]
+                },
+                hours: "Lun-Dom: 11:00am-20:00pm",
+                phone: "53 50131498",
+                
+            },
+                
+
+             {
+                id: 70,
+                name: "El Gelato",
+                category: "icecream",
+                image: "",
+                rating: 4.9,
+                reviews: 512,
+                address: "Ave 1ra Esq. 46, Playa.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3285!2d-58.42!3d-34.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDMzJzAwLjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Donde se celebran los momentos especiales.",
+                specialties: ["Helado artesanal premium 🍨"],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Mini Cono Degustación", price: "$1.800", desc: "3 mini porciones para probar" }
+                    ],
+                    mains: [
+                        { item: "Waffle con Helado", price: "$5.500", desc: "Con 2 sabores a elección" },
+                        { item: "Brownie Caliente", price: "$6.200", desc: "Con bola de helado vainilla" }
+                    ],
+                    pasta: [],
+                    sandwiches: [
+                        { item: "Donuts Rellenos", price: "$3.200", desc: "De crema pastelera y chocolate" },
+                        { item: "Cookie Sándwich", price: "$4.500", desc: "2 galletas con helado en medio" }
+                    ],
+                    desserts: [
+                        { item: "1/4 kg (2 sabores)", price: "$3.800", desc: "Incluye cucurucho o envase" },
+                        { item: "1/2 kg (3 sabores)", price: "$6.200", desc: "Ideal para compartir" },
+                        { item: "1 kg (4 sabores)", price: "$11.500", desc: "Familiar" },
+                        { item: "Cucurucho Gourmet", price: "$2.500", desc: "Con chocolate y almendras" },
+                        { item: "Café Affogato", price: "$4.200", desc: "Helado de vainilla con espresso" },
+                        { item: "Sundae Especial", price: "$5.800", desc: "Con salsa, crema y frutos" }
+                    ],
+                    drinks: [
+                        { item: "Smoothie de Helado", price: "$4.500", desc: "Batido cremoso de helado" },
+                        { item: "Granizado", price: "$3.200", desc: "Café o limón con helado" },
+                        { item: "Agua Mineral", price: "$1.800", desc: "Con o sin gas" }
+                    ]
+                },
+                hours: "Lun-Dom: 9:00am-23:00pm",
+                phone: "53 59605045",
+                
+            },
+
+                {
+                id: 71,
+                name: "Café & Estancia Bohemia",
+                category: "restaurant",
+                image: "",
+                rating: 4.9,
+                reviews: 189,
+                address: "🗺️📍San Ignacio 364 Muralla y Teniente Rey.La Habana.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Se refleja la riqueza histórica y cultural que definen a la ciudad.",
+                specialties: ["Descrubelo."],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Picadera Parranda", price: "$8.500", desc: "Mix de frituras para compartir" },
+                        { item: "Croquetas Variadas", price: "$3.800", desc: "6 unidades, jamón y pollo" },
+                        { item: "Papas Fritas Cargadas", price: "$4.200", desc: "Con cheddar, panceta y verdeo" }
+                    ],
+                    mains: [
+                        { item: "Hamburguesa Parranda", price: "$7.800", desc: "Doble carne, cheddar y huevo" },
+                        { item: "Chivito al Plato", price: "$9.500", desc: "Lomo, jamón, queso y huevo" },
+                        { item: "Milanesa Napolitana", price: "$10.200", desc: "Con papas españolas" }
+                    ],
+                    pasta: [
+                        { item: "Pizza de la Casa", price: "$11.000", desc: "Salsa especial y 4 quesos" }
+                    ],
+                    sandwiches: [
+                        { item: "Hamburguesa Bacon", price: "$8.500", desc: "Doble panceta y cebolla caramelizada" },
+                        { item: "Sándwich de Bondiola", price: "$7.200", desc: "Cerdo desmenuzado con salsa BBQ" },
+                        { item: "Wrap de Pollo Crispy", price: "$6.800", desc: "Pollo empanizado y vegetales" },
+                        { item: "Pan de Queso XL", price: "$5.500", desc: "3 unidades, receta brasileña" }
+                    ],
+                    desserts: [
+                        { item: "Chocotorta", price: "$3.500", desc: "Clásica argentina" },
+                        { item: "Helado Frito", price: "$4.200", desc: "Tempura de helado vainilla" }
+                    ],
+                    drinks: [
+                        { item: "Pinta IPA", price: "$2.800", desc: "Indian Pale Ale local" },
+                        { item: "Pinta Stout", price: "$3.200", desc: "Cerveza negra con notas de café" },
+                        { item: "Cuba Libre", price: "$3.500", desc: "Ron, coca y limón" },
+                        { item: "Gin Tonic", price: "$4.200", desc: "Con frutos rojos" }
+                    ]
+                },
+                hours: "⏰️ Lun-Dom: 11:00am-23:00pm",
+                phone: "+53 52871607",
+            },
+
+                {
+                id: 72,
+                name: "Mango Gelateria & Cafe",
+                category: "icecream",
+                image: "",
+                rating: 4.9,
+                reviews: 512,
+                address: "Teniente Rey #106 / San Ignacio y Cuba. La Habana Vieja.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3285!2d-58.42!3d-34.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDMzJzAwLjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Un paseo por Plaza Vieja siempre es mejor con un gelato🍦",
+                specialties: ["Helado artesanal 🍧 basado en el puro sabor tropical 🍍 y con receta italiana 🇮🇹."],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Mini Cono Degustación", price: "$1.800", desc: "3 mini porciones para probar" }
+                    ],
+                    mains: [
+                        { item: "Waffle con Helado", price: "$5.500", desc: "Con 2 sabores a elección" },
+                        { item: "Brownie Caliente", price: "$6.200", desc: "Con bola de helado vainilla" }
+                    ],
+                    pasta: [],
+                    sandwiches: [
+                        { item: "Donuts Rellenos", price: "$3.200", desc: "De crema pastelera y chocolate" },
+                        { item: "Cookie Sándwich", price: "$4.500", desc: "2 galletas con helado en medio" }
+                    ],
+                    desserts: [
+                        { item: "1/4 kg (2 sabores)", price: "$3.800", desc: "Incluye cucurucho o envase" },
+                        { item: "1/2 kg (3 sabores)", price: "$6.200", desc: "Ideal para compartir" },
+                        { item: "1 kg (4 sabores)", price: "$11.500", desc: "Familiar" },
+                        { item: "Cucurucho Gourmet", price: "$2.500", desc: "Con chocolate y almendras" },
+                        { item: "Café Affogato", price: "$4.200", desc: "Helado de vainilla con espresso" },
+                        { item: "Sundae Especial", price: "$5.800", desc: "Con salsa, crema y frutos" }
+                    ],
+                    drinks: [
+                        { item: "Smoothie de Helado", price: "$4.500", desc: "Batido cremoso de helado" },
+                        { item: "Granizado", price: "$3.200", desc: "Café o limón con helado" },
+                        { item: "Agua Mineral", price: "$1.800", desc: "Con o sin gas" }
+                    ]
+                },
+                hours: "Lun-Dom: 10:00am-23:00pm",
+                phone: "+53 50914755",
+                
+            },
+         {
+                id: 73,
+                name: "Bar Restaurante Industria 8 ⭐",
+                category: "restaurant",
+                image: "",
+                rating: 4.9,
+                reviews: 189,
+                address: "🗺️📍Industria, Genios y Refugio, Centro Habana.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "El sótano más privado de La Habana ✨ Comida, Música y más ⭐ Ofertas nuevas todas las semanas 🎁.",
+                specialties: ["Descrubelo."],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Picadera Parranda", price: "$8.500", desc: "Mix de frituras para compartir" },
+                        { item: "Croquetas Variadas", price: "$3.800", desc: "6 unidades, jamón y pollo" },
+                        { item: "Papas Fritas Cargadas", price: "$4.200", desc: "Con cheddar, panceta y verdeo" }
+                    ],
+                    mains: [
+                        { item: "Hamburguesa Parranda", price: "$7.800", desc: "Doble carne, cheddar y huevo" },
+                        { item: "Chivito al Plato", price: "$9.500", desc: "Lomo, jamón, queso y huevo" },
+                        { item: "Milanesa Napolitana", price: "$10.200", desc: "Con papas españolas" }
+                    ],
+                    pasta: [
+                        { item: "Pizza de la Casa", price: "$11.000", desc: "Salsa especial y 4 quesos" }
+                    ],
+                    sandwiches: [
+                        { item: "Hamburguesa Bacon", price: "$8.500", desc: "Doble panceta y cebolla caramelizada" },
+                        { item: "Sándwich de Bondiola", price: "$7.200", desc: "Cerdo desmenuzado con salsa BBQ" },
+                        { item: "Wrap de Pollo Crispy", price: "$6.800", desc: "Pollo empanizado y vegetales" },
+                        { item: "Pan de Queso XL", price: "$5.500", desc: "3 unidades, receta brasileña" }
+                    ],
+                    desserts: [
+                        { item: "Chocotorta", price: "$3.500", desc: "Clásica argentina" },
+                        { item: "Helado Frito", price: "$4.200", desc: "Tempura de helado vainilla" }
+                    ],
+                    drinks: [
+                        { item: "Pinta IPA", price: "$2.800", desc: "Indian Pale Ale local" },
+                        { item: "Pinta Stout", price: "$3.200", desc: "Cerveza negra con notas de café" },
+                        { item: "Cuba Libre", price: "$3.500", desc: "Ron, coca y limón" },
+                        { item: "Gin Tonic", price: "$4.200", desc: "Con frutos rojos" }
+                    ]
+                },
+                hours: "⏰️ Lun-Dom: 12:00pm-00:00am",
+                phone: "#",
+            },
+                
+
 
         ];
 
@@ -5390,4 +5617,5 @@ function initAuthEventListeners() {
         renderPlaces();
         updateFavCount();
         updateRewardsDisplay();
+
    
