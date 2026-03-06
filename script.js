@@ -3790,6 +3790,146 @@
                 phone: "#",
             },
 
+      {
+                id: 80,
+                name: "Bar El Dandy",
+                category: "Bar",
+                image: "",
+                rating: 4.9,
+                reviews: 189,
+                address: "🗺️📍Teniente Rey 401, esquina Villegas, Parque Cristo, La Habana.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Tapas and cocktail bar ☕️✨",
+                specialties: ["Descrubelo"],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Picadera Parranda", price: "$8.500", desc: "Mix de frituras para compartir" },
+                        { item: "Croquetas Variadas", price: "$3.800", desc: "6 unidades, jamón y pollo" },
+                        { item: "Papas Fritas Cargadas", price: "$4.200", desc: "Con cheddar, panceta y verdeo" }
+                    ],
+                    mains: [
+                        { item: "Hamburguesa Parranda", price: "$7.800", desc: "Doble carne, cheddar y huevo" },
+                        { item: "Chivito al Plato", price: "$9.500", desc: "Lomo, jamón, queso y huevo" },
+                        { item: "Milanesa Napolitana", price: "$10.200", desc: "Con papas españolas" }
+                    ],
+                    pasta: [
+                        { item: "Pizza de la Casa", price: "$11.000", desc: "Salsa especial y 4 quesos" }
+                    ],
+                    sandwiches: [
+                        { item: "Hamburguesa Bacon", price: "$8.500", desc: "Doble panceta y cebolla caramelizada" },
+                        { item: "Sándwich de Bondiola", price: "$7.200", desc: "Cerdo desmenuzado con salsa BBQ" },
+                        { item: "Wrap de Pollo Crispy", price: "$6.800", desc: "Pollo empanizado y vegetales" },
+                        { item: "Pan de Queso XL", price: "$5.500", desc: "3 unidades, receta brasileña" }
+                    ],
+                    desserts: [
+                        { item: "Chocotorta", price: "$3.500", desc: "Clásica argentina" },
+                        { item: "Helado Frito", price: "$4.200", desc: "Tempura de helado vainilla" }
+                    ],
+                    drinks: [
+                        { item: "Pinta IPA", price: "$2.800", desc: "Indian Pale Ale local" },
+                        { item: "Pinta Stout", price: "$3.200", desc: "Cerveza negra con notas de café" },
+                        { item: "Cuba Libre", price: "$3.500", desc: "Ron, coca y limón" },
+                        { item: "Gin Tonic", price: "$4.200", desc: "Con frutos rojos" }
+                    ]
+                },
+                hours: "⏰️ Lun-Dom: 8:00am-22:00pm",
+                phone: "53 53254319",
+            },
+
+        {
+                id: 81,
+                name: "O'Reilly 304",
+                category: "restaurant",
+                image: "",
+                rating: 4.9,
+                reviews: 189,
+                address: "🗺️📍O'Reilly #304 Habana y Aguiar, Habana Viieja.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Opciones vegetarianas, Opciones veganas, Opciones sin gluten.",
+                specialties: ["Descrubelo."],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Picadera Parranda", price: "$8.500", desc: "Mix de frituras para compartir" },
+                        { item: "Croquetas Variadas", price: "$3.800", desc: "6 unidades, jamón y pollo" },
+                        { item: "Papas Fritas Cargadas", price: "$4.200", desc: "Con cheddar, panceta y verdeo" }
+                    ],
+                    mains: [
+                        { item: "Hamburguesa Parranda", price: "$7.800", desc: "Doble carne, cheddar y huevo" },
+                        { item: "Chivito al Plato", price: "$9.500", desc: "Lomo, jamón, queso y huevo" },
+                        { item: "Milanesa Napolitana", price: "$10.200", desc: "Con papas españolas" }
+                    ],
+                    pasta: [
+                        { item: "Pizza de la Casa", price: "$11.000", desc: "Salsa especial y 4 quesos" }
+                    ],
+                    sandwiches: [
+                        { item: "Hamburguesa Bacon", price: "$8.500", desc: "Doble panceta y cebolla caramelizada" },
+                        { item: "Sándwich de Bondiola", price: "$7.200", desc: "Cerdo desmenuzado con salsa BBQ" },
+                        { item: "Wrap de Pollo Crispy", price: "$6.800", desc: "Pollo empanizado y vegetales" },
+                        { item: "Pan de Queso XL", price: "$5.500", desc: "3 unidades, receta brasileña" }
+                    ],
+                    desserts: [
+                        { item: "Chocotorta", price: "$3.500", desc: "Clásica argentina" },
+                        { item: "Helado Frito", price: "$4.200", desc: "Tempura de helado vainilla" }
+                    ],
+                    drinks: [
+                        { item: "Pinta IPA", price: "$2.800", desc: "Indian Pale Ale local" },
+                        { item: "Pinta Stout", price: "$3.200", desc: "Cerveza negra con notas de café" },
+                        { item: "Cuba Libre", price: "$3.500", desc: "Ron, coca y limón" },
+                        { item: "Gin Tonic", price: "$4.200", desc: "Con frutos rojos" }
+                    ]
+                },
+                hours: "⏰️ Lun-Dom: 12:00pm-00:00am",
+                phone: "#",
+            },
+
+        {
+                id: 82,
+                name: "Café Laurent",
+                category: "Bar",
+                image: "",
+                rating: 4.9,
+                reviews: 189,
+                address: "🗺️📍Calle M #257 entre 19 y 21, Vedado.",
+                mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+                description: "Tapas and cocktail bar ☕️✨",
+                specialties: [" Coctelería premium"],
+                priceRange: "$$",
+                menu: {
+                    entrees: [
+                        { item: "Picadera Parranda", price: "$8.500", desc: "Mix de frituras para compartir" },
+                        { item: "Croquetas Variadas", price: "$3.800", desc: "6 unidades, jamón y pollo" },
+                        { item: "Papas Fritas Cargadas", price: "$4.200", desc: "Con cheddar, panceta y verdeo" }
+                    ],
+                    mains: [
+                        { item: "Hamburguesa Parranda", price: "$7.800", desc: "Doble carne, cheddar y huevo" },
+                        { item: "Chivito al Plato", price: "$9.500", desc: "Lomo, jamón, queso y huevo" },
+                        { item: "Milanesa Napolitana", price: "$10.200", desc: "Con papas españolas" }
+                    ],
+                    pasta: [
+                        { item: "Pizza de la Casa", price: "$11.000", desc: "Salsa especial y 4 quesos" }
+                    ],
+                    sandwiches: [
+                        { item: "Hamburguesa Bacon", price: "$8.500", desc: "Doble panceta y cebolla caramelizada" },
+                        { item: "Sándwich de Bondiola", price: "$7.200", desc: "Cerdo desmenuzado con salsa BBQ" },
+                        { item: "Wrap de Pollo Crispy", price: "$6.800", desc: "Pollo empanizado y vegetales" },
+                        { item: "Pan de Queso XL", price: "$5.500", desc: "3 unidades, receta brasileña" }
+                    ],
+                    desserts: [
+                        { item: "Chocotorta", price: "$3.500", desc: "Clásica argentina" },
+                        { item: "Helado Frito", price: "$4.200", desc: "Tempura de helado vainilla" }
+                    ],
+                    drinks: [
+                        { item: "Pinta IPA", price: "$2.800", desc: "Indian Pale Ale local" },
+                        { item: "Pinta Stout", price: "$3.200", desc: "Cerveza negra con notas de café" },
+                        { item: "Cuba Libre", price: "$3.500", desc: "Ron, coca y limón" },
+                        { item: "Gin Tonic", price: "$4.200", desc: "Con frutos rojos" }
+                    ]
+                },
+                hours: "⏰️ Lun-Dom: 12:00pm-23:00pm",
+                phone: "53 53254319",
+            },
 
         ];
 
@@ -5900,6 +6040,7 @@ function initAuthEventListeners() {
         updateRewardsDisplay();
 
    
+
 
 
 
