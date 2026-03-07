@@ -3374,7 +3374,7 @@
             },
 
             {
-                id: 70,
+                id: 71,
                 name: "El Gelato",
                 category: "icecream",
                 image: "",
@@ -3418,7 +3418,7 @@
             },
 
             {
-                id: 71,
+                id: 72,
                 name: "Café & Estancia Bohemia",
                 category: "restaurant",
                 image: "",
@@ -3465,7 +3465,7 @@
             },
 
             {
-                id: 72,
+                id: 73,
                 name: "Mango Gelateria & Cafe",
                 category: "icecream",
                 image: "",
@@ -3509,7 +3509,7 @@
             },
 
             {
-                id: 73,
+                id: 74,
                 name: "Bar Restaurante Industria 8 ⭐",
                 category: "restaurant",
                 image: "",
@@ -3556,7 +3556,7 @@
             },
 
              {
-                id: 74,
+                id: 75,
                 name: "Los Mercaderes",
                 category: "restaurant",
                 image: "",
@@ -3603,7 +3603,7 @@
             },
 
             {
-                id: 75,
+                id: 76,
                 name: "Restaurante El Rum Rum de La Habana",
                 category: "restaurant",
                 image: "",
@@ -3650,7 +3650,7 @@
             },
 
             {
-                id: 76,
+                id: 77,
                 name: "La Guarida",
                 category: "restaurant",
                 image: "",
@@ -3697,7 +3697,7 @@
             },
 
             {
-                id: 77,
+                id: 78,
                 name: "LA ESQUINA DE CUBA",
                 category: "restaurant",
                 image: "",
@@ -3744,7 +3744,7 @@
             },
 
             {
-                id: 78,
+                id: 79,
                 name: "Vistamar Restaurante",
                 category: "restaurant",
                 image: "",
@@ -3791,7 +3791,7 @@
             },
 
             {
-                id: 79,
+                id: 80,
                 name: "ChaChaChá Bar-Restaurante",
                 category: "restaurant",
                 image: "",
@@ -3838,7 +3838,7 @@
             },
 
              {
-                id: 80,
+                id: 81,
                 name: "Bar El Dandy",
                 category: "Bar",
                 image: "",
@@ -3885,7 +3885,7 @@
             },
 
             {
-                id: 81,
+                id: 82,
                 name: "O'Reilly 304",
                 category: "restaurant",
                 image: "",
@@ -3932,7 +3932,7 @@
             },
 
             {
-                id: 82,
+                id: 83,
                 name: "Café Laurent",
                 category: "Bar",
                 image: "",
@@ -3979,7 +3979,7 @@
             },
 
             {
-                id: 83,
+                id: 84,
                 name: "Doña Eutimia",
                 category: "restaurant",
                 image: "",
@@ -4026,7 +4026,7 @@
             },
 
             {
-                id: 84,
+                id: 85,
                 name: "Adastra Restaurante",
                 category: "restaurant",
                 image: "",
@@ -6180,4 +6180,5 @@ function initAuthEventListeners() {
         updateFavCount();
         updateRewardsDisplay();
    
+
 
