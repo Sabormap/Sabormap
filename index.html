@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Descubre los mejores restaurantes, bares y cafés de tu ciudad con SaborMap">
+    <meta name="theme-color" content="#FF6B6B">
+    
+    <title>SaborMap - Descubre los mejores sabores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        dark: '#2D3436',
+                        light: '#F7F1E3',
+                        brand: '#ff9a9e',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* ============================================
+           ESTILOS BASE Y ANIMACIONES
+           ============================================ */
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+        }
+        .modal-enter {
+            animation: modalIn 0.3s ease-out forwards;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .category-btn.active {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .star-rating {
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-bounce {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .footer-link {
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #FF6B6B;
+            transition: width 0.3s;
+        }
+        .footer-link:hover::after {
+            width: 100%;
+        }
+        .social-icon {
+            transition: all 0.3s;
+        }
+        .social-icon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(255, 107, 107, 0.4);
+        }
+        .toast {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #FF6B6B;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        .reward-card {
+            transition: all 0.3s;
+        }
+        .reward-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+        
+        /* MENÚ/CARTA */
+        .menu-item-card {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .menu-item-card:hover {
+            transform: translateX(5px);
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .menu-price-tag {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(255,107,107,0.3);
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .menu-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .menu-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* NAVEGACIÓN DEL MENÚ */
+        .menu-nav-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .menu-nav-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 50%;
+            margin: 0 8px;
+            flex-shrink: 0;
+        }
+        
+        .menu-nav-btn:hover {
+            background: #FF6B6B;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .menu-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .menu-tabs-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .menu-tabs-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 12px 4px;
+        }
+        
+        .menu-tabs-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .menu-scroll-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+            transition: width 0.3s;
+            z-index: 5;
+        }
+
+        .menu-tab {
+            flex-shrink: 0;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .menu-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .menu-tab.active {
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+        }
+
+        .menu-tab-entrees { background: #FFF3E0; color: #E65100; }
+        .menu-tab-entrees.active { background: linear-gradient(135deg, #FF9F43 0%, #FDCB6E 100%); }
+        .menu-tab-mains { background: #FFEBEE; color: #C62828; }
+        .menu-tab-mains.active { background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%); }
+        .menu-tab-pasta { background: #FFF8E1; color: #F57F17; }
+        .menu-tab-pasta.active { background: linear-gradient(135deg, #FDCB6E 0%, #FFEAA7 100%); }
+        .menu-tab-sandwiches { background: #E8F5E9; color: #2E7D32; }
+        .menu-tab-sandwiches.active { background: linear-gradient(135deg, #00B894 0%, #00CEC9 100%); }
+        .menu-tab-desserts { background: #FCE4EC; color: #C2185B; }
+        .menu-tab-desserts.active { background: linear-gradient(135deg, #FD79A8 0%, #FDCB6E 100%); }
+        .menu-tab-drinks { background: #E3F2FD; color: #1565C0; }
+        .menu-tab-drinks.active { background: linear-gradient(135deg, #74B9FF 0%, #A29BFE 100%); }
+
+        .category-counter {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-left: 6px;
+            font-weight: 700;
+        }
+
+        /* CARD LAYOUT */
+        .place-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .place-card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .place-card-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .place-description {
+            flex: 1;
+            min-height: 3rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 639px) {
+            body {
+                padding-bottom: 4rem;
+            }
+            #placesGrid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            .menu-nav-btn {
+                width: 32px;
+                height: 32px;
+                margin: 0 4px;
+            }
+        }
+
+        @media (min-width: 640px) and (max-width: 1023px) {
+            #placesGrid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #placesGrid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            z-index: 50;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+
+        .mobile-bottom-nav button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 1rem;
+            color: #6b7280;
+            font-size: 0.65rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .mobile-bottom-nav button.active {
+            color: #FF6B6B;
+        }
+
+        img {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        img.loaded {
+            opacity: 1;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #e5e5e5;
+            }
+            .bg-white {
+                background-color: #2d2d2d;
+            }
+            .bg-gray-50 {
+                background-color: #262626;
+            }
+            .text-gray-900 {
+                color: #f3f4f6;
+            }
+            .text-gray-600 {
+                color: #d1d5db;
+            }
+            .mobile-bottom-nav {
+                background: #2d2d2d;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-24 right-4 z-50 hidden">
+        <div class="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 toast">
+            <i class="fas fa-check-circle text-green-400"></i>
+            <span id="toastMessage">Operación exitosa</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 glass-effect border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-12 h-12 relative logo-bounce">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-md">
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#logoGrad)"/>
+                            <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                            <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                            <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                            <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-serif text-2xl font-bold text-gray-900 tracking-tight">SaborMap</h1>
+                        <p class="text-xs text-gray-500 font-medium">Descubre sabores únicos</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleFavorites()" class="relative p-2 text-gray-600 hover:text-primary transition group">
+                        <i class="fas fa-heart text-xl group-hover:scale-110 transition-transform"></i>
+                        <span id="fav-count" class="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="relative bg-dark text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-30">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200" loading="lazy" class="w-full h-full object-cover" alt="Restaurant background">
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
+            <div class="w-24 h-24 mx-auto mb-6 slide-in">
+                <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
+                    <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#logoGrad)"/>
+                    <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                </svg>
+            </div>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4 slide-in">Encuentra tu próximo sabor favorito</h2>
+            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto slide-in">Explora los mejores restaurantes, bares, heladerías y puestos de comida de tu ciudad</p>
+            
+            <div class="max-w-xl mx-auto relative slide-in">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, tipo de comida o ubicación..." 
+                    class="w-full px-6 py-4 rounded-full text-gray-900 shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/30 pl-14"
+                    onkeyup="filterPlaces()">
+                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="sticky top-20 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 py-4" id="filterSection">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" id="categoryFilters">
+                <button onclick="filterCategory('all')" class="category-btn active px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Todos
+                </button>
+                <button onclick="filterCategory('restaurant')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="restaurant">
+                    <i class="fas fa-utensils mr-2"></i>Restaurantes
+                </button>
+                <button onclick="filterCategory('bar')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="bar">
+                    <i class="fas fa-cocktail mr-2"></i>Bares-Cafeterías
+                </button>
+                <button onclick="filterCategory('icecream')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="icecream">
+                    <i class="fas fa-ice-cream mr-2"></i>Heladerías
+                </button>
+                <button onclick="filterCategory('streetfood')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="streetfood">
+                    <i class="fas fa-hotdog mr-2"></i>Street Food
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="placesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-32 h-32 mx-auto mb-6 opacity-30">
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="#ccc"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron lugares</h3>
+            <p class="text-gray-500">Intenta con otros filtros de búsqueda</p>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full modal-enter">
+                <div id="modalContent" class="bg-white"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewards Modal -->
+    <div id="rewardsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCommunityModal('rewardsModal')"></div>
+            <div class="relative bg-white rounded-2xl max-w-3xl w-full p-8 modal-enter max-h-[90vh] overflow-y-auto">
+                <button onclick="closeCommunityModal('rewardsModal')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+                
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <i class="fas fa-crown text-4xl text-white"></i>
+                    </div>
+                    <h3 class="font-serif text-3xl font-bold text-gray-900">Programa de Recompensas</h3>
+                    <p class="text-gray-600 mt-2">Gana puntos por cada acción y canjéalos por experiencias únicas</p>
+                </div>
+
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-green-500"></i> Cómo ganar puntos
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fas fa-user-plus text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Registro completo</p>
+                                <p class="text-sm text-gray-500">Completa tu perfil</p>
+                            </div>
+                            <span class="font-bold text-primary">+50 pts</span>
+                        </div>
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                <i class="fas fa-star text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Escribir reseña</p>
+                                <p class="text-sm text-gray-500">Mínimo 100 caracteres</p>
+                            </div>
+                            <span class="font-bold text-primary">+25 pts</span>
+                        </div>
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                <i class="fas fa-camera text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Subir foto</p>
+                                <p class="text-sm text-gray-500">De un plato o local</p>
+                            </div>
+                            <span class="font-bold text-primary">+15 pts</span>
+                        </div>
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Agregar favorito</p>
+                                <p class="text-sm text-gray-500">Guarda tus lugares</p>
+                            </div>
+                            <span class="font-bold text-primary">+5 pts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-gift text-primary"></i> Canjea tus puntos
+                    </h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary">
+                            <i class="fas fa-coffee text-4xl text-primary mb-3"></i>
+                            <h5 class="font-bold mb-1">Café gratis</h5>
+                            <p class="text-sm text-gray-500 mb-3">En cualquier café asociado</p>
+                            <button onclick="redeemReward('coffee', 100)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">
+                                100 pts
+                            </button>
+                        </div>
+                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary">
+                            <i class="fas fa-utensils text-4xl text-primary mb-3"></i>
+                            <h5 class="font-bold mb-1">20% descuento</h5>
+                            <p class="text-sm text-gray-500 mb-3">En restaurantes seleccionados</p>
+                            <button onclick="redeemReward('discount', 250)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">
+                                250 pts
+                            </button>
+                        </div>
+                        <div class="reward-card bg-white border-2 border-primary rounded-xl p-4 text-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-primary text-white text-xs px-2 py-1 rounded-bl-lg">POPULAR</div>
+                            <i class="fas fa-crown text-4xl text-yellow-500 mb-3"></i>
+                            <h5 class="font-bold mb-1">Cena para 2</h5>
+                            <p class="text-sm text-gray-500 mb-3">Experiencia gastronómica</p>
+                            <button onclick="redeemReward('dinner', 1000)" class="w-full bg-primary text-white py-2 rounded-lg font-semibold transition text-sm hover:bg-red-600">
+                                1,000 pts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-brand to-secondary"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-4 cursor-pointer" onclick="resetFilters(); window.scrollTo({top: 0, behavior: 'smooth'});">
+                        <div class="w-10 h-10">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <defs>
+                                    <linearGradient id="footerLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#footerLogoGrad)"/>
+                                <ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/>
+                                <path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="90" cy="80" r="3" fill="#ff9a9e"/>
+                                <circle cx="110" cy="80" r="3" fill="#ff9a9e"/>
+                                <path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-serif text-xl font-bold">SaborMap</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">Tu guía definitiva para descubrir los mejores sabores de la ciudad.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-compass text-primary"></i> Explorar
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><span onclick="filterCategory('restaurant')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-utensils text-xs w-4"></i> Restaurantes</span></li>
+                        <li><span onclick="filterCategory('bar')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-cocktail text-xs w-4"></i> Bares</span></li>
+                        <li><span onclick="filterCategory('icecream')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-ice-cream text-xs w-4"></i> Heladerías</span></li>
+                        <li><span onclick="filterCategory('streetfood')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-hotdog text-xs w-4"></i> Street Food</span></li>
+                        <li><span onclick="showTopRated()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-star text-xs w-4"></i> Mejor valorados</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-users text-secondary"></i> Comunidad
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><span onclick="openCommunityModal('rewardsModal')" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-gift text-xs w-4"></i> Programa de recompensas</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-headset text-brand"></i> Soporte
+                    </h4>
+                    <ul class="space-y-2 text-sm text-gray-400 mb-4">
+                        <li><span onclick="showHelpModal()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-question-circle text-xs w-4"></i> Centro de ayuda</span></li>
+                        <li><span onclick="showPrivacyPolicy()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-shield-alt text-xs w-4"></i>Política de Privacidad</span></li>
+                        <li><span onclick="showTermsOfUse()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-file-contract text-xs w-4"></i> Términos de uso</span></li>
+                    </ul>
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p class="text-xs text-gray-400 mb-1">¿Necesitas ayuda?</p>
+                        <a href="mailto:sabormap1@gmail.com" class="text-primary font-semibold text-sm hover:underline">sabormap1@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span>© 2026 SaborMap. Todos los derechos reservados.</span>
+                </div>
+                
+                <div class="flex gap-3">
+                    <a href="#" class="social-icon w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white border border-gray-700">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-icon w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white border border-gray-700">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav">
+        <button onclick="resetFilters(); window.scrollTo({top:0, behavior:'smooth'})" class="active">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </button>
+        <button onclick="toggleFavorites()">
+            <i class="fas fa-heart"></i>
+            <span>Favoritos</span>
+        </button>
+        <button onclick="openCommunityModal('rewardsModal')">
+            <i class="fas fa-crown"></i>
+            <span>Rewards</span>
+        </button>
+    </nav>
+
+    <script>
+        // ============================================
+        // TODOS LOS DATOS DE LOS ESTABLECIMIENTOS (COMPLETO 1-85)
+        // ============================================
+        
+        const places = [
+            { id: 1, name: "Yo Invito", category: "restaurant", image: "imagenes/Yo invito.webp", rating: 4.8, reviews: 324, address: "📍Calle 3era, esquina a D, Vedado", description: "Contamos con área infantil para el disfrute de los peques. Siéntete como en casa 😊😌", specialties: ["Variedad de comida cubana e internacional"], priceRange: "$$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "#", menu: { entrees: [{ item: "Tostones Rellenos", price: "$3.500", desc: "De jamón y queso" }], mains: [{ item: "Bife de Chorizo", price: "$12.500", desc: "400g con guarnición" }] } },
+            { id: 2, name: "5 Esquinas Trattoria", category: "restaurant", image: "imagenes/5 esquinas.jpg", rating: 4.9, reviews: 189, address: "🗺️📍calle Habana esq. Cuarteles, Habana Vieja", description: "Creamos verdaderas obras de arte con el más puro sabor italiano.", specialties: ["Comida Italiana"], priceRange: "$$", hours: "⏰️ Mar-Dom: 18:00-02:00", phone: "#", menu: { entrees: [{ item: "Bruschetta Clásica", price: "$3.200", desc: "Tomate, albahaca" }], pasta: [{ item: "Spaghetti Carbonara", price: "$9.500", desc: "Con panceta" }] } },
+            { id: 3, name: "Sapori", category: "bar", image: "imagenes/Sapori.jpg", rating: 4.9, reviews: 189, address: "🗺️📍| Calle 31 entre 6 y 8. Miramar. Playa.", description: "Con amor y con sabor. Postres peligrosamente adictivos.", specialties: ["Dulcería-Brunch"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "#", menu: { desserts: [{ item: "Cheesecake Oreo", price: "$4.800", desc: "Base de galleta" }] } },
+            { id: 4, name: "El Portal de Cojímar", category: "restaurant", image: "imagenes/El Portal de Cojimar.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Morro, Esq. K, Cojímar", description: "🍽 Restaurante familiar en Cojímar. A minutos del mar.", specialties: ["🔥 Parrilladas", "🦐 Mariscos"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "53 55422269", menu: { mains: [{ item: "Parrilla del Mar", price: "$16.800", desc: "Langosta, camarones" }] } },
+            { id: 5, name: "Los 3 Chinitos", category: "restaurant", image: "imagenes/Los 3 Chinitos.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 10 entre 3ra y 5ta Miramar", description: "Bienvenidos a Los 3 Chinitos en Miramar.", specialties: ["pizzas grandes"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "+53 56143419", menu: { mains: [{ item: "Pizza Extravaganza", price: "$13.500", desc: "Pepperoni" }] } },
+            { id: 6, name: "Café de la Esquina", category: "restaurant", image: "imagenes/Café de la Esquina.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 10 entre 3ra y 5ta Miramar", description: "¡No pierdas la oportunidad, únete a esta experiencia de sabores únicos!", specialties: ["Fusión cubano-italiana"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:30am-23:30pm", phone: "78362565", menu: { mains: [{ item: "Ropa Vieja Risotto", price: "$11.500", desc: "Fusión" }] } },
+            { id: 7, name: "Ela & Paleta", category: "icecream", image: "imagenes/Ela & Paleta.jpg", rating: 4.9, reviews: 512, address: "Calle 9na. e/ F y G, Vedado.", description: "Dicen que los colores hacen la vida más bonita... 🌈", specialties: ["🍦Helado artesanal"], priceRange: "$$", hours: "Lun-Dom: 10:00am-1:00am", phone: "#", menu: { desserts: [{ item: "1/4 kg (2 sabores)", price: "$3.800", desc: "Incluye cucurucho" }] } },
+            { id: 8, name: "LILU CHURROS CUBA", category: "streetfood", image: "imagenes/Lilu-Churros.jpg", rating: 4.7, reviews: 267, address: "Linea no. 406 e/ F y G, VEDADO.", description: "Food truck de tacos auténticos mexicanos.", specialties: ["Churros Rellenos"], priceRange: "$", hours: "Vie-Dom: 19:00-02:00", phone: "+54 11 5678-9012", menu: { mains: [{ item: "Taco al Pastor", price: "$1.200", desc: "Cerdo marinado" }] } },
+            { id: 9, name: "Crispy Chicken", category: "restaurant", image: "imagenes/Crispy Chicken.jpg", rating: 4.5, reviews: 198, address: "🗺️📍Ave. Acosta, esq Juan Delgado, Monaco", description: "El secreto de la felicidad está en un pollito.", specialties: ["Variedades de Pollo"], priceRange: "$$$$", hours: "Lun-Dom: 10:00am-23:30pm", phone: "+53 63182745", menu: {} },
+            { id: 10, name: "Cafetería Pilón", category: "bar", image: "imagenes/Cafetería Pilón.jpg", rating: 4.4, reviews: 156, address: "Calle 25 entre M y N", description: "nuevos espacios para pilonear junto a nosotros.", specialties: ["Descubrelo"], priceRange: "$$", hours: "Lun-Vie: 08:00-20:00", phone: "#", menu: {} },
+            { id: 11, name: "Parranda Grill Bar", category: "restaurant", image: "imagenes/Parranda Grill Bar.jpg", rating: 4.9, reviews: 189, address: "🗺️📍O'farrill #366 % D'strampes y Figueroa", description: "✨Una vista perfecta al horizonte habanero✨", specialties: ["picadera Parrandas"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00am-00:00pm", phone: "#", menu: {} },
+            { id: 12, name: "Sensaciones Restaurante-Grill", category: "restaurant", image: "imagenes/Sensacioones Restaurante-Grill.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 70 No. 902 entre 9na y 11, Playa", description: "Dónde comer es un placer✨", specialties: ["Sabores frescos"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00am-00:00pm", phone: "#", menu: {} },
+            { id: 13, name: "RESTAURANTE EL JARDIN", category: "restaurant", image: "imagenes/RESTAURANTE EL JARDIN.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Linea y Calle C, Vedado", description: "El espacio ideal para disfrutar en familia", specialties: ["🥘Comida criolla e internacional"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00am-00:00pm", phone: "7 8311414", menu: {} },
+            { id: 14, name: "La Despensa", category: "restaurant", image: "imagenes/La despensa.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 9 / F y G", description: "💛 Sabor Tropical 🍻🌴.Tu nuevo vicio en el Vedado", specialties: ["Personaliza🍕"], priceRange: "$$", hours: "⏰️ Lun-Dom: 7:30am-3:00am", phone: "7 8311414", menu: {} },
+            { id: 15, name: "Fuego Lento Steakhouse", category: "restaurant", image: "imagenes/Fuego Lento Steakhouse.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 1ra e/ C y D, Vedado", description: "🧑🏾‍🍳 Hay sabores que no se apresuran...", specialties: ["CORTES & CARNES"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:30pm-12:00am", phone: "+53 52145269", menu: {} },
+            { id: 16, name: "Sabores", category: "restaurant", image: "imagenes/Sabores.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 1ra e/ C y D, Vedado", description: "Sabores, en el Palacio del Conde Lombillo🏛️.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:30pm-12:00am", phone: "#", menu: {} },
+            { id: 17, name: "The Monkey Restobar", category: "restaurant", image: "imagenes/The Monkey Restobar.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle L e/ calle 17 y calle 15, Vedado.", description: "RestoBar-Eventos privados-DJ Session🎧.", specialties: ["Comida internacional"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00pm-1:00am", phone: "+53 58058576", menu: {} },
+            { id: 18, name: "Malcriado", category: "bar", image: "imagenes/Malcriado.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle Infanta entre Jovellar y San Lázaro # 202A", description: "Aquí el sabor no tiene reglas, las reglas las pones tu..", specialties: ["☕️Rico café"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "#", menu: {} },
+            { id: 19, name: "El Frito", category: "bar", image: "imagenes/El Frito.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Aguacate entre Obispo y Obrapía", description: "Apúrate y prueba las alitas antes de que vuelan 😏", specialties: ["Alitas crujientes"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00am-19:30pm", phone: "#", menu: {} },
+            { id: 20, name: "Birra | Casa de la Cerveza", category: "bar", image: "imagenes/Birra  Casa de la Cerveza.jpg", rating: 4.9, reviews: 189, address: "🗺️📍15 entre L y K #153.", description: "🍺 Cerveza siempre helada y gran variedad.", specialties: ["🍸 Cocteles únicos"], priceRange: "$$", hours: "⏰️ Lun-Jue: 10:00am-23:00pm", phone: "#", menu: {} },
+            { id: 21, name: "JAMA | Best sushi in Town 💎", category: "restaurant", image: "imagenes/Best Sushi in Town.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Aguiar 261 entre O'Really y San Juan de Dios.", description: "Best Sushi in Town.", specialties: ["Sushi"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00pm-1:00am", phone: "+53 58058576", menu: {} },
+            { id: 22, name: "Café Literario La Copa", category: "bar", image: "imagenes/Café Literario La Copa.jpg", rating: 4.9, reviews: 189, address: "🗺️📍1ra A/42 y 44, La Copa, Playa.", description: "🤎✨ Un rincón para leer, crear y saborear.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Jue: 9:00am-17:00pm", phone: "#", menu: {} },
+            { id: 23, name: "LUQUE HABANA", category: "restaurant", image: "imagenes/LUQUE HABANA.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle G #556 / 23 y 25. Vedado.", description: "Prueba nuestras pizzas y pastas 🍕🍝.", specialties: ["Comida italiana"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00pm-23:30pm", phone: "+53 50633569", menu: {} },
+            { id: 24, name: "Encuentro Restaurante Chino", category: "restaurant", image: "imagenes/Encuentro Restaurante Chino.webp", rating: 4.9, reviews: 189, address: "🗺️📍Hotel Manzana Kempinski piso 2.", description: "🔥 Donde hay fuego, hay sabor.", specialties: ["Hot pot"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "+53 50134757", menu: {} },
+            { id: 25, name: "𝐋𝐀 𝐂𝐀𝐑𝐑𝐄𝐓𝐀", category: "restaurant", image: "imagenes/La Carreta.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 21. Esq. K Vedado.", description: "⭐️El Icónico Famoso Restaurant en CUBA", specialties: ["Música en vivo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 26, name: "Café Clington", category: "bar", image: "imagenes/Café Clington.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 60 e/ 3era y 3era A no.303,Playa.", description: "“Unirnos es un comienzo, estar juntos es un progreso”", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Jue: 9:00am-20:00pm", phone: "#", menu: {} },
+            { id: 27, name: "Food Master", category: "restaurant", image: "imagenes/Food Master.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 7ma A #6620 e/66 y 70 Miramar", description: "Porque los buenos momentos merecen un buen lugar. 💚💚💚", specialties: ["BURGER 🍔 PIZZA 🍕"], priceRange: "$$", hours: "⏰️ Dom-Jue: 11:00am-21:00pm", phone: "#", menu: {} },
+            { id: 28, name: "Sibarita 🍍", category: "restaurant", image: "imagenes/sibarita.jpg", rating: 4.9, reviews: 189, address: "🗺️📍O'Reilly 528 / Bernaza y Villegas", description: "🌎 Cuban Food & Tiki Cocktails 🗿🍸", specialties: ["Cuban Food"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 29, name: "EL PROYECTO", category: "bar", image: "imagenes/EL PROYECTO.jpg", rating: 4.9, reviews: 189, address: "🗺️📍14 y 11, Vedado", description: "🎥 cine gratis en un portal.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Jue: 9:00am-20:00pm", phone: "#", menu: {} },
+            { id: 30, name: "Mila", category: "restaurant", image: "imagenes/Mila.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 9na/J e I # 254 Vedado.", description: "Un spot italiano con detalles que enamoran desde que entras.", specialties: ["🍕Auténtica Cocina Italiana"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00am", phone: "+53 58695188", menu: {} },
+            { id: 31, name: "Brasserie 255 Restaurant", category: "restaurant", image: "imagenes/Brasserie 255 Restaurant.webp", rating: 4.9, reviews: 189, address: "🗺️📍Juan Delgado 255", description: "Sabores que te hacen querer volver ✨", specialties: ["Desayuno | Almuerzo | Cena"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-23:00am", phone: "+53 56147642", menu: {} },
+            { id: 32, name: "ATENEO DE LA HABANA", category: "bar", image: "imagenes/ATENEO DE LA HABANA.webp", rating: 4.9, reviews: 189, address: "🗺️📍Prado 121 esquina Refugio.", description: "Creando un espacio para todxs 🌈", specialties: ["☕ Café Ateneo"], priceRange: "$$", hours: "⏰️ Lun-Vie: 8:30am-18:00pm", phone: "+53 52845235", menu: {} },
+            { id: 33, name: "Paladar Kilómetro Zero", category: "restaurant", image: "imagenes/Paladar Kilómetro Zero.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Juan Delgado 255", description: "Sabores que te hacen querer volver ✨", specialties: ["Desayuno | Almuerzo | Cena"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-23:00am", phone: "+53 56147642", menu: {} },
+            { id: 34, name: "Kore • Café", category: "bar", image: "imagenes/Kore • Café.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calzada y K, Vedado.", description: "Si buscas un almuerzo que te deje satisfecho", specialties: ["🧇 Waffles, ☕️ Cafés"], priceRange: "$$", hours: "⏰️ Lun-Dom: 7:00am-00:00am", phone: "#", menu: {} },
+            { id: 35, name: "Mambo", category: "restaurant", image: "imagenes/Mambo.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Ave 23 entre 12 y 14", description: "📍Donde se vive el entretenimiento en vivo.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-00:00am", phone: "#", menu: {} },
+            { id: 36, name: "Zooppelia 🍦 Heladería", category: "icecream", image: "imagenes/Zooppelia 🍦 Heladería.jpg", rating: 4.9, reviews: 512, address: "Calle 9na. e/ F y G, Vedado.", description: "En @zoomarket_habana podrás comprar Helados", specialties: ["Descubrelo"], priceRange: "$$", hours: "Lun-Dom: 10:00am-1:00am", phone: "#", menu: {} },
+            { id: 37, name: "IMPERIOS", category: "restaurant", image: "imagenes/IMPERIOS.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Avenida 9na #12018", description: "Vive una experiencia en cada nivel", specialties: ["●Terraza con pizzas"], priceRange: "$$", hours: "⏰️ Lun-Mie: 12:00pm-00:00am", phone: "+53 50284747", menu: {} },
+            { id: 38, name: "Alta Casa", category: "restaurant", image: "imagenes/Alta Casa.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 47 # 807 e/ Conill y Santa Ana", description: "Sabores que elevan tu experiencia ✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-00:00am", phone: "78831365", menu: {} },
+            { id: 39, name: "El Bejuco", category: "bar", image: "imagenes/El Bejuco.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Línea 1206 entre 18 y 20", description: "☀️ |Co-working by day 💻 |☕ Café |", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 9:00am-4:00am", phone: "#", menu: {} },
+            { id: 40, name: "Montefreddo", category: "icecream", image: "imagenes/Montefreddo.jpg", rating: 4.9, reviews: 512, address: "Calle San Rafael #1209", description: "🍦✨ Helados, frapuccinos, dulces variados", specialties: ["Helado artesanal"], priceRange: "$$", hours: "Lun-Dom: 10:00am-9:00pm", phone: "78781535", menu: {} },
+            { id: 41, name: "Paladar El jardin de los Milagros", category: "restaurant", image: "imagenes/Paladar El jardin de los Milagros.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 37 entre 24 y San Juan Bautista", description: "Sabores que elevan tu experiencia ✨", specialties: ["Comida al carbon🥩"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-9:30pm", phone: "78811053", menu: {} },
+            { id: 42, name: "Nero di seppia 🦑", category: "restaurant", image: "imagenes/Nero di seppia 🦑.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 6 / 1ra y 3ra, Miramar", description: "Esencia italiana 🇮🇹✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Mie-Jue: 16:00pm-00:00am", phone: "53 54787871", menu: {} },
+            { id: 43, name: "San Ignacio 214", category: "restaurant", image: "imagenes/San Ignacio 214.webp", rating: 4.9, reviews: 189, address: "🗺️📍San Ignacio214 esq. Lamparilla", description: "☕ Donde el aroma del tabaco se mezcla con el sabor cubano.", specialties: ["Auténticas recetas cubanas"], priceRange: "$$", hours: "⏰️ Lun-Dom: 9:00am-22:00pm", phone: "#", menu: {} },
+            { id: 44, name: "A la Turca Istanbul", category: "icecream", image: "imagenes/A la Turca Istanbul.jpg", rating: 4.9, reviews: 512, address: "🗺️📍21 y L, Vedado.", description: "Restaurante-Heladería 🇹🇷🍨.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "#", menu: {} },
+            { id: 45, name: "Amaya", category: "restaurant", image: "imagenes/Amaya.jpg", rating: 4.9, reviews: 189, address: "🗺️📍21 y L, Vedado.", description: "Descubre la magia de la cocina turca", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Mar-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 46, name: "PanParaPan 23y18", category: "restaurant", image: "imagenes/PanParaPan 23y18.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 23, esq 18 # 1202", description: "Capturando la perfección en cada rebanada🍕📷", specialties: ["Comida rápida"], priceRange: "$$", hours: "⏰️ Mar-Dom: 10:00am-11:30pm", phone: "+53 52724660", menu: {} },
+            { id: 47, name: "Restaurante Snack Bar G310", category: "restaurant", image: "imagenes/Restaurante Snack Bar G310.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle G No 310 e/ 13 y 15.", description: "Wifi gratis", specialties: ["🍔 Snack, tragos"], priceRange: "$$", hours: "⏰️ Lun-Dom: 24 horas", phone: "#", menu: {} },
+            { id: 48, name: "La Macorina", category: "restaurant", image: "imagenes/La Macorina.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Prado 62. Frente al hotel Packard", description: "⭐ Sabores que te hacen querer volver", specialties: ["Cocina Cubana & Internacional"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:30am-23:00pm", phone: "#", menu: {} },
+            { id: 49, name: "Café FM", category: "bar", image: "imagenes/Café FM.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Playa 13 entre 60 y 62.", description: "Descubre el placer de saborear una jugosa hamburguesa", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 24 horas", phone: "+53 51967272", menu: {} },
+            { id: 50, name: "Razones y Motivos", category: "restaurant", image: "imagenes/Razones y Motivos.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle F #63 entre 3ra y 5ta, Vedado.", description: "Un lugar perfecto para ir con tus amigos", specialties: ["Comida Criolla e Internacional"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:30pm", phone: "+53 52930021", menu: {} },
+            { id: 51, name: "El Idilio", category: "restaurant", image: "imagenes/El Idilio.webp", rating: 4.9, reviews: 189, address: "🗺️📍Esquina de 15 y G, Vedado.", description: "🔥 Que no se apague la llama", specialties: ["Cocina al carbón + cerveza"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "+53 52913911", menu: {} },
+            { id: 52, name: "Café Del Ángel", category: "bar", image: "imagenes/Café Del Ángel.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Compostela 1 Esquina Cuarteles.", description: "🍝🍗 Elige entre pasta pomodoro o nuggets", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "#", menu: {} },
+            { id: 53, name: "Sushi Level_Qva", category: "restaurant", image: "imagenes/Sushi Level_Qva.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Concordia/lealtad y perseverancia 304", description: "🍱Restaurante y Delivery", specialties: ["Comida asiática"], priceRange: "$$", hours: "⏰️ Mar-Dom: 19:00pm-23:30pm", phone: "+53 52913911", menu: {} },
+            { id: 54, name: "MiauCafé", category: "bar", image: "imagenes/MiauCafé.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Línea #1057 entre 12 y 14", description: "🍝🖼️El ronroneo del arte.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Sab: 11:00am-22:00pm", phone: "#", menu: {} },
+            { id: 55, name: "ENPLAZA23", category: "bar", image: "imagenes/ENPLAZA23.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Ave. 23 e/ Paseo y 2, Vedado.", description: "🛒🍕 Un lugar para hacer compras y comer delicioso.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00am-22:00pm", phone: "#", menu: {} },
+            { id: 56, name: "Thaly’s Cafe", category: "bar", image: "imagenes/Thaly’s Cafe.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle 12 #318 entre 3ra y 5ta Miramar", description: "Diseñado para hacerte feliz ☺️", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Vie: 8:00am-18:00pm", phone: "72035525", menu: {} },
+            { id: 57, name: "La Torre de Marfil Restaurant & Bar", category: "restaurant", image: "imagenes/La Torre de Marfil Restaurant & Bar.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Mercaderes entre Obispo y Obrapia.", description: "Restaurante de cocina cubana e internacional", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Mar-Dom: 11:00am-23:00pm", phone: "+53 52667604", menu: {} },
+            { id: 58, name: "Teniente Rey 360", category: "restaurant", image: "imagenes/Teniente Rey 360.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Teniente Rey #360 e/ Villegas y Aguacate.", description: "🍹Bar-Restaurante especializado en comida tradicional cubana🇨🇺", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-21:30pm", phone: "78602916", menu: {} },
+            { id: 59, name: "Restuarante Perla Negra🏴", category: "restaurant", image: "imagenes/Restuarante Perla Negra.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Milagros No.114", description: "¿Quieres conocer un Barco Pirata ☠️ en plena Habana?", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Vie: 12:00pm-00:00am", phone: "+53 59333495", menu: {} },
+            { id: 60, name: "Restaurant Habana Blues", category: "restaurant", image: "imagenes/Restaurant Habana Blues.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle H entre 17 y 19 vedado.", description: "🤤 Menú variado.🖼️ Decoración única.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:30am", phone: "+53 7835654", menu: {} },
+            { id: 61, name: "La Lola Bar & Cafeteria", category: "bar", image: "imagenes/LaLola bar & cafetería.webp", rating: 4.9, reviews: 189, address: "🗺️📍Ayestaran & Pedro Perez", description: "🛵 domicilio en toda la habana", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 14:00pm-3:00am", phone: "+53 53654726", menu: {} },
+            { id: 62, name: "Kanda", category: "bar", image: "imagenes/Kanda.webp", rating: 4.9, reviews: 189, address: "🗺️📍Calle J #460 entre 21 y 23, Vedado.", description: "🥤 En Kanda puedes pedir tus bebidas favoritas para llevar.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 9:00am-21:00pm", phone: "#", menu: {} },
+            { id: 63, name: "Tiky Tiky", category: "bar", image: "imagenes/Tiky Tiky.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 19 entre 2 y 4 #825 Vedado.", description: "🥤 En Kanda puedes pedir tus bebidas favoritas para llevar.", specialties: ["🍽️Comida criolla e internacional!!!"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00am-22:00pm", phone: "+53 59172820", menu: {} },
+            { id: 64, name: "Mojito Mojito", category: "restaurant", image: "imagenes/Mojito Mojito.webp", rating: 4.9, reviews: 189, address: "🗺️📍Muralla e/Cuba y San Ignacio", description: "🍋🍋MOJITO MOJITO :Porque cuando tomas mojito: UNA VEZ NO BASTA.", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:30pm", phone: "#", menu: {} },
+            { id: 65, name: "🍝Sfornabontà by Amalfi🍸", category: "restaurant", image: "imagenes/Sfornabontà by Amalfi.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 1ra # 4215 entre 42 y 44, Playa.", description: "🇮🇹 Il Gusto della Qualitá.🍋 Restaurante Coffee Shop", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 7:30am-23:00pm", phone: "#", menu: {} },
+            { id: 66, name: "Betty Boom", category: "restaurant", image: "imagenes/Betty Boom.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 60 y 5ta A, Miramar.", description: "Deliciosa comida a la parrilla", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:30am-00:00am", phone: "+53 53904259", menu: {} },
+            { id: 67, name: "Restaurante 7 Dias", category: "restaurant", image: "imagenes/Restaurante 7 Dias.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 14 y Mar, Miramar, Playa", description: "¡Una experiencia explosiva!", specialties: ["Descubrelo"], priceRange: "$$", hours: "⏰️ Dom-Jue: 11:00am-22:30pm", phone: "+53 52837046", menu: {} },
+            { id: 68, name: "FONDA LA PAILA", category: "restaurant", image: "imagenes/FONDA LA PAILA.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Esq 25,calle M,Vedado.", description: "Los colores de nuestros platos no son casualidad… son identidad.", specialties: ["COMIDA AL CARBÓN"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "+53 58846474", menu: {} },
+            { id: 69, name: "Bohío Mercadito", category: "bar", image: "imagenes/Bohío Mercadito.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 19 / 12 y 10 Vedado.", description: "Realiza tu compra y de paso tómate un café ☕️✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 10:00am-21:00pm", phone: "#", menu: {} },
+            { id: 70, name: "El Farallón", category: "restaurant", image: "imagenes/El Farallón.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 22, esquina 23, Vedado.", description: "🥇Restaurante-Pizzería de lujo", specialties: ["Pastas, carnes, pescados"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-23:00pm", phone: "+53 59652021", menu: {} },
+            { id: 71, name: "Entre Nos", category: "restaurant", image: "imagenes/Entre Nos.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Aguiar 62 / Cuarteles y Peña Pobre", description: "🍀Lo que aquí pase, Entre nos se queda🍀", specialties: ["🥗ensaladas.🍹smothies"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-23:00pm", phone: "#", menu: {} },
+            { id: 72, name: "Helad'oro", category: "icecream", image: "imagenes/Helad'oro.jpg", rating: 4.9, reviews: 512, address: "Calle Aguiar 206", description: "Helado artesanal con un toque cubano.", specialties: ["Descubrelo"], priceRange: "$$", hours: "Lun-Dom: 11:00am-20:00pm", phone: "53 50131498", menu: {} },
+            { id: 73, name: "El Gelato", category: "icecream", image: "imagenes/El Gelato.jpg", rating: 4.9, reviews: 512, address: "Ave 1ra Esq. 46, Playa.", description: "Donde se celebran los momentos especiales.", specialties: ["Helado artesanal premium 🍨"], priceRange: "$$", hours: "Lun-Dom: 9:00am-23:00pm", phone: "53 59605045", menu: {} },
+            { id: 74, name: "Café & Estancia Bohemia", category: "restaurant", image: "imagenes/Café & Estancia Bohemia.jpg", rating: 4.9, reviews: 189, address: "🗺️📍San Ignacio 364", description: "Se refleja la riqueza histórica y cultural", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 11:00am-23:00pm", phone: "+53 52871607", menu: {} },
+            { id: 75, name: "Mango Gelateria & Cafe", category: "icecream", image: "imagenes/Mango Gelateria & Cafe.jpg", rating: 4.9, reviews: 512, address: "Teniente Rey #106", description: "Un paseo por Plaza Vieja siempre es mejor con un gelato🍦", specialties: ["Helado artesanal 🍧"], priceRange: "$$", hours: "Lun-Dom: 10:00am-23:00pm", phone: "+53 50914755", menu: {} },
+            { id: 76, name: "Bar Restaurante Industria 8 ⭐", category: "restaurant", image: "imagenes/Bar Restaurante Industria 8.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Industria, Genios y Refugio", description: "El sótano más privado de La Habana ✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 77, name: "Los Mercaderes", category: "restaurant", image: "imagenes/Los Mercaderes.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Mercaderes 207", description: "Una experiencia para vivir y compartir.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "+53 52901531", menu: {} },
+            { id: 78, name: "Restaurante El Rum Rum de La Habana", category: "restaurant", image: "imagenes/Restaurante El Rum Rum de La Habana.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Empedrado No. 256", description: "Un restaurante de primera categoría", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "+53 52901531", menu: {} },
+            { id: 79, name: "La Guarida", category: "restaurant", image: "imagenes/La Guarida.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Empedrado No. 256", description: "Un viaje al corazón de La Habana.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "#", menu: {} },
+            { id: 80, name: "LA ESQUINA DE CUBA", category: "restaurant", image: "imagenes/LA ESQUINA DE CUBA.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle Cuba #203", description: "Un balcón en la Habana Vieja.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "#", menu: {} },
+            { id: 81, name: "Vistamar Restaurante", category: "restaurant", image: "imagenes/Vistamar Restaurante.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle 1ra entre 22 y 24.", description: "✨Un sabor, un estilo, un océano.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 82, name: "ChaChaChá Bar-Restaurante", category: "restaurant", image: "imagenes/ChaChaChá Bar-Restaurante.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Monserrate #159", description: "Música en vivo• Coctelería de autor.", specialties: ["Comida cubana contemporánea"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 83, name: "Bar El Dandy", category: "bar", image: "imagenes/Bar El Dandy.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Teniente Rey 401", description: "Tapas and cocktail bar ☕️✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 8:00am-22:00pm", phone: "53 53254319", menu: {} },
+            { id: 84, name: "O'Reilly 304", category: "restaurant", image: "imagenes/O'Reilly 304.jpg", rating: 4.9, reviews: 189, address: "🗺️📍O'Reilly #304", description: "Opciones vegetarianas, veganas, sin gluten.", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "#", menu: {} },
+            { id: 85, name: "Café Laurent", category: "bar", image: "imagenes/Café Laurent.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Calle M #257 entre 19 y 21", description: "Tapas and cocktail bar ☕️✨", specialties: ["Coctelería premium"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-23:00pm", phone: "53 53254319", menu: {} },
+            { id: 86, name: "Adastra Restaurante", category: "restaurant", image: "imagenes/Adastra Restaurante.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Obipo #255", description: "Donde el sabor y la calidez te llevan hacia las estrellas✨", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "+53 63518498", menu: {} },
+            { id: 87, name: "Doña Eutimia", category: "restaurant", image: "imagenes/Doña Eutimia.jpg", rating: 4.9, reviews: 189, address: "🗺️📍Callejón del Chorro 60C", description: "🥘 Comida Tradicional Cubana", specialties: ["Descrubelo"], priceRange: "$$", hours: "⏰️ Lun-Dom: 12:00pm-00:00am", phone: "+53 53284713", menu: {} }
+        ];
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        
+        let currentFilter = 'all';
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let userPoints = parseInt(localStorage.getItem('sabormap_points')) || 0;
+        let isRewardsMember = localStorage.getItem('sabormap_rewards_member') === 'true';
+
+        // ============================================
+        // FUNCIONES PRINCIPALES
+        // ============================================
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function openCommunityModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCommunityModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function renderPlaces() {
+            const grid = document.getElementById('placesGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = places.filter(place => {
+                const matchesCategory = currentFilter === 'all' || place.category === currentFilter;
+                const matchesSearch = place.name.toLowerCase().includes(searchTerm) || 
+                                    place.description.toLowerCase().includes(searchTerm) ||
+                                    place.address.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                grid.innerHTML = '';
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+            
+            grid.innerHTML = filtered.map((place, index) => {
+                const categoryName = place.category === 'restaurant' ? 'Restaurante' : 
+                                    place.category === 'bar' ? 'Bar' : 
+                                    place.category === 'icecream' ? 'Heladería' : 'Street Food';
+                
+                return `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer slide-in place-card" 
+                     style="animation-delay: ${index * 0.1}s"
+                     onclick="openModal(${place.id})">
+                    <div class="relative h-48 overflow-hidden">
+                        <img data-src="${place.image}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" loading="lazy" alt="${place.name}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold shadow-md">
+                            <span class="star-rating"><i class="fas fa-star mr-1"></i>${place.rating}</span>
+                        </div>
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">
+                                ${categoryName}
+                            </span>
+                        </div>
+                        <button onclick="toggleFavorite(event, ${place.id})" class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 ${favorites.includes(place.id) ? 'text-red-500' : 'text-gray-400'}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6 place-card-content">
+                        <div class="place-card-info">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-serif text-xl font-bold text-gray-900 line-clamp-1">${place.name}</h3>
+                                <span class="text-sm font-semibold text-gray-600">${place.priceRange}</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 place-description">${place.description.substring(0, 100)}${place.description.length > 100 ? '...' : ''}</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt text-primary mr-2"></i>
+                                <span class="truncate">${place.address}</span>
+                            </div>
+                        </div>
+                        <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-primary transition-colors flex items-center justify-center gap-2 group">
+                            Ver detalles <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+            
+            // Lazy loading de imágenes
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            img.src = img.dataset.src;
+                            img.classList.add('loaded');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+                observer.observe(img);
+            });
+        }
+
+        function filterCategory(category) {
+            currentFilter = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('button').classList.add('active');
+            renderPlaces();
+        }
+
+        function filterPlaces() {
+            renderPlaces();
+        }
+
+        function resetFilters() {
+            currentFilter = 'all';
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.trim() === 'Todos' || btn.querySelector('svg')) {
+                    btn.classList.add('active');
+                }
+            });
+            renderPlaces();
+        }
+
+        function showTopRated() {
+            currentFilter = 'all';
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.trim() === 'Todos' || btn.querySelector('svg')) {
+                    btn.classList.add('active');
+                }
+            });
+            renderPlaces();
+            showToast('Ordenando por mejor valorados');
+        }
+
+        function getCategoryName(cat) {
+            const names = {
+                'restaurant': 'Restaurantes',
+                'bar': 'Bares',
+                'icecream': 'Heladerías',
+                'streetfood': 'Street Food',
+                'all': 'Todos'
+            };
+            return names[cat] || cat;
+        }
+
+        function openModal(id) {
+            const place = places.find(p => p.id === id);
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            const isFav = favorites.includes(id);
+            
+            content.innerHTML = `
+                <div class="relative">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition">
+                        <i class="fas fa-times text-gray-800"></i>
+                    </button>
+                    <div class="h-64 sm:h-80 overflow-hidden relative">
+                        <img src="${place.image}" alt="${place.name}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <span class="bg-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2 inline-block">
+                                ${getCategoryName(place.category)}
+                            </span>
+                            <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-2">${place.name}</h2>
+                            <div class="flex items-center gap-4 text-sm">
+                                <span class="flex items-center"><i class="fas fa-star text-yellow-400 mr-1"></i> ${place.rating} (${place.reviews} reseñas)</span>
+                                <span>${place.priceRange}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 sm:p-8">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="font-serif text-xl font-bold mb-3">Sobre el lugar</h3>
+                                <p class="text-gray-600 mb-6 leading-relaxed">${place.description}</p>
+                                <div class="space-y-4 mb-6">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">Dirección</h4>
+                                            <p class="text-gray-600 text-sm">${place.address}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">Horario</h4>
+                                            <p class="text-gray-600 text-sm">${place.hours}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">Contacto</h4>
+                                            <p class="text-gray-600 text-sm">${place.phone}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-6">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Especialidades</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${place.specialties.map(s => `
+                                            <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium border border-orange-200">
+                                                <i class="fas fa-check mr-1 text-xs"></i>${s}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <button onclick="toggleFavorite(event, ${place.id}); openModal(${place.id})" 
+                                    class="w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${isFav ? 'bg-red-50 text-red-600 border-2 border-red-200' : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600'}">
+                                    <i class="fas fa-heart ${isFav ? 'animate-pulse' : ''}"></i>
+                                    ${isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                </button>
+                            </div>
+                            <div>
+                                <div class="bg-gray-50 rounded-xl p-4 text-center">
+                                    <i class="fas fa-utensils text-4xl text-primary mb-2"></i>
+                                    <p class="text-gray-600">Menú disponible en el local</p>
+                                    <p class="text-sm text-gray-500 mt-2">Consulta nuestras especialidades directamente en el restaurante</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleFavorite(event, id) {
+            event.stopPropagation();
+            const index = favorites.indexOf(id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showToast('Eliminado de favoritos');
+            } else {
+                favorites.push(id);
+                showToast('Agregado a favoritos +5 pts');
+                addPoints(5);
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavCount();
+            renderPlaces();
+        }
+
+        function updateFavCount() {
+            const count = favorites.length;
+            const badge = document.getElementById('fav-count');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function toggleFavorites() {
+            if (favorites.length === 0) {
+                showToast('No tienes favoritos guardados');
+                return;
+            }
+            
+            const grid = document.getElementById('placesGrid');
+            const favPlaces = places.filter(p => favorites.includes(p.id));
+            
+            if (favPlaces.length === 0) {
+                showToast('No hay favoritos para mostrar');
+                return;
+            }
+            
+            grid.innerHTML = favPlaces.map((place, index) => `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer slide-in place-card" 
+                     style="animation-delay: ${index * 0.1}s"
+                     onclick="openModal(${place.id})">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${place.image}" loading="lazy" alt="${place.name}" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold">
+                            ⭐ ${place.rating}
+                        </div>
+                        <button onclick="toggleFavorite(event, ${place.id})" class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-red-500">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-gray-900 mb-2">${place.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${place.description.substring(0, 100)}${place.description.length > 100 ? '...' : ''}</p>
+                        <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-primary transition-colors">
+                            Ver detalles
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            showToast('Mostrando tus favoritos');
+        }
+
+        // Funciones de recompensas
+        function addPoints(points) {
+            if (!isRewardsMember) return;
+            userPoints += points;
+            localStorage.setItem('sabormap_points', userPoints);
+            updateRewardsDisplay();
+        }
+
+        function redeemReward(type, cost) {
+            if (!isRewardsMember) {
+                showToast('Únete al programa de recompensas primero');
+                return;
+            }
+            if (userPoints < cost) {
+                showToast(`Te faltan ${cost - userPoints} puntos`);
+                return;
+            }
+            
+            const rewards = {
+                'coffee': 'Café gratis',
+                'discount': '20% de descuento',
+                'dinner': 'Cena para 2'
+            };
+            
+            if (confirm(`¿Canjear ${rewards[type]} por ${cost} puntos?`)) {
+                userPoints -= cost;
+                localStorage.setItem('sabormap_points', userPoints);
+                updateRewardsDisplay();
+                showToast(`¡Canje exitoso! Disfruta tu ${rewards[type]}`);
+            }
+        }
+
+        function updateRewardsDisplay() {
+            const pointsDisplay = document.querySelector('#rewardsModal .text-3xl.font-bold');
+            if (pointsDisplay && isRewardsMember) {
+                pointsDisplay.textContent = userPoints;
+            }
+        }
+
+        // Funciones de soporte
+        function showHelpModal() {
+            showToast('Centro de ayuda: Escríbenos a sabormap1@gmail.com');
+        }
+
+        function showPrivacyPolicy() {
+            showToast('Política de Privacidad: Tus datos están seguros con nosotros.');
+        }
+
+        function showTermsOfUse() {
+            showToast('Términos de Uso: Al usar SaborMap aceptas nuestras condiciones.');
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                ['rewardsModal'].forEach(id => {
+                    if (!document.getElementById(id).classList.contains('hidden')) {
+                        closeCommunityModal(id);
+                    }
+                });
+            }
+        });
+
+        renderPlaces();
+        updateFavCount();
+    </script>
+</body>
+</html>
