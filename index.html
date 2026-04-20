@@ -2974,6 +2974,29 @@
             }
         });
 
+// La Catedral Bar Restaurante
+        places.push({
+            id: 87,
+            name: "La Catedral Bar Restaurante",
+            category: "restaurant",
+            image: "imagenes/La Catedral Bar Restaurante.jpg",
+            rating: 4.9,
+            reviews: 189,
+            address: "🗺️📍Calle 8 e/ Calzada y 5ta, Vedado.",
+            mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.5!2d-58.42!3d-34.58!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM0JzQ4LjAiUyA1OMKwMjUnMTIuMCJX!5e0!3m2!1ses!2sar!4v1234567890",
+            description: "🍽️ Para rendir culto a la buena mesa ❤️",
+            specialties: ["Comida cubana e internacional."],
+            priceRange: "$$",
+            hours: "⏰️ Lun-Dom: 12:00pm-00:00am",
+            phone: "#",
+            menu: {
+                mains: [
+                    { item: "Ropa Vieja", price: "$9.500", desc: "Tradicional" },
+                    { item: "Lechón Asado", price: "$10.500", desc: "Crujiente" }
+                ]
+            }
+        });
+
         // ============================================
         // VARIABLES GLOBALES
         // ============================================
@@ -2987,6 +3010,22 @@
         // FUNCIONES PRINCIPALES
         // ============================================
         
+////Auxiliary function to get backup image URL
+        function getFallbackImage(category, name) {
+            // Genera una imagen aleatoria de comida basada en la categoría usando Unsplash Source
+            const keywords = category === 'icecream' ? 'icecream' : 
+                             category === 'bar' ? 'coffee,bar' : 
+                             category === 'streetfood' ? 'streetfood' : 'restaurant';
+            // Codificamos el nombre para que sea único por restaurante pero seguro
+            const seed = name.replace(/\s+/g, '-').toLowerCase();
+            return `https://source.unsplash.com/800x600/?${keywords}&sig=${seed}`;
+        }
+        
+        // Función mejorada para obtener src (intenta local, si falla usa online)
+        function getImageSrc(originalSrc, category, name) {
+            return originalSrc; // Retornamos la original, el error handler hará el trabajo
+        }
+
         function showToast(message) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
@@ -3035,7 +3074,13 @@
                      style="animation-delay: ${index * 0.1}s"
                      onclick="openModal(${place.id})">
                     <div class="relative h-48 overflow-hidden">
-                        <img data-src="${place.image}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" loading="lazy" alt="${place.name}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+                        <!-- Añadida clase lazy-load y onerror para fallback -->
+                        <img data-src="${place.image}" 
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" 
+                             loading="lazy" 
+                             alt="${place.name}" 
+                             class="w-full h-full object-cover transition-transform duration-700 hover:scale-110 lazy-load"
+                             onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}'; this.classList.add('loaded');">
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold shadow-md">
                             <span class="star-rating"><i class="fas fa-star mr-1"></i>${place.rating}</span>
                         </div>
@@ -3317,8 +3362,14 @@
                     <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition">
                         <i class="fas fa-times text-gray-800"></i>
                     </button>
-                    <div class="h-64 sm:h-80 overflow-hidden relative">
-                        <img src="${place.image}" alt="${place.name}" class="w-full h-full object-cover">
+                    <div class="h-64 sm:h-80 overflow-hidden relative bg-gray-200">
+                        <!-- CORRECCIÓN AQUÍ: Añadido onerror y lógica para asegurar visibilidad -->
+                        <img id="modal-img-${place.id}" 
+                             src="${place.image}" 
+                             alt="${place.name}" 
+                             class="w-full h-full object-cover"
+                             style="opacity: 1;"
+                             onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}';">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div class="absolute bottom-6 left-6 text-white">
                             <span class="bg-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2 inline-block">
@@ -3409,6 +3460,12 @@
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             
+            // Asegurarnos de que la imagen del modal sea visible aunque falle la carga local
+            const modalImg = document.getElementById(`modal-img-${place.id}`);
+            if (modalImg) {
+                modalImg.style.opacity = '1';
+            }
+            
             setTimeout(() => {
                 updateMenuNavButtons();
             }, 100);
@@ -3465,7 +3522,7 @@
                      style="animation-delay: ${index * 0.1}s"
                      onclick="openModal(${place.id})">
                     <div class="relative h-48 overflow-hidden">
-                        <img src="${place.image}" loading="lazy" alt="${place.name}" class="w-full h-full object-cover">
+                        <img src="${place.image}" loading="lazy" alt="${place.name}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}';">
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold">
                             ⭐ ${place.rating}
                         </div>
