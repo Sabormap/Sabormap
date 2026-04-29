@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR s.r.l - Generador de Facturas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ESTILOS GENERALES - Tema Oro/Negro */
+        :root {
+            --primary-color: #d97706; /* Amber 600 */
+            --secondary-color: #b45309; /* Amber 700 */
+            --accent-color: #fbbf24; /* Amber 400 */
+            --dark-bg: #111827; /* Gray 900 */
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Estilos de Inputs para edición */
+        .editable-input {
+            border: 1px dashed #d1d5db;
+            background: transparent;
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .editable-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: rgba(251, 191, 36, 0.1);
+        }
+
+        .editable-input:hover {
+            border-color: var(--secondary-color);
+            background-color: white;
+        }
+
+        /* Estilos específicos para impresión */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ocultar elementos que no se deben imprimir */
+            .no-print {
+                display: none !important;
+            }
+
+            /* Asegurar que el contenedor de la factura ocupe toda la página */
+            #invoice-container {
+                width: 100%;
+                max-width: 100%;
+                box-shadow: none;
+                margin: 0;
+                border: none;
+            }
+
+            /* Quitar bordes de los inputs al imprimir para que parezca texto estático */
+            .editable-input {
+                border: none !important;
+                padding: 0;
+                background: transparent !important;
+                border-radius: 0;
+            }
+
+            /* Ajustar tabla para impresión */
+            .table-row-input {
+                border: none !important;
+                background: transparent !important;
+                width: auto;
+                min-width: 20px;
+                text-align: center;
+            }
+
+            .product-select {
+                appearance: none; /* Ocultar flecha del select en impresión */
+                border: none !important;
+                background: transparent !important;
+                font-weight: 600;
+            }
+        }
+
+        /* Animaciones para UI */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Botón Flotante de Impresión (No se imprime) -->
+    <div class="fixed bottom-8 right-8 z-50 no-print">
+        <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all transform hover:scale-105">
+            <i class="fas fa-print text-xl"></i>
+            <span class="font-bold text-lg">Imprimir Factura</span>
+        </button>
+    </div>
+
+    <!-- Botón Atrás (No se imprime) -->
+    <div class="fixed top-8 left-8 z-50 no-print">
+        <a href="javascript:history.back()" class="text-gray-500 hover:text-amber-600 flex items-center gap-2 transition-colors">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Contenedor Principal A4 -->
+    <div id="invoice-container" class="max-w-[210mm] min-h-[297mm] mx-auto my-8 bg-white shadow-2xl relative box-border">
+        
+        <!-- Decoración de Borde Superior -->
+        <div class="h-4 w-full bg-gradient-to-r from-gray-900 via-amber-600 to-gray-900"></div>
+
+        <!-- Encabezado de Factura -->
+        <div class="p-8 pb-4 flex justify-between items-start border-b-2 border-gray-100">
+            <!-- Logo y Empresa -->
+            <div class="flex items-center gap-6">
+                <div class="w-24 h-24 bg-white p-2 border border-amber-200 rounded-lg shadow-sm flex items-center justify-center">
+                    <!-- Logo URL de tu código original -->
+                    <img src="https://z-cdn-media.chatglm.cn/files/eacc73b2-2122-4c19-9553-dd6b06d2be00_Logo2.jpg?auth_key=1790430396-abc36b9bd8c349ef9d9a7dc13691e34d-0-a4a7e44781f0d1447a417d2e80143d68" 
+                         alt="Logo CSR" 
+                         class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">CSR <span class="text-amber-600">s.r.l</span></h1>
+                    <p class="text-gray-500 font-medium text-sm">Especialistas en Aceites y Lubricantes</p>
+                    <p class="text-xs text-gray-400 mt-1">Calle 19 e/ 60 y 62, Playa, Habana</p>
+                    <p class="text-xs text-gray-400">+53 56578961 | csrhabana@gmail.com</p>
+                </div>
+            </div>
+
+            <!-- Datos de Factura -->
+            <div class="text-right">
+                <h2 class="text-5xl font-black text-gray-200 mb-2 select-none">FACTURA</h2>
+                <div class="inline-block bg-gray-50 border border-gray-200 rounded-lg p-3 min-w-[200px] text-left">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase">No.</span>
+                        <input type="text" value="000001" class="editable-input font-mono font-bold text-lg text-gray-800 text-right w-24" placeholder="NIT">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase">Fecha:</span>
+                        <input type="date" class="editable-input text-sm font-semibold text-gray-700 w-32">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Cliente -->
+        <div class="p-8 pt-6 grid grid-cols-2 gap-12">
+            <div>
+                <h3 class="text-xs font-bold text-amber-600 uppercase mb-3 tracking-wider">Facturar a:</h3>
+                <div class="space-y-2">
+                    <input type="text" placeholder="Nombre del Cliente / Empresa" class="editable-input font-bold text-lg text-gray-900">
+                    <input type="text" placeholder="NIT / CI / RNC" class="editable-input text-sm text-gray-600 font-mono">
+                    <textarea rows="2" placeholder="Dirección completa" class="editable-input text-sm text-gray-600 resize-none"></textarea>
+                    <input type="text" placeholder="Teléfono de contacto" class="editable-input text-sm text-gray-600">
+                </div>
+            </div>
+
+            <div class="text-right space-y-4">
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-100 inline-block text-left w-full">
+                    <p class="text-xs text-amber-800 font-bold mb-1">Método de Pago</p>
+                    <select class="editable-input font-semibold text-gray-800 bg-transparent w-full">
+                        <option>Efectivo (CUP)</option>
+                        <option>Transferencia Bancaria</option>
+                        <option>USD (Cash)</option>
+                        <option>EUR (Cash)</option>
+                    </select>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold mb-1">Vendedor</p>
+                    <input type="text" value="CSR Trade Ventas" class="editable-input text-sm text-gray-700 font-medium text-right">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="px-8 py-2">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-gray-900">
+                        <th class="py-3 text-xs font-bold text-gray-500 uppercase tracking-wider w-16">Cant.</th>
+                        <th class="py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Descripción / Producto</th>
+                        <th class="py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right w-24">Precio Unit.</th>
+                        <th class="py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right w-24">Total</th>
+                        <th class="py-3 w-10 no-print"></th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-items" class="text-sm">
+                    <!-- Las filas se generarán con JS -->
+                </tbody>
+            </table>
+            
+            <!-- Botón para agregar fila (No se imprime) -->
+            <button onclick="addNewRow()" class="mt-4 text-amber-600 hover:text-amber-800 font-semibold text-sm flex items-center gap-2 transition-colors no-print">
+                <i class="fas fa-plus-circle"></i> Agregar otro producto
+            </button>
+        </div>
+
+        <!-- Totales y Condiciones -->
+        <div class="p-8 grid grid-cols-3 gap-8 mt-4 border-t border-gray-200">
+            
+            <!-- Condiciones -->
+            <div class="col-span-2">
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Términos y Notas:</h3>
+                <textarea class="editable-input text-xs text-gray-600 h-24 w-full leading-relaxed" placeholder="Ej: Precios en CUP. Producto sujeto a disponibilidad. Garantía según fabricante.">Los precios expresados son en Moneda Nacional (CUP). El pago debe realizarse contra entrega. Los productos aceites no tienen devolución una vez abiertos.</textarea>
+            </div>
+
+            <!-- Cálculos -->
+            <div class="flex flex-col justify-end space-y-3">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500 font-medium">Subtotal:</span>
+                    <span class="font-mono text-gray-700">$ <span id="subtotal-display">0.00</span></span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500 font-medium">Impuestos (IVA):</span>
+                    <input type="text" value="0.00" id="tax-input" class="editable-input font-mono text-gray-700 text-right w-24" oninput="calculateTotal()">
+                </div>
+                <div class="flex justify-between items-center text-xl font-bold text-amber-700 pt-2 border-t border-gray-200">
+                    <span>Total a Pagar:</span>
+                    <span class="font-mono">$ <span id="total-display">0.00</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto p-8 pt-2 border-t border-gray-200 flex justify-between items-end text-xs text-gray-400">
+            <div class="w-1/3">
+                <p class="font-bold text-gray-500 mb-2">Firma Autorizada</p>
+                <div class="border-b border-gray-300 w-full mb-1"></div>
+                <p>CSR s.r.l</p>
+            </div>
+            <div class="text-center w-1/3">
+                <p class="mb-1"><i class="fas fa-shield-alt text-amber-600"></i> Calidad Garantizada</p>
+                <p>Gracias por su preferencia</p>
+            </div>
+            <div class="w-1/3 text-right">
+                <p>Página 1 de 1</p>
+                <p class="mt-1">CSR s.r.l &copy; 2025</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATOS DE PRODUCTOS (Extraídos de tu código original) ---
+        const aceites = [
+            { id: 1, name: "Gazpromneft HD-60 5L", price: 21.50 },
+            { id: 2, name: "Gazpromneft Super Multi 20W-50 CI-4 5L", price: 22.50 },
+            { id: 3, name: "Brake Fluid G-Energy Expert DOT 4 1L", price: 7.50 },
+            { id: 4, name: "Gazpromneft GL-4 80W-90 Premium 1L", price: 5.90 },
+            { id: 5, name: "Gazpromneft Antifreezer SF12+40 1L", price: 5.60 },
+            { id: 6, name: "Gazpromneft Moto 2T 1L", price: 9.50 },
+            { id: 7, name: "Gazpromneft Grease L Moly EP 2 CL 400ml", price: 8.80 },
+            { id: 8, name: "Gazpromneft Grease L Moly EP 2 18L", price: 170.00 },
+            { id: 9, name: "Gazpromneft Super Multi 15W-40 CI-4 205L", price: 980.00 },
+            { id: 10, name: "Gazpromneft Super Multi 20W-50 CI-4 205L", price: 990.00 },
+            { id: 12, name: "Gazpromneft Diesel Extra 15W-40 5L", price: 22.50 },
+        ];
+
+        // --- LÓGICA DE LA FACTURA ---
+
+        function createProductOptions() {
+            let options = `<option value="" disabled selected>Seleccionar producto...</option>`;
+            aceites.forEach(oil => {
+                options += `<option value="${oil.id}" data-price="${oil.price}">${oil.name}</option>`;
+            });
+            return options;
+        }
+
+        function addNewRow(data = null) {
+            const tbody = document.getElementById('invoice-items');
+            const rowId = 'row-' + Date.now();
+            
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-100 group hover:bg-gray-50 transition-colors fade-in";
+            tr.id = rowId;
+
+            // Valores por defecto o pasados por argumento
+            const qty = data ? data.qty : 1;
+            const productId = data ? data.productId : "";
+            const price = data ? data.price : "0.00";
+
+            tr.innerHTML = `
+                <td class="py-3 align-top">
+                    <input type="number" min="1" value="${qty}" 
+                           class="table-row-input w-full font-bold text-center text-gray-800" 
+                           oninput="calculateRowTotal('${rowId}')">
+                </td>
+                <td class="py-3 align-top">
+                    <select class="product-select w-full text-gray-700 focus:outline-none bg-transparent" 
+                            onchange="updatePriceFromSelect(this, '${rowId}')">
+                        ${createProductOptions()}
+                    </select>
+                </td>
+                <td class="py-3 align-top text-right">
+                    <input type="number" step="0.01" value="${price}" 
+                           class="table-row-input w-full font-mono text-gray-600 text-right" 
+                           oninput="calculateRowTotal('${rowId}')">
+                </td>
+                <td class="py-3 align-top text-right font-bold text-gray-800">
+                    <span class="row-total">$0.00</span>
+                </td>
+                <td class="py-3 align-middle text-center no-print">
+                    <button onclick="deleteRow('${rowId}')" class="text-gray-300 hover:text-red-500 transition-colors">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+
+            // Si se pasaron datos (para reconstruir estado), seleccionar el producto
+            if(data && data.productId) {
+                const select = tr.querySelector('select');
+                select.value = data.productId;
+                // Disparar evento manualmente para actualizar precio
+                updatePriceFromSelect(select, rowId);
+            }
+        }
+
+        function deleteRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateTotal();
+            }
+        }
+
+        function updatePriceFromSelect(selectElement, rowId) {
+            const row = document.getElementById(rowId);
+            const priceInput = row.querySelector('input[type="number"][step="0.01"]');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            
+            if (selectedOption.value) {
+                const price = parseFloat(selectedOption.getAttribute('data-price'));
+                priceInput.value = price.toFixed(2);
+                calculateRowTotal(rowId);
+            }
+        }
+
+        function calculateRowTotal(rowId) {
+            const row = document.getElementById(rowId);
+            const qty = parseFloat(row.querySelector('input[type="number"]').value) || 0;
+            const price = parseFloat(row.querySelector('input[type="number"][step="0.01"]').value) || 0;
+            
+            const total = qty * price;
+            row.querySelector('.row-total').textContent = '$' + total.toFixed(2);
+            
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            
+            document.querySelectorAll('#invoice-items tr').forEach(row => {
+                const totalText = row.querySelector('.row-total').textContent.replace('$', '');
+                subtotal += parseFloat(totalText) || 0;
+            });
+
+            const tax = parseFloat(document.getElementById('tax-input').value) || 0;
+            const total = subtotal + tax;
+
+            document.getElementById('subtotal-display').textContent = subtotal.toFixed(2);
+            document.getElementById('total-display').textContent = total.toFixed(2);
+        }
+
+        // Inicializar con 3 filas vacías
+        window.onload = function() {
+            addNewRow();
+            addNewRow();
+            addNewRow();
+            
+            // Poner fecha de hoy por defecto
+            const dateInput = document.querySelector('input[type="date"]');
+            if(dateInput) {
+                dateInput.valueAsDate = new Date();
+            }
+        };
+    </script>
+</body>
+</html>
