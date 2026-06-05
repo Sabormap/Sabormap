@@ -1,0 +1,14 @@
+# Carpetas del sistema
+.DS_Store
+Thumbs.db
+
+# Carpetas de editores (VS Code, etc)
+.vscode/
+.idea/
+
+# Node modules (si usaras npm en el futuro)
+node_modules/
+
+# Archivos de entorno (NUNCA subas claves secretas de servicio de Supabase aquí)
+.env
+.env.local
