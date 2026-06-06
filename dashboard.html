@@ -7,23 +7,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
     <style>
         :root {
-            --bg: #F8FAFC; /* Fondo principal claro */
-            --bg-elevated: #FFFFFF; /* Blanco para sidebar y headers */
-            --card: #FFFFFF; /* Blanco para tarjetas */
-            --card-hover: #F1F5F9; /* Gris suave al pasar el ratón */
-            --border: #E2E8F0; /* Bordes suaves */
-            --accent: #4F46E5; /* Índigo moderno */
+            --bg: #F8FAFC;
+            --bg-elevated: #FFFFFF;
+            --card: #FFFFFF;
+            --card-hover: #F1F5F9;
+            --border: #E2E8F0;
+            --accent: #4F46E5;
             --accent-hover: #4338CA;
             --accent-glow: rgba(79, 70, 229, 0.15);
             --success: #10B981;
             --danger: #EF4444;
             --danger-hover: #DC2626;
-            --fg: #1E293B; /* Texto principal oscuro */
-            --fg-secondary: #64748B; /* Texto secundario gris */
+            --fg: #1E293B;
+            --fg-secondary: #64748B;
             --muted: #94A3B8;
-            --warning: #F59E0B; /* Ámbar para estrellas */
+            --warning: #F59E0B;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +39,6 @@
 
         h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
 
-        /* Fondo animado con partículas sutiles */
         .bg-pattern {
             position: fixed;
             inset: 0;
@@ -60,13 +60,14 @@
             background-size: 60px 60px;
         }
 
-        /* Scrollbar personalizado */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--fg-secondary); }
 
-        /* Login & Signup View */
+        /* ============================================ */
+        /* AUTH VIEW                                    */
+        /* ============================================ */
         .auth-view {
             position: fixed;
             inset: 0;
@@ -99,7 +100,100 @@
         .auth-link { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; transition: color 0.2s; }
         .auth-link:hover { text-decoration: underline; color: var(--accent-hover); }
 
-        /* Sidebar */
+        /* Auth tabs */
+        .auth-tab {
+            position: relative;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--fg-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+        }
+        .auth-tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #7C3AED);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .auth-tab.active { color: var(--accent); }
+        .auth-tab.active::after { width: 70%; }
+        .auth-tab:hover { color: var(--accent); }
+
+        .auth-input {
+            width: 100%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px 12px 44px;
+            color: var(--fg);
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .auth-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: #FFFFFF;
+        }
+        .auth-input::placeholder { color: var(--muted); }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent) 0%, #7C3AED 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .auth-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+        .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .auth-btn .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .auth-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 12px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .auth-error.show { display: flex; }
+
+        /* ============================================ */
+        /* SIDEBAR                                      */
+        /* ============================================ */
         .sidebar {
             position: fixed;
             left: 0; top: 0; bottom: 0;
@@ -133,7 +227,9 @@
         }
         .sidebar-link i { width: 20px; text-align: center; font-size: 1rem; }
 
-        /* Contenido principal */
+        /* ============================================ */
+        /* MAIN CONTENT                                 */
+        /* ============================================ */
         .main-content {
             margin-left: 260px;
             position: relative;
@@ -142,7 +238,9 @@
             padding: 0;
         }
 
-        /* Stat cards */
+        /* ============================================ */
+        /* STAT CARDS                                   */
+        /* ============================================ */
         .stat-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -169,7 +267,9 @@
         }
         .stat-card:hover::before { opacity: 1; }
 
-        /* Place cards */
+        /* ============================================ */
+        /* PLACE CARDS                                  */
+        /* ============================================ */
         .place-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -192,7 +292,9 @@
         }
         .place-card:hover .place-card-img { transform: scale(1.05); }
 
-        /* Botones */
+        /* ============================================ */
+        /* BUTTONS                                      */
+        /* ============================================ */
         .btn-primary {
             background: var(--accent);
             color: #FFFFFF;
@@ -208,6 +310,7 @@
             gap: 8px;
             text-decoration: none;
             box-shadow: 0 2px 6px var(--accent-glow);
+            font-family: 'DM Sans', sans-serif;
         }
         .btn-primary:hover {
             background: var(--accent-hover);
@@ -228,6 +331,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-family: 'DM Sans', sans-serif;
         }
         .btn-secondary:hover {
             background: var(--bg);
@@ -247,6 +351,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-family: 'DM Sans', sans-serif;
         }
         .btn-danger:hover {
             background: var(--danger);
@@ -255,11 +360,13 @@
 
         .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; }
 
-        /* Modal */
+        /* ============================================ */
+        /* MODAL                                        */
+        /* ============================================ */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.4); /* Shadow overlay más suave */
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(8px);
             z-index: 100;
             display: none;
@@ -287,7 +394,9 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Inputs */
+        /* ============================================ */
+        /* FORM INPUTS                                  */
+        /* ============================================ */
         .form-input {
             width: 100%;
             background: var(--bg);
@@ -307,7 +416,8 @@
         }
         .form-input::placeholder { color: var(--muted); }
 
-        select.form-input { cursor: pointer; appearance: none;
+        select.form-input {
+            cursor: pointer; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 14px center;
@@ -326,7 +436,9 @@
 
         textarea.form-input { resize: vertical; min-height: 80px; }
 
-        /* Tags */
+        /* ============================================ */
+        /* TAGS                                         */
+        /* ============================================ */
         .tag {
             display: inline-flex;
             align-items: center;
@@ -346,7 +458,9 @@
         }
         .tag .remove-tag:hover { opacity: 1; }
 
-        /* Toast */
+        /* ============================================ */
+        /* TOAST                                        */
+        /* ============================================ */
         .toast-container {
             position: fixed;
             top: 24px;
@@ -383,7 +497,9 @@
             to { opacity: 0; transform: translateX(40px); }
         }
 
-        /* Confirm dialog */
+        /* ============================================ */
+        /* MISC                                         */
+        /* ============================================ */
         .confirm-dialog { text-align: center; }
         .confirm-dialog .icon-wrap {
             width: 64px; height: 64px;
@@ -395,7 +511,6 @@
             margin-bottom: 16px;
         }
 
-        /* Category badges */
         .cat-badge {
             display: inline-flex;
             align-items: center;
@@ -412,14 +527,11 @@
         .cat-icecream { background: #FCE7F3; color: #DB2777; }
         .cat-streetfood { background: #D1FAE5; color: #059669; }
 
-        /* Price range */
         .price-range { color: var(--success); font-weight: 700; letter-spacing: 1px; }
 
-        /* Rating stars */
         .stars { color: var(--warning); }
         .stars .empty { color: var(--muted); }
 
-        /* Menú item en formulario */
         .menu-item-row {
             display: grid;
             grid-template-columns: 1fr 80px 1fr 40px;
@@ -428,7 +540,6 @@
             margin-bottom: 8px;
         }
 
-        /* Menu section card */
         .menu-section-card {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -437,18 +548,15 @@
             margin-bottom: 12px;
         }
 
-        /* Empty state */
         .empty-state { text-align: center; padding: 80px 40px; }
         .empty-state .icon-big { font-size: 4rem; color: var(--muted); margin-bottom: 20px; opacity: 0.3; }
 
-        /* Animaciones de entrada */
         .fade-in { animation: fadeIn 0.5s ease; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Stat number animado */
         .stat-number {
             font-family: 'Playfair Display', serif;
             font-size: 2.2rem;
@@ -457,7 +565,6 @@
             color: var(--fg);
         }
 
-        /* Avatar del dueño */
         .owner-avatar {
             width: 40px; height: 40px;
             border-radius: 12px;
@@ -471,7 +578,6 @@
             box-shadow: 0 2px 4px var(--accent-glow);
         }
 
-        /* Imagen upload area */
         .upload-area {
             border: 2px dashed var(--border);
             border-radius: 12px;
@@ -490,15 +596,6 @@
         .upload-area.has-image { padding: 0; border-style: solid; }
         .upload-area img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .sidebar { transform: translateX(-100%); box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .menu-item-row { grid-template-columns: 1fr 70px 1fr 36px; }
-        }
-
-        /* Progress bar */
         .progress-bar {
             height: 6px;
             background: var(--border);
@@ -511,7 +608,6 @@
             transition: width 0.6s ease;
         }
 
-        /* Tabs */
         .tab-btn {
             padding: 10px 24px;
             border: none;
@@ -526,6 +622,72 @@
         }
         .tab-btn:hover { color: var(--fg); }
         .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        .loading-spinner {
+            width: 48px; height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-item-row { grid-template-columns: 1fr 70px 1fr 36px; }
+             #statsCharts { grid-template-columns: 1fr !important; }
+        }
+
+        @media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0f172a;
+        --bg-elevated: #1e293b;
+        --card: #1e293b;
+        --card-hover: #334155;
+        --border: #334155;
+        --fg: #f1f5f9;
+        --fg-secondary: #94a3b8;
+        --muted: #64748b;
+        --accent-glow: rgba(79, 70, 229, 0.25);
+    }
+    .upload-area { background: var(--bg-elevated); }
+    .form-input { background: #0f172a; border-color: #334155; color: var(--fg); }
+    .form-input:focus { background: #1e293b; }
+    select.form-input { background-color: #0f172a; }
+    .auth-input { background: #0f172a; border-color: #334155; color: var(--fg); }
+    .auth-input:focus { background: #1e293b; }
+    .toast { background: var(--bg-elevated); color: var(--fg); }
+    /* ✅ FIX: Header en modo oscuro */
+    .main-content header {
+        background: rgba(15, 23, 42, 0.85) !important;
+        border-bottom-color: var(--border) !important;
+    }
+    /* ✅ FIX: Loading overlay en modo oscuro */
+    .loading-overlay { background: var(--bg); }
+    .loading-overlay p { color: var(--fg-secondary); }
+    /* ✅ FIX: Auth view en modo oscuro */
+    .auth-view { background: var(--bg); }
+    .auth-card { background: var(--bg-elevated); border-color: var(--border); }
+    .auth-card h2 { color: var(--fg); }
+    /* ✅ FIX: Imagen de upload placeholder */
+    .upload-area p { color: var(--fg-secondary); }
+}
     </style>
 </head>
 <body>
@@ -533,81 +695,102 @@
     <div class="bg-pattern"></div>
     <div class="bg-grid"></div>
 
+    <!-- Loading -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p style="color: var(--fg-secondary); font-size: 0.9rem;">Cargando panel...</p>
+    </div>
+
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- AUTH VIEW (Login & Signup) -->
-    <div id="authView" class="auth-view">
+    <!-- ============================================ -->
+    <!-- AUTH VIEW                                    -->
+    <!-- ============================================ -->
+    <div id="authView" class="auth-view hidden">
         <div class="auth-card">
             <div style="text-align: center; margin-bottom: 32px;">
-                <div class="owner-avatar" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto 16px;">S</div>
+                <div class="owner-avatar" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto 16px; border-radius: 18px;">S</div>
                 <h2 style="font-size: 1.8rem; font-weight: 900;">SaborMap</h2>
-                <p style="color: var(--fg-secondary); font-size: 0.9rem; margin-top: 4px;" id="authSubtitle">Accede a tu panel de gestión</p>
+                <p style="color: var(--fg-secondary); font-size: 0.9rem; margin-top: 4px;" id="authSubtitle">Panel de Gestión</p>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px;">
+                <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">
+                    <i class="fas fa-sign-in-alt" style="margin-right:6px;"></i>Iniciar Sesión
+                </button>
+                <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">
+                    <i class="fas fa-user-plus" style="margin-right:6px;"></i>Registrarse
+                </button>
             </div>
 
             <!-- Login Form -->
             <div id="loginFormContainer" class="auth-form-container active">
                 <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Email</label>
-                        <input class="form-input" type="email" id="loginEmail" required placeholder="tu@email.com">
+                    <div style="margin-bottom: 16px; position: relative;">
+                        <i class="fas fa-envelope" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="email" id="loginEmail" required placeholder="tu@email.com">
                     </div>
-                    <div style="margin-bottom: 24px;">
-                        <label class="form-label">Contraseña</label>
-                        <input class="form-input" type="password" id="loginPassword" required placeholder="••••••••">
+                    <div style="margin-bottom: 8px; position: relative;">
+                        <i class="fas fa-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="password" id="loginPassword" required placeholder="Contraseña">
+                        <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:0;">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-                        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                    </button>
-                    <p id="loginError" style="color: var(--danger); font-size: 0.85rem; text-align: center; margin-top: 12px; display: none;">Credenciales incorrectas</p>
+                    <div style="margin-bottom: 20px; text-align: right;">
+                        <button type="button" onclick="handleForgotPassword()" style="background:none;border:none;color:var(--accent);font-size:0.82rem;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</button>
+                    </div>
+                    <button type="submit" class="auth-btn" id="loginBtn">Iniciar Sesión</button>
+                    <div id="loginError" class="auth-error"><i class="fas fa-exclamation-circle"></i><span id="loginErrorText"></span></div>
                 </form>
                 <div style="text-align: center; margin-top: 24px;">
-                    <p style="color: var(--fg-secondary); font-size: 0.88rem;">¿No tienes cuenta? <span class="auth-link" onclick="toggleAuthForm('signup')">Crear una cuenta</span></p>
-                    <p style="color: var(--muted); font-size: 0.78rem; margin-top: 12px;">Demo: carlos@ejemplo.com / 1234</p>
+                    <p style="color: var(--fg-secondary); font-size: 0.88rem;">¿No tienes cuenta? <span class="auth-link" onclick="switchAuthTab('register')">Crear una cuenta</span></p>
                 </div>
             </div>
 
-            <!-- Signup Form -->
-            <div id="signupFormContainer" class="auth-form-container">
-                <form id="signupForm" onsubmit="handleSignup(event)">
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Nombre completo</label>
-                        <input class="form-input" type="text" id="signupName" required placeholder="Ej: María López">
+            <!-- Register Form -->
+            <div id="registerFormContainer" class="auth-form-container">
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div style="margin-bottom: 16px; position: relative;">
+                        <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="text" id="registerName" required placeholder="Nombre completo" minlength="2">
                     </div>
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Email</label>
-                        <input class="form-input" type="email" id="signupEmail" required placeholder="tu@email.com">
+                    <div style="margin-bottom: 16px; position: relative;">
+                        <i class="fas fa-envelope" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="email" id="registerEmail" required placeholder="tu@email.com">
                     </div>
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Contraseña</label>
-                        <input class="form-input" type="password" id="signupPassword" required placeholder="Mínimo 6 caracteres">
+                    <div style="margin-bottom: 16px; position: relative;">
+                        <i class="fas fa-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="password" id="registerPassword" required placeholder="Mínimo 6 caracteres" minlength="6">
                     </div>
-                    <div style="margin-bottom: 24px;">
-                        <label class="form-label">Confirmar Contraseña</label>
-                        <input class="form-input" type="password" id="signupConfirm" required placeholder="Repite tu contraseña">
+                    <div style="margin-bottom: 20px; position: relative;">
+                        <i class="fas fa-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;"></i>
+                        <input class="auth-input" type="password" id="registerConfirm" required placeholder="Confirmar contraseña">
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-                        <i class="fas fa-user-plus"></i> Crear Cuenta
-                    </button>
-                    <p id="signupError" style="color: var(--danger); font-size: 0.85rem; text-align: center; margin-top: 12px; display: none;"></p>
+                    <button type="submit" class="auth-btn" id="registerBtn">Crear Cuenta</button>
+                    <div id="registerError" class="auth-error"><i class="fas fa-exclamation-circle"></i><span id="registerErrorText"></span></div>
                 </form>
                 <div style="text-align: center; margin-top: 24px;">
-                    <p style="color: var(--fg-secondary); font-size: 0.88rem;">¿Ya tienes cuenta? <span class="auth-link" onclick="toggleAuthForm('login')">Iniciar sesión</span></p>
+                    <p style="color: var(--fg-secondary); font-size: 0.88rem;">¿Ya tienes cuenta? <span class="auth-link" onclick="switchAuthTab('login')">Iniciar sesión</span></p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- APP WRAPPER (Oculto hasta iniciar sesión) -->
+    <!-- ============================================ -->
+    <!-- APP WRAPPER                                  -->
+    <!-- ============================================ -->
     <div id="appWrapper" style="display: none;">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div style="padding: 24px 20px; border-bottom: 1px solid var(--border);">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div class="owner-avatar" id="sidebarAvatar">C</div>
+                    <div class="owner-avatar" id="sidebarAvatar">?</div>
                     <div>
-                        <div style="font-weight: 700; font-size: 0.95rem;" id="sidebarOwnerName">Carlos Mendoza</div>
-                        <div style="font-size: 0.78rem; color: var(--accent); font-weight: 600;">Propietario</div>
+                        <div style="font-weight: 700; font-size: 0.95rem;" id="sidebarOwnerName">Propietario</div>
+                        <div style="font-size: 0.78rem; color: var(--accent); font-weight: 600;" id="sidebarOwnerRole">Propietario</div>
                     </div>
                 </div>
             </div>
@@ -638,24 +821,24 @@
             </div>
         </aside>
 
-        <!-- Botón menú móvil -->
+        <!-- Mobile menu button -->
         <button id="menuToggle" onclick="toggleSidebar()" style="position:fixed;top:16px;left:16px;z-index:50;background:var(--card);border:1px solid var(--border);color:var(--fg);width:42px;height:42px;border-radius:10px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
             <i class="fas fa-bars"></i>
         </button>
 
-        <!-- Contenido principal -->
+        <!-- Main Content -->
         <main class="main-content" id="mainContent">
             <!-- Header -->
             <header style="padding: 24px 36px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 30;">
                 <div>
                     <h1 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 2px;" id="viewTitle">Panel General</h1>
-                    <p style="font-size: 0.82rem; color: var(--fg-secondary);" id="viewSubtitle">Bienvenido de vuelta. Aquí tienes un resumen de tus locales.</p>
+                    <p style="font-size: 0.82rem; color: var(--fg-secondary);" id="viewSubtitle">Bienvenido de vuelta.</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <button class="btn-primary" onclick="openCreateModal()">
                         <i class="fas fa-plus"></i> Nuevo Local
                     </button>
-                    <div class="owner-avatar" style="cursor:pointer;" onclick="toggleSidebar()" id="headerAvatar">C</div>
+                    <div class="owner-avatar" style="cursor:pointer;" onclick="toggleSidebar()" id="headerAvatar">?</div>
                 </div>
             </header>
 
@@ -687,7 +870,7 @@
                 <div id="emptyState" style="display: none;" class="empty-state">
                     <div class="icon-big"><i class="fas fa-store-slash"></i></div>
                     <h3 style="font-size: 1.4rem; margin-bottom: 8px;">Aún no tienes locales</h3>
-                    <p style="color: var(--fg-secondary); margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto;">Crea tu primer local y empieza a recibir reseñas de tus clientes.</p>
+                    <p style="color: var(--fg-secondary); margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto;">Crea tu primer local y empieza a recibir reseñas.</p>
                     <button class="btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> Crear Mi Primer Local</button>
                 </div>
             </section>
@@ -716,7 +899,7 @@
                 <div id="statsEmpty" class="empty-state">
                     <div class="icon-big"><i class="fas fa-chart-pie"></i></div>
                     <h3 style="font-size: 1.3rem; margin-bottom: 8px;">Selecciona un local</h3>
-                    <p style="color: var(--fg-secondary);">Elige uno de tus locales para ver sus estadísticas detalladas.</p>
+                    <p style="color: var(--fg-secondary);">Elige uno de tus locales para ver sus estadísticas.</p>
                 </div>
             </section>
 
@@ -731,7 +914,7 @@
                 <div id="reviewsEmpty" class="empty-state">
                     <div class="icon-big"><i class="fas fa-comments"></i></div>
                     <h3 style="font-size: 1.3rem; margin-bottom: 8px;">Reseñas de tus locales</h3>
-                    <p style="color: var(--fg-secondary);">Selecciona un local para ver las reseñas de tus clientes.</p>
+                    <p style="color: var(--fg-secondary);">Selecciona un local para ver las reseñas.</p>
                 </div>
             </section>
 
@@ -741,24 +924,20 @@
                     <div class="stat-card" style="margin-bottom: 24px;">
                         <h3 style="font-size: 1.1rem; margin-bottom: 20px; font-family: 'DM Sans', sans-serif; font-weight: 700;">Perfil del Propietario</h3>
                         <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
-                            <div class="owner-avatar" style="width: 72px; height: 72px; font-size: 1.6rem; border-radius: 18px;" id="settingsAvatar">C</div>
+                            <div class="owner-avatar" style="width: 72px; height: 72px; font-size: 1.6rem; border-radius: 18px;" id="settingsAvatar">?</div>
                             <div>
-                                <div style="font-weight: 700; font-size: 1.1rem;" id="settingsName">Carlos Mendoza</div>
-                                <div style="color: var(--fg-secondary); font-size: 0.88rem;" id="settingsEmail">carlos@ejemplo.com</div>
+                                <div style="font-weight: 700; font-size: 1.1rem;" id="settingsName">—</div>
+                                <div style="color: var(--fg-secondary); font-size: 0.88rem;" id="settingsEmail">—</div>
                             </div>
                         </div>
                         <div style="display: grid; gap: 16px;">
                             <div>
                                 <label class="form-label">Nombre completo</label>
-                                <input class="form-input" id="settingsNameInput" value="Carlos Mendoza">
+                                <input class="form-input" id="settingsNameInput" placeholder="Tu nombre">
                             </div>
                             <div>
                                 <label class="form-label">Email</label>
-                                <input class="form-input" id="settingsEmailInput" value="carlos@ejemplo.com" type="email">
-                            </div>
-                            <div>
-                                <label class="form-label">Teléfono</label>
-                                <input class="form-input" id="settingsPhoneInput" value="+34 612 345 678">
+                                <input class="form-input" id="settingsEmailInput" type="email" placeholder="tu@email.com" disabled style="opacity:0.6;cursor:not-allowed;">
                             </div>
                             <button class="btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Guardar Cambios</button>
                         </div>
@@ -820,7 +999,7 @@
                         </div>
                         <div>
                             <label class="form-label">Teléfono</label>
-                            <input class="form-input" id="placePhone" required placeholder="+34 900 000 000">
+                            <input class="form-input" id="placePhone" required placeholder="+53 5XX XXXXX">
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -842,11 +1021,11 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                         <div>
                             <label class="form-label">Latitud</label>
-                            <input class="form-input" id="placeLat" type="number" step="any" placeholder="40.4168">
+                            <input class="form-input" id="placeLat" type="number" step="any" placeholder="23.1136">
                         </div>
                         <div>
                             <label class="form-label">Longitud</label>
-                            <input class="form-input" id="placeLng" type="number" step="any" placeholder="-3.7038">
+                            <input class="form-input" id="placeLng" type="number" step="any" placeholder="-82.3666">
                         </div>
                     </div>
                     <div style="margin-bottom: 20px;">
@@ -878,7 +1057,7 @@
                 <div class="confirm-dialog">
                     <div class="icon-wrap"><i class="fas fa-exclamation-triangle" style="color: var(--danger); font-size: 1.6rem;"></i></div>
                     <h3 style="font-size: 1.3rem; margin-bottom: 8px;" id="deleteTitle">Eliminar Local</h3>
-                    <p style="color: var(--fg-secondary); margin-bottom: 24px;" id="deleteMessage">Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.</p>
+                    <p style="color: var(--fg-secondary); margin-bottom: 24px;" id="deleteMessage">Esta acción no se puede deshacer.</p>
                     <div style="display: flex; gap: 12px; justify-content: center;">
                         <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
                         <button class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()"><i class="fas fa-trash-alt"></i> Eliminar</button>
@@ -887,7 +1066,7 @@
             </div>
         </div>
 
-        <!-- Modal: Ver Detalle/Estadísticas de un Local -->
+        <!-- Modal: Ver Detalle -->
         <div class="modal-overlay" id="detailModal">
             <div class="modal-content" style="max-width: 640px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
@@ -899,760 +1078,1552 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT                                   -->
+    <!-- ============================================ -->
     <script>
-        // ============================================================
-        // AUTENTICACIÓN, REGISTRO Y ESTADO
-        // ============================================================
-        
-        let CURRENT_OWNER = null;
+    // ============================================================
+    // 1. CONFIGURACIÓN SUPABASE
+    // ============================================================
+    const SUPABASE_URL = 'https://pevnalzsdzyhroyfaijq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_-3dKeSSVDBEKtBKCsZWGFQ_3dksF1ZA';
 
-        function initAuthSystem() {
-            if (!localStorage.getItem('sabormap_users')) {
-                const defaultUsers = [{
-                    id: 'owner_001',
-                    name: 'Carlos Mendoza',
-                    email: 'carlos@ejemplo.com',
-                    password: '1234',
-                    phone: '+34 612 345 678'
-                }];
-                localStorage.setItem('sabormap_users', JSON.stringify(defaultUsers));
-            }
+    let supabaseClient = null;
+    let supabaseReady = false;
+
+    try {
+        if (typeof window.supabase === 'undefined') {
+            console.error('[Dashboard] Librería supabase-js no cargada');
+        } else if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true,
+                    detectSessionInUrl: true,
+                    storage: window.localStorage
+                }
+            });
+            supabaseReady = true;
+            console.log('[Dashboard] Supabase inicializado');
         }
+    } catch (err) {
+        console.error('[Dashboard] Error al inicializar Supabase:', err.message);
+        supabaseReady = false;
+    }
 
-        function toggleAuthForm(formType) {
-            document.getElementById('loginFormContainer').classList.remove('active');
-            document.getElementById('signupFormContainer').classList.remove('active');
-            document.getElementById('loginError').style.display = 'none';
-            document.getElementById('signupError').style.display = 'none';
+    // ============================================================
+    // 2. ESTADO DE LA APLICACIÓN
+    // ============================================================
+    let currentUser = null;
+    let currentProfile = null;
+    let places = [];
+    let reviews = [];
+    let currentSpecialties = [];
+    let currentMenu = {};
+    let currentImageData = null;
+    let deleteTargetId = null;
+    let deleteAllMode = false;
+    let currentFilter = 'all';
+    let authInitialized = false;
+    let authInitPromise = null;
 
-            if (formType === 'signup') {
-                document.getElementById('signupFormContainer').classList.add('active');
-                document.getElementById('authSubtitle').textContent = 'Crea tu cuenta de propietario';
+    const DEFAULT_REVIEWS = [
+        { id: 'r001', place_id: 'place_001', user_name: 'Ana G.', rating: 5, comment: 'La mejor comida. Servicio excelente.', date: '2025-01-20' },
+        { id: 'r002', place_id: 'place_001', user_name: 'Miguel R.', rating: 4, comment: 'Muy buen restaurante, los arroces son espectaculares.', date: '2025-01-18' },
+        { id: 'r003', place_id: 'place_001', user_name: 'Laura P.', rating: 5, comment: 'Fui con mi familia y todos quedamos encantados.', date: '2025-01-15' },
+    ];
+
+// ============================================================
+// 2.5. UTILIDAD DE ESCAPE HTML (Previene XSS)
+// ============================================================
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Escape para atributos HTML (maneja comillas y paréntesis para event handlers)
+function escapeAttr(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/</g, '\\x3c')
+        .replace(/>/g, '\\x3e')
+        .replace(/\)/g, '\\x29')
+        .replace(/\(/g, '\\x28');
+}
+
+    // ============================================================
+    // 3. AUTENTICACIÓN CON SUPABASE (CORREGIDO)
+    // ============================================================
+    if (supabaseReady) {
+    authInitPromise = new Promise((resolve) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('[Dashboard Auth] Evento:', event, session ? 'con sesión' : 'sin sesión');
+
+            try {
+                if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+                    currentUser = session.user;
+
+                    if (event === 'TOKEN_REFRESHED') {
+                        // ✅ FIX: Solo actualizar la sesión, NO reiniciar la app
+                        console.log('[Dashboard Auth] Token refrescado');
+                        return;
+                    }
+
+                    await loadUserProfile();
+                    updateOwnerDisplay();
+
+                    if (event === 'INITIAL_SESSION') {
+                        console.log('[Dashboard Auth] ✅ Sesión restaurada para:', currentUser.email);
+                    }
+                    if (event === 'SIGNED_IN') {
+                        showToast('¡Bienvenido, ' + (currentProfile?.nombre_completo || '') + '!', 'success');
+                    }
+
+                    await checkAuth();
+                } else if (event === 'SIGNED_OUT') {
+                    currentUser = null;
+                    currentProfile = null;
+                    console.log('[Dashboard Auth] Sesión cerrada');
+                    await checkAuth();
+                }
+            } catch (err) {
+                console.error('[Dashboard Auth] Error en onAuthStateChange:', err);
+                try { await checkAuth(); } catch (e) {}
+            }
+
+            if (!authInitialized) {
+                authInitialized = true;
+                resolve();
+            }
+        });
+    });
+}
+
+    async function loadUserProfile() {
+        if (!supabaseReady || !currentUser) return;
+        try {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    await createMissingProfile();
+                    return;
+                }
+                console.warn('[Dashboard] Error cargando perfil:', error.message);
+                return;
+            }
+            currentProfile = data;
+        } catch (err) {
+            console.error('[Dashboard] Excepción cargando perfil:', err.message);
+        }
+    }
+
+    async function createMissingProfile() {
+        if (!supabaseReady || !currentUser) return;
+        const meta = currentUser.user_metadata || {};
+        try {
+            const { data, error } = await supabaseClient.from('profiles').insert({
+                id: currentUser.id,
+                email: currentUser.email,
+                nombre_completo: meta.nombre_completo || meta.name || '',
+                rol: meta.rol || 'propietario',
+                puntos: 0,
+                fecha_registro: new Date().toISOString(),
+                avatar_url: meta.avatar_url || null
+            }).select().single();
+
+            if (!error) {
+                currentProfile = data;
             } else {
-                document.getElementById('loginFormContainer').classList.add('active');
-                document.getElementById('authSubtitle').textContent = 'Accede a tu panel de gestión';
+                console.error('[Dashboard] Error creando perfil:', error.message);
             }
+        } catch (err) {
+            console.error('[Dashboard] Excepción creando perfil:', err.message);
+        }
+    }
+
+    // ============================================================
+    // 4. AUTH UI
+    // ============================================================
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => {
+            t.classList.remove('active');
+            if (t.dataset.tab === tab) t.classList.add('active');
+        });
+        document.getElementById('loginFormContainer').classList.toggle('active', tab === 'login');
+        document.getElementById('registerFormContainer').classList.toggle('active', tab === 'register');
+        hideAuthError('login');
+        hideAuthError('register');
+    }
+
+    function showAuthError(form, message) {
+        const el = document.getElementById(form + 'Error');
+        const txt = document.getElementById(form + 'ErrorText');
+        if (el && txt) { txt.textContent = message; el.classList.add('show'); }
+    }
+
+    function hideAuthError(form) {
+        const el = document.getElementById(form + 'Error');
+        if (el) el.classList.remove('show');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // ============================================================
+    // 5. LOGIN / REGISTER / LOGOUT CON SUPABASE
+    // ============================================================
+    async function handleLogin(event) {
+        event.preventDefault();
+        if (!supabaseReady) {
+            showAuthError('login', 'Servicio de autenticación no disponible.');
+            return;
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const pass = document.getElementById('loginPassword').value;
-            
-            const users = JSON.parse(localStorage.getItem('sabormap_users'));
-            const user = users.find(u => u.email === email && u.password === pass);
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('loginBtn');
 
-            if (user) {
-                CURRENT_OWNER = { id: user.id, name: user.name, email: user.email, phone: user.phone };
-                sessionStorage.setItem('sabormap_logged_user', JSON.stringify(CURRENT_OWNER));
-                document.getElementById('loginError').style.display = 'none';
-                checkAuth();
+        hideAuthError('login');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>';
+
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                let msg = 'Error al iniciar sesión.';
+                if (error.message.includes('Invalid login credentials')) msg = 'Correo o contraseña incorrectos.';
+                else if (error.message.includes('Email not confirmed')) msg = 'Debes confirmar tu correo primero.';
+                else if (error.message.includes('Too many requests')) msg = 'Demasiados intentos. Espera unos minutos.';
+                else msg += ' (' + error.message + ')';
+                showAuthError('login', msg);
             } else {
-                document.getElementById('loginError').style.display = 'block';
-                showToast('Credenciales incorrectas', 'error');
+                // onAuthStateChange se encarga del resto
+                hideAuthError('login');
             }
+        } catch (err) {
+            showAuthError('login', 'Error inesperado: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Iniciar Sesión';
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        if (!supabaseReady) {
+            showAuthError('register', 'Servicio de autenticación no disponible.');
+            return;
         }
 
-        function handleSignup(event) {
-            event.preventDefault();
-            const name = document.getElementById('signupName').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const pass = document.getElementById('signupPassword').value;
-            const confirmPass = document.getElementById('signupConfirm').value;
-            const errorEl = document.getElementById('signupError');
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const confirm = document.getElementById('registerConfirm').value;
+        const btn = document.getElementById('registerBtn');
 
-            if (pass.length < 6) {
-                errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
-                errorEl.style.display = 'block'; return;
-            }
-            if (pass !== confirmPass) {
-                errorEl.textContent = 'Las contraseñas no coinciden';
-                errorEl.style.display = 'block'; return;
-            }
+        hideAuthError('register');
 
-            let users = JSON.parse(localStorage.getItem('sabormap_users'));
-            if (users.find(u => u.email === email)) {
-                errorEl.textContent = 'Este email ya está registrado';
-                errorEl.style.display = 'block'; return;
-            }
+        if (name.length < 2) { showAuthError('register', 'El nombre debe tener al menos 2 caracteres.'); return; }
+        if (password.length < 6) { showAuthError('register', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+        if (password !== confirm) { showAuthError('register', 'Las contraseñas no coinciden.'); return; }
 
-            const newUser = {
-                id: 'owner_' + Date.now(),
-                name: name,
-                email: email,
-                password: pass,
-                phone: ''
-            };
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>';
 
-            users.push(newUser);
-            localStorage.setItem('sabormap_users', JSON.stringify(users));
+        try {
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        nombre_completo: name,
+                        rol: 'propietario'
+                    }
+                }
+            });
 
-            CURRENT_OWNER = { id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone };
-            sessionStorage.setItem('sabormap_logged_user', JSON.stringify(CURRENT_OWNER));
-            
-            showToast('Cuenta creada exitosamente', 'success');
-            checkAuth();
-        }
-
-        function checkAuth() {
-            const loggedUser = sessionStorage.getItem('sabormap_logged_user');
-            if (loggedUser) {
-                CURRENT_OWNER = JSON.parse(loggedUser);
-                document.getElementById('authView').classList.add('hidden');
-                document.getElementById('appWrapper').style.display = 'block';
-                init();
+            if (error) {
+                let msg = 'Error al crear la cuenta.';
+                if (error.message.includes('already registered')) msg = 'Este correo ya está registrado.';
+                else msg += ' (' + error.message + ')';
+                showAuthError('register', msg);
             } else {
-                document.getElementById('authView').classList.remove('hidden');
-                document.getElementById('appWrapper').style.display = 'none';
+                if (data.user && !data.session) {
+                    showToast('Revisa tu correo para confirmar tu cuenta', 'info');
+                    switchAuthTab('login');
+                }
+                // Si hay sesión automática, onAuthStateChange se encarga
+            }
+        } catch (err) {
+            showAuthError('register', 'Error inesperado: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Crear Cuenta';
+        }
+    }
+
+    async function handleForgotPassword() {
+        if (!supabaseReady) { showToast('Servicio no disponible', 'error'); return; }
+        const email = document.getElementById('loginEmail').value.trim();
+        if (!email) { showAuthError('login', 'Ingresa tu correo arriba y pulsa "¿Olvidaste tu contraseña?"'); return; }
+
+        try {
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname
+            });
+            if (error) {
+                showAuthError('login', 'No se pudo enviar el correo de recuperación.');
+            } else {
+                showToast('Revisa tu correo para restablecer la contraseña', 'info');
+            }
+        } catch (err) {
+            showAuthError('login', 'Error de conexión.');
+        }
+    }
+
+    async function logoutUser() {
+    if (supabaseReady) {
+        try { await supabaseClient.auth.signOut(); } catch (err) {}
+    }
+    currentUser = null;
+    currentProfile = null;
+    // ✅ FIX: Resetear estado de inicialización para la próxima sesión
+    initCalled = false;
+    initPromise = null;
+    places = [];
+    reviews = [];
+    currentFilter = 'all';
+    showToast('Sesión cerrada correctamente', 'info');
+    setTimeout(() => {
+        document.getElementById('loginForm').reset();
+        document.getElementById('registerForm').reset();
+        switchAuthTab('login');
+        checkAuth();
+    }, 500);
+}
+
+    // ============================================================
+    // 6. CHECK AUTH (CORREGIDO)
+    // ============================================================
+  async function checkAuth() {
+    const authView = document.getElementById('authView');
+    const appWrapper = document.getElementById('appWrapper');
+    const loading = document.getElementById('loadingOverlay');
+
+    if (currentUser) {
+        if (!currentProfile) {
+            await loadUserProfile();
+            if (!currentProfile) {
+                await createMissingProfile();
             }
         }
 
-        function logoutUser() {
-            sessionStorage.removeItem('sabormap_logged_user');
-            CURRENT_OWNER = null;
-            showToast('Sesión cerrada correctamente', 'info');
-            setTimeout(() => {
-                document.getElementById('loginForm').reset();
-                document.getElementById('signupForm').reset();
-                toggleAuthForm('login');
-                checkAuth();
-            }, 500);
-        }
+        authView.classList.add('hidden');
+        appWrapper.style.display = 'block';
+        loading.classList.add('hidden');
 
-        // ============================================================
-        // DATOS Y ESTADO
-        // ============================================================
+        // ✅ FIX: Esperar a que init() termine antes de continuar
+        await init();
+    } else {
+        authView.classList.remove('hidden');
+        appWrapper.style.display = 'none';
+        loading.classList.add('hidden');
+    }
+}
 
-        const DEFAULT_PLACES = [
-            {
-                id: 'place_001', owner_id: 'owner_001', name: 'La Taberna del Puerto', category: 'restaurant',
-                description: 'Cocina mediterránea con los mejores productos del mar. Ambiente acogedor con vistas al puerto deportivo. Especialidades en arroces y pescados frescos del día.',
-                address: 'Calle del Puerto 12, Barcelona', schedule: 'Lun-Vie: 12:00-23:30, Sáb-Dom: 11:30-00:00',
-                phone: '+34 934 567 890', price_range: '$$',
-                specialties: ['Paella Valenciana', 'Fideuà', 'Pulpo a la Gallega', 'Crema Catalana'],
-                image: 'https://picsum.photos/seed/taverna-puerto/800/500.jpg', lat: 41.3780, lng: 2.1860,
-                rating: 4.6, review_count: 128, favorite_count: 89,
-                menu: {
-                    entrantes: [ { name: 'Ensalada Mediterránea', price: 9.50, description: 'Tomate, mozzarella, albahaca y aceite de oliva' }, { name: 'Croquetas de Jamón', price: 8.00, description: 'Croquetas caseras con jamón ibérico' }, { name: 'Pulpo a la Gallega', price: 14.00, description: 'Pulpo tierno con pimentón y aceite de oliva' } ],
-                    platos_fuertes: [ { name: 'Paella Valenciana', price: 18.00, description: 'Arroz con pollo, judías y azafrán' }, { name: 'Fideuà de Mariscos', price: 19.50, description: 'Fideos cortos con gambas, calamares y mejillones' }, { name: 'Bacalao al Pil Pil', price: 17.00, description: 'Bacalao en salsa de ajo y guindilla' } ],
-                    postres: [ { name: 'Crema Catalana', price: 6.50, description: 'Crema quemada con canela' }, { name: 'Tarta de Santiago', price: 7.00, description: 'Tarta de almendras tradicional' } ],
-                    bebidas: [ { name: 'Sangría de la Casa', price: 8.00, description: 'Vino, frutas y especias' }, { name: 'Cava Brut', price: 6.00, description: 'Copa de cava catalán' } ]
-                }, created_at: '2024-01-15T10:00:00Z'
-            },
-            {
-                id: 'place_002', owner_id: 'owner_001', name: 'Cocktail Lab', category: 'bar',
-                description: 'Bar de coctelería creativa con más de 50 combinaciones originales. Ambiente exclusivo con música en vivo los fines de semana. Carta de gin-tonics premium.',
-                address: 'Carrer de Provença 256, Barcelona', schedule: 'Mar-Jue: 19:00-02:00, Vie-Sáb: 19:00-03:30, Dom: 19:00-01:00',
-                phone: '+34 934 123 456', price_range: '$$$',
-                specialties: ['Negroni Ahumado', 'Gin-Tonic Premium', 'Margarita de Jalapeño', 'Espresso Martini'],
-                image: 'https://picsum.photos/seed/cocktail-lab/800/500.jpg', lat: 41.3920, lng: 2.1650,
-                rating: 4.3, review_count: 76, favorite_count: 54,
-                menu: {
-                    cocteles: [ { name: 'Negroni Ahumado', price: 14.00, description: 'Gin, Campari, vermut ahumado con madera de cerezo' }, { name: 'Espresso Martini', price: 13.00, description: 'Vodka, café espresso, licor de café' }, { name: 'Margarita de Jalapeño', price: 13.50, description: 'Tequila, triple sec, jalapeño fresco' } ],
-                    tapas: [ { name: 'Patatas Bravas Premium', price: 9.00, description: 'Con salsa brava casera y alioli' }, { name: 'Tabla de Quesos', price: 16.00, description: 'Selección de quesos artesanos' } ]
-                }, created_at: '2024-03-20T14:00:00Z'
-            },
-            {
-                id: 'place_003', owner_id: 'owner_001', name: 'Gelato Paradiso', category: 'icecream',
-                description: 'Heladería artesanal con ingredientes naturales de temporada. Más de 30 sabores incluyendo opciones veganas y sin gluten. Helados elaborados diariamente.',
-                address: 'Plaça de Catalunya 4, Barcelona', schedule: 'Lun-Dom: 10:00-22:30',
-                phone: '+34 935 678 901', price_range: '$',
-                specialties: ['Pistacho Siciliano', 'Chocolate Belga', 'Fresa de Huelva', 'Limón de Amalfi'],
-                image: 'https://picsum.photos/seed/gelato-paradiso/800/500.jpg', lat: 41.3870, lng: 2.1700,
-                rating: 4.8, review_count: 203, favorite_count: 167,
-                menu: {
-                    helados: [ { name: 'Pistacho Siciliano', price: 3.50, description: 'Con pistachos de Bronte' }, { name: 'Chocolate Belga', price: 3.50, description: 'Cacao puro belga 70%' }, { name: 'Fresa de Huelva', price: 3.50, description: 'Fresas frescas de temporada' } ],
-                    toppings: [ { name: 'Crema de Nata', price: 1.00, description: 'Nata montada fresca' }, { name: 'Sirope de Chocolate', price: 1.00, description: 'Chocolate fondant' } ]
-                }, created_at: '2024-05-10T09:00:00Z'
-            },
-            {
-                id: 'place_004', owner_id: 'owner_OTHER', name: 'Local Ajeno', category: 'restaurant',
-                description: 'Este local pertenece a otro dueño y no debería ser editable.',
-                address: 'Calle Falsa 123', schedule: '00:00-00:00', phone: '+34 000 000 000', price_range: '$',
-                specialties: [], image: 'https://picsum.photos/seed/other-place/800/500.jpg', lat: 40.0, lng: -3.0,
-                rating: 3.0, review_count: 5, favorite_count: 2, menu: {}, created_at: '2024-06-01T00:00:00Z'
+    // ============================================================
+    // 7. CARGA DE LUGARES DESDE SUPABASE
+    // ============================================================
+    function convertSupabaseToDashboard(dbPlace) {
+        if (!dbPlace) return null;
+        let specialties = [];
+        try {
+            specialties = typeof dbPlace.specialties === 'string'
+                ? JSON.parse(dbPlace.specialties)
+                : (Array.isArray(dbPlace.specialties) ? dbPlace.specialties : []);
+        } catch (e) { specialties = []; }
+
+        let menu = {};
+        try {
+            const raw = typeof dbPlace.menu === 'string' ? JSON.parse(dbPlace.menu) : dbPlace.menu;
+            if (raw && typeof raw === 'object') menu = raw;
+        } catch (e) { menu = {}; }
+
+        return {
+            id: dbPlace.id,
+            owner_id: dbPlace.owner_id || '',
+            name: dbPlace.name || 'Sin nombre',
+            category: (dbPlace.category || 'restaurant').toLowerCase(),
+            description: dbPlace.description || '',
+            address: dbPlace.address || '',
+            schedule: dbPlace.hours || dbPlace.schedule || 'Horario no disponible',
+            phone: dbPlace.phone || '',
+            price_range: dbPlace.price_range || dbPlace.priceRange || '$',
+            specialties: specialties,
+            image: dbPlace.image || '',
+            lat: dbPlace.lat || 0,
+            lng: dbPlace.lng || 0,
+            rating: parseFloat(dbPlace.rating) || 0,
+            review_count: dbPlace.reviews || dbPlace.review_count || 0,
+            favorite_count: dbPlace.favorite_count || 0,
+            menu: menu,
+            created_at: dbPlace.created_at || new Date().toISOString()
+        };
+    }
+
+    async function loadPlacesFromSupabase() {
+        if (!supabaseReady || !currentUser) return [];
+        try {
+            const { data, error } = await supabaseClient
+                .from('places')
+                .select('*')
+                .eq('owner_id', currentUser.id)
+                .order('id', { ascending: true });
+
+            if (error) {
+                console.error('[Dashboard] Error cargando lugares:', error.message);
+                return [];
             }
-        ];
+            if (data && data.length > 0) {
+                return data.map(convertSupabaseToDashboard).filter(Boolean);
+            }
+            return [];
+        } catch (err) {
+            console.error('[Dashboard] Excepción cargando lugares:', err.message);
+            return [];
+        }
+    }
 
-        const DEFAULT_REVIEWS = [
-            { id: 'r001', place_id: 'place_001', user_name: 'Ana G.', rating: 5, comment: 'La mejor paella que he probado en Barcelona. El servicio fue excelente y las vistas del puerto son maravillosas.', date: '2024-11-20' },
-            { id: 'r002', place_id: 'place_001', user_name: 'Miguel R.', rating: 4, comment: 'Muy buen restaurante, los arroces son espectaculares. Un poco caro pero vale la pena.', date: '2024-11-18' },
-            { id: 'r003', place_id: 'place_001', user_name: 'Laura P.', rating: 5, comment: 'Fui con mi familia y todos quedamos encantados. El pulpo a la gallega es impresionante.', date: '2024-11-15' },
-            { id: 'r004', place_id: 'place_001', user_name: 'Pedro S.', rating: 4, comment: 'Comida deliciosa, ambiente agradable. Volvería sin duda.', date: '2024-11-10' },
-            { id: 'r005', place_id: 'place_002', user_name: 'Sofía M.', rating: 5, comment: 'Los mejores cócteles de la ciudad. El Negroni ahumado es una experiencia única.', date: '2024-11-22' },
-            { id: 'r006', place_id: 'place_002', user_name: 'David L.', rating: 4, comment: 'Ambiente genial y buena música. Los gin-tonics premium son espectaculares.', date: '2024-11-19' },
-            { id: 'r007', place_id: 'place_002', user_name: 'Elena F.', rating: 4, comment: 'Sitio muy chulo para una cita. Cócteles creativos y buen servicio.', date: '2024-11-12' },
-            { id: 'r008', place_id: 'place_003', user_name: 'Carmen T.', rating: 5, comment: 'El mejor helado artesanal que he probado. El pistacho es increíble, se nota que es de calidad.', date: '2024-11-25' },
-            { id: 'r009', place_id: 'place_003', user_name: 'Javier B.', rating: 5, comment: 'Opciones veganas deliciosas. Vuelvo cada semana, soy adicto al chocolate belga.', date: '2024-11-23' },
-            { id: 'r010', place_id: 'place_003', user_name: 'Isabel N.', rating: 5, comment: 'Perfecto para el verano. Helados frescos y naturales, sin colorantes artificiales.', date: '2024-11-21' },
-            { id: 'r011', place_id: 'place_003', user_name: 'Roberto K.', rating: 4, comment: 'Muy buenos helados, quizás un poco pequeños para el precio. Pero el sabor es impecable.', date: '2024-11-16' },
-        ];
+    async function savePlaceToSupabase(placeData) {
+    if (!supabaseReady || !currentUser) return null;
 
-        let places = [];
-        let reviews = [];
-        let currentSpecialties = [];
-        let currentMenu = {};
-        let currentImageData = null;
-        let deleteTargetId = null;
-        let deleteAllMode = false;
-        let currentFilter = 'all';
+    const dbData = {
+        name: placeData.name,
+        category: placeData.category,
+        description: placeData.description,
+        address: placeData.address,
+        hours: placeData.schedule,
+        phone: placeData.phone,
+        price_range: placeData.price_range,
+        specialties: placeData.specialties,
+        image: placeData.image,
+        menu: placeData.menu,
+        owner_id: currentUser.id
+    };
 
-        // ============================================================
-        // INICIALIZACIÓN
-        // ============================================================
+    // ✅ Solo incluir lat/lng si las columnas existen en la tabla
 
-        function init() {
-            const storedPlaces = localStorage.getItem('owner_places');
+if (placeData.lat !== undefined && placeData.lat !== null) dbData.lat = placeData.lat;
+if (placeData.lng !== undefined && placeData.lng !== null) dbData.lng = placeData.lng;
+    try {
+        if (placeData.id && !String(placeData.id).startsWith('place_')) {
+            const { data, error } = await supabaseClient
+                .from('places')
+                .update(dbData)
+                .eq('id', placeData.id)
+                .select()
+                .single();
+
+            if (error) { console.error('[Dashboard] Error actualizando:', error.message); return null; }
+            return data;
+        } else {
+            const { data, error } = await supabaseClient
+                .from('places')
+                .insert(dbData)
+                .select()
+                .single();
+
+            if (error) { console.error('[Dashboard] Error insertando:', error.message); return null; }
+            return data;
+        }
+    } catch (err) {
+        console.error('[Dashboard] Excepción guardando:', err.message);
+        return null;
+    }
+}
+
+    async function deletePlaceFromSupabase(placeId) {
+        if (!supabaseReady || !currentUser) return false;
+        try {
+            const { error } = await supabaseClient
+                .from('places')
+                .delete()
+                .eq('id', placeId)
+                .eq('owner_id', currentUser.id);
+
+            if (error) { console.error('[Dashboard] Error eliminando:', error.message); return false; }
+            return true;
+        } catch (err) {
+            console.error('[Dashboard] Excepción eliminando:', err.message);
+            return false;
+        }
+    }
+
+    // ============================================================
+    // 8. PERFIL EN SUPABASE
+    // ============================================================
+    async function updateProfileInSupabase(updates) {
+        if (!supabaseReady || !currentUser) return false;
+        try {
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update(updates)
+                .eq('id', currentUser.id);
+
+            if (error) { console.error('[Dashboard] Error actualizando perfil:', error.message); return false; }
+            return true;
+        } catch (err) {
+            console.error('[Dashboard] Excepción actualizando perfil:', err.message);
+            return false;
+        }
+    }
+
+    // ============================================================
+    // 9. INICIALIZACIÓN
+    // ============================================================
+  let initCalled = false;
+let initPromise = null;
+
+async function init() {
+    if (initPromise) return initPromise;
+
+    initPromise = (async () => {
+        try {
+            // ✅ FIX: Si Supabase está listo, SIEMPRE usar sus datos
+            // (incluso si devuelve [] — significa que el usuario no tiene lugares)
+            if (supabaseReady && currentUser) {
+                places = await loadPlacesFromSupabase();
+            } else {
+                // Fallback a localStorage solo si Supabase NO está disponible
+                const storedPlaces = localStorage.getItem('owner_places');
+                if (storedPlaces) {
+                    try {
+                        places = JSON.parse(storedPlaces);
+                        places = places.filter(p => p.owner_id === currentUser.id);
+                    } catch (e) {
+                        places = [];
+                    }
+                } else {
+                    places = [];
+                }
+            }
+
             const storedReviews = localStorage.getItem('owner_reviews');
-
-            if (storedPlaces) { places = JSON.parse(storedPlaces); } 
-            else { places = JSON.parse(JSON.stringify(DEFAULT_PLACES)); savePlaces(); }
-
-            if (storedReviews) { reviews = JSON.parse(storedReviews); } 
-            else { reviews = JSON.parse(JSON.stringify(DEFAULT_REVIEWS)); saveReviews(); }
+            try {
+                reviews = storedReviews ? JSON.parse(storedReviews) : JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
+            } catch (e) {
+                reviews = JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
+            }
 
             updateOwnerDisplay();
             renderDashboard();
             renderPlaces();
             populateSelects();
-            setupResponsive();
+
+            if (!initCalled) {
+                setupResponsive();
+            }
+            initCalled = true;
+
             setTimeout(() => animateCounters(), 300);
+            console.log('[Dashboard] ✅ Inicializado -', places.length, 'locales');
+        } catch (err) {
+            console.error('[Dashboard] ❌ Error en init:', err);
+            places = [];
+            renderDashboard();
+            renderPlaces();
+        } finally {
+            initPromise = null;
         }
+    })();
 
-        function savePlaces() { localStorage.setItem('owner_places', JSON.stringify(places)); }
-        function saveReviews() { localStorage.setItem('owner_reviews', JSON.stringify(reviews)); }
-        function getOwnerPlaces() { return places.filter(p => p.owner_id === CURRENT_OWNER.id); }
-
-        function updateOwnerDisplay() {
-            if (!CURRENT_OWNER) return;
-            const initial = CURRENT_OWNER.name.charAt(0).toUpperCase();
-            document.getElementById('sidebarAvatar').textContent = initial;
-            document.getElementById('headerAvatar').textContent = initial;
-            document.getElementById('settingsAvatar').textContent = initial;
-            document.getElementById('sidebarOwnerName').textContent = CURRENT_OWNER.name;
-            document.getElementById('settingsName').textContent = CURRENT_OWNER.name;
-            document.getElementById('settingsEmail').textContent = CURRENT_OWNER.email;
-            document.getElementById('settingsNameInput').value = CURRENT_OWNER.name;
-            document.getElementById('settingsEmailInput').value = CURRENT_OWNER.email;
-            document.getElementById('settingsPhoneInput').value = CURRENT_OWNER.phone || '';
-        }
-
-        // ============================================================
-        // NAVEGACIÓN
-        // ============================================================
-
-        function switchView(viewName) {
-            document.querySelectorAll('[id^="view"]').forEach(el => {
-                if (el.id.startsWith('view') && el.closest && el.closest('main')) { el.style.display = 'none'; }
-            });
-
-            const viewMap = { 'dashboard': 'viewDashboard', 'places': 'viewPlaces', 'stats': 'viewStats', 'reviews': 'viewReviews', 'settings': 'viewSettings' };
-            const viewId = viewMap[viewName];
-            if (viewId) {
-                const el = document.getElementById(viewId);
-                el.style.display = 'block'; el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in');
-            }
-
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            const activeLink = document.querySelector(`.sidebar-link[data-view="${viewName}"]`);
-            if (activeLink) activeLink.classList.add('active');
-
-            const titles = {
-               'dashboard': ['Panel General', 'Bienvenido de vuelta. Aquí tienes un resumen de tus locales.'],
-               'places': ['Mis Locales', 'Gestiona todos tus establecimientos desde aquí.'],
-               'stats': ['Estadísticas', 'Analiza el rendimiento de tus locales.'],
-               'reviews': ['Reseñas', 'Lee lo que opinan tus clientes.'],
-               'website': ['SaborMap', 'Ir a la página pública.'],
-               'settings': ['Configuración', 'Gestiona tu perfil y preferencias.']
-           };
-            document.getElementById('viewTitle').textContent = titles[viewName][0];
-            document.getElementById('viewSubtitle').textContent = titles[viewName][1];
-            document.getElementById('sidebar').classList.remove('open');
-
-            if (viewName === 'dashboard') { renderDashboard(); setTimeout(() => animateCounters(), 100); }
-            if (viewName === 'places') renderPlaces();
-            if (viewName === 'stats') populateSelects();
-            if (viewName === 'reviews') { populateSelects(); }
-        }
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-        function setupResponsive() {
-            const check = () => {
-                const btn = document.getElementById('menuToggle');
-                if (window.innerWidth <= 900) { btn.style.display = 'flex'; } 
-                else { btn.style.display = 'none'; document.getElementById('sidebar').classList.remove('open'); }
-            };
-            check(); window.addEventListener('resize', check);
-        }
-
-        // ============================================================
-        // DASHBOARD
-        // ============================================================
-
-        function renderDashboard() {
-            const myPlaces = getOwnerPlaces();
-            const totalReviews = myPlaces.reduce((s, p) => s + p.review_count, 0);
-            const avgRating = myPlaces.length > 0 ? (myPlaces.reduce((s, p) => s + p.rating, 0) / myPlaces.length).toFixed(1) : '0.0';
-            const totalFavorites = myPlaces.reduce((s, p) => s + p.favorite_count, 0);
-
-            document.getElementById('statCards').innerHTML = `
-                <div class="stat-card">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                        <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Locales</span>
-                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(79,70,229,0.1);display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-store" style="color:var(--accent);font-size:0.9rem;"></i>
-                        </div>
-                    </div>
-                    <div class="stat-number" data-target="${myPlaces.length}">0</div>
-                    <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">${myPlaces.filter(p => p.category === 'restaurant').length} restaurantes, ${myPlaces.filter(p => p.category !== 'restaurant').length} otros</div>
-                </div>
-                <div class="stat-card">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                        <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Reseñas</span>
-                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-comments" style="color:var(--success);font-size:0.9rem;"></i>
-                        </div>
-                    </div>
-                    <div class="stat-number" data-target="${totalReviews}">0</div>
-                    <div style="margin-top:8px;">
-                        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(totalReviews / 5, 100)}%;background:var(--success);"></div></div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                        <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Puntuación Media</span>
-                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-star" style="color:var(--warning);font-size:0.9rem;"></i>
-                        </div>
-                    </div>
-                    <div class="stat-number" style="color:var(--warning);">${avgRating}</div>
-                    <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">${renderStarsText(parseFloat(avgRating))}</div>
-                </div>
-                <div class="stat-card">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                        <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Favoritos</span>
-                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-heart" style="color:var(--danger);font-size:0.9rem;"></i>
-                        </div>
-                    </div>
-                    <div class="stat-number" data-target="${totalFavorites}">0</div>
-                    <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">+${Math.floor(totalFavorites * 0.12)} esta semana</div>
-                </div>
-            `;
-            renderPlaceCards('dashPlacesGrid', myPlaces, true);
-        }
-
-        function animateCounters() {
-            document.querySelectorAll('.stat-number[data-target]').forEach(el => {
-                const target = parseInt(el.dataset.target); const duration = 800; const start = performance.now();
-                function update(now) {
-                    const elapsed = now - start; const progress = Math.min(elapsed / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 3); el.textContent = Math.round(target * eased);
-                    if (progress < 1) requestAnimationFrame(update);
-                }
-                requestAnimationFrame(update);
-            });
-        }
-
-        // ============================================================
-        // PLACES VIEW
-        // ============================================================
-
-        function renderPlaces() {
-            let myPlaces = getOwnerPlaces();
-            if (currentFilter !== 'all') { myPlaces = myPlaces.filter(p => p.category === currentFilter); }
-            if (myPlaces.length === 0) {
-                document.getElementById('placesGrid').style.display = 'none'; document.getElementById('emptyState').style.display = 'block';
-            } else {
-                document.getElementById('placesGrid').style.display = 'grid'; document.getElementById('emptyState').style.display = 'none';
-                renderPlaceCards('placesGrid', myPlaces, false);
-            }
-        }
-
-        function filterPlaces(category, btn) {
-            currentFilter = category; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active'); renderPlaces();
-        }
-
-        function renderPlaceCards(containerId, placesList, compact) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = placesList.map(place => {
-                const catLabels = { restaurant: 'Restaurante', bar: 'Bar', icecream: 'Heladería', streetfood: 'Street Food' };
-                const catIcons = { restaurant: 'utensils', bar: 'martini-glass', icecream: 'ice-cream', streetfood: 'hotdog' };
-                const reviewsForPlace = reviews.filter(r => r.place_id === place.id);
-                const avgRevRating = reviewsForPlace.length > 0 ? (reviewsForPlace.reduce((s, r) => s + r.rating, 0) / reviewsForPlace.length).toFixed(1) : place.rating.toFixed(1);
-                return `
-                <article class="place-card">
-                    <div style="overflow:hidden;position:relative;">
-                        <img class="place-card-img" src="${place.image}" alt="${place.name}" onerror="this.src='https://picsum.photos/seed/fallback-${place.id}/800/500.jpg'">
-                        <div style="position:absolute;top:12px;left:12px;">
-                            <span class="cat-badge cat-${place.category}"><i class="fas fa-${catIcons[place.category]}"></i> ${catLabels[place.category]}</span>
-                        </div>
-                        <div style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.9);backdrop-filter:blur(6px);padding:4px 10px;border-radius:8px;font-size:0.82rem;font-weight:700;color:#1E293B;">
-                            <i class="fas fa-star" style="color:var(--warning);font-size:0.75rem;"></i> ${avgRevRating}
-                        </div>
-                    </div>
-                    <div style="padding:20px;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-                            <h3 style="font-size:1.15rem;font-weight:900;line-height:1.2;">${place.name}</h3>
-                            <span class="price-range">${place.price_range}</span>
-                        </div>
-                        <p style="color:var(--fg-secondary);font-size:0.82rem;line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${place.description}</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">
-                            ${place.specialties.slice(0, 3).map(s => `<span style="background:var(--accent-glow);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;">${s}</span>`).join('')}
-                            ${place.specialties.length > 3 ? `<span style="color:var(--muted);font-size:0.72rem;padding:2px 4px;">+${place.specialties.length - 3}</span>` : ''}
-                        </div>
-                        <div style="display:flex;gap:12px;font-size:0.78rem;color:var(--fg-secondary);margin-bottom:16px;">
-                            <span><i class="fas fa-comment" style="margin-right:4px;"></i>${place.review_count} reseñas</span>
-                            <span><i class="fas fa-heart" style="margin-right:4px;color:var(--danger);"></i>${place.favorite_count} favs</span>
-                        </div>
-                        <div style="display:flex;gap:8px;">
-                            <button class="btn-secondary btn-sm" onclick="openEditModal('${place.id}')" title="Editar"><i class="fas fa-edit"></i> Editar</button>
-                            <button class="btn-secondary btn-sm" onclick="openDetailModal('${place.id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>
-                            <button class="btn-secondary btn-sm" onclick="event.stopPropagation(); window.open('index.html?place=${place.id}', '_blank')" title="Ver en SaborMap"><i class="fas fa-external-link-alt"></i></button>
-                            <button class="btn-danger btn-sm" onclick="openDeleteModal('${place.id}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </div>
-                </article>`;
-            }).join('');
-        }
-
-        // ============================================================
-        // MODAL: CREAR / EDITAR
-        // ============================================================
-
-        function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Nuevo Local';
-            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Crear Local';
-            document.getElementById('placeForm').reset(); document.getElementById('placeId').value = '';
-            currentSpecialties = []; currentMenu = {}; currentImageData = null;
-            document.getElementById('uploadPlaceholder').style.display = 'block'; document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('uploadArea').classList.remove('has-image'); document.getElementById('specialtiesTags').innerHTML = '';
-            document.getElementById('menuSections').innerHTML = '';
-            addMenuSection('entrantes', 'Entrantes'); addMenuSection('platos_fuertes', 'Platos Fuertes'); addMenuSection('postres', 'Postres');
-            document.getElementById('placeModal').classList.add('show');
-        }
-
-        function openEditModal(placeId) {
-            const place = places.find(p => p.id === placeId);
-            if (!place) { showToast('Local no encontrado', 'error'); return; }
-            if (place.owner_id !== CURRENT_OWNER.id) { showToast('No tienes permiso para editar este local', 'error'); return; }
-            document.getElementById('modalTitle').textContent = 'Editar Local';
-            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-            document.getElementById('placeId').value = place.id;
-            document.getElementById('placeName').value = place.name; document.getElementById('placeCategory').value = place.category;
-            document.getElementById('placeDescription').value = place.description; document.getElementById('placeAddress').value = place.address;
-            document.getElementById('placePhone').value = place.phone; document.getElementById('placeSchedule').value = place.schedule;
-            document.getElementById('placePriceRange').value = place.price_range;
-            document.getElementById('placeLat').value = place.lat || ''; document.getElementById('placeLng').value = place.lng || '';
-            currentImageData = place.image;
-            if (place.image) {
-                document.getElementById('uploadPlaceholder').style.display = 'none'; document.getElementById('imagePreview').style.display = 'block';
-                document.getElementById('imagePreview').src = place.image; document.getElementById('uploadArea').classList.add('has-image');
-            }
-            currentSpecialties = [...place.specialties]; renderSpecialtiesTags();
-            currentMenu = JSON.parse(JSON.stringify(place.menu || {})); document.getElementById('menuSections').innerHTML = '';
-            Object.entries(currentMenu).forEach(([key, items]) => {
-                const sectionLabel = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); addMenuSection(key, sectionLabel, items);
-            });
-            document.getElementById('placeModal').classList.add('show');
-        }
-
-        function closePlaceModal() { document.getElementById('placeModal').classList.remove('show'); }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0]; if (!file) return;
-            if (file.size > 5 * 1024 * 1024) { showToast('La imagen no debe superar 5MB', 'error'); return; }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageData = e.target.result; document.getElementById('uploadPlaceholder').style.display = 'none';
-                document.getElementById('imagePreview').style.display = 'block'; document.getElementById('imagePreview').src = currentImageData;
-                document.getElementById('uploadArea').classList.add('has-image');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function addSpecialty() {
-            const input = document.getElementById('specialtyInput'); const value = input.value.trim(); if (!value) return;
-            if (currentSpecialties.includes(value)) { showToast('Esta especialidad ya existe', 'error'); return; }
-            currentSpecialties.push(value); input.value = ''; renderSpecialtiesTags();
-        }
-        function removeSpecialty(index) { currentSpecialties.splice(index, 1); renderSpecialtiesTags(); }
-        function renderSpecialtiesTags() {
-            document.getElementById('specialtiesTags').innerHTML = currentSpecialties.map((s, i) =>
-                `<span class="tag">${s}<span class="remove-tag" onclick="removeSpecialty(${i})"><i class="fas fa-times"></i></span></span>`
-            ).join('');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const specInput = document.getElementById('specialtyInput');
-            if (specInput) { specInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSpecialty(); } }); }
-        });
-
-        function addMenuSection(key, label, items) {
-            key = key || ''; label = label || ''; items = items || [];
-            const sectionId = 'menu_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-            const container = document.getElementById('menuSections'); const div = document.createElement('div');
-            div.className = 'menu-section-card'; div.id = sectionId;
-            div.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <input class="form-input" style="max-width:200px;font-weight:700;font-size:0.88rem;" value="${label}" placeholder="Nombre de sección" data-section-label>
-                        <input class="form-input" style="max-width:160px;font-size:0.82rem;" value="${key}" placeholder="clave_seccion" data-section-key>
-                    </div>
-                    <button type="button" onclick="removeMenuSection('${sectionId}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.9rem;padding:4px;"><i class="fas fa-trash-alt"></i></button>
-                </div>
-                <div class="menu-items-list" data-items> ${items.map((item, idx) => renderMenuItemRow(sectionId, item, idx)).join('')} </div>
-                <button type="button" class="btn-secondary btn-sm" style="margin-top:8px;" onclick="addMenuItem('${sectionId}')"><i class="fas fa-plus"></i> Agregar Plato</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function renderMenuItemRow(sectionId, item, idx) {
-            return `
-                <div class="menu-item-row" data-item-row>
-                    <input class="form-input" placeholder="Nombre" value="${item.name || ''}" data-item-name style="font-size:0.82rem;padding:8px 10px;">
-                    <input class="form-input" placeholder="Precio" type="number" step="0.01" value="${item.price || ''}" data-item-price style="font-size:0.82rem;padding:8px 10px;">
-                    <input class="form-input" placeholder="Descripción" value="${item.description || ''}" data-item-desc style="font-size:0.82rem;padding:8px 10px;">
-                    <button type="button" onclick="this.closest('[data-item-row]').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;"><i class="fas fa-times"></i></button>
-                </div>
-            `;
-        }
-
-        function addMenuItem(sectionId) {
-            const section = document.getElementById(sectionId); const list = section.querySelector('[data-items]');
-            const div = document.createElement('div'); div.setAttribute('data-item-row', ''); div.className = 'menu-item-row';
-            div.innerHTML = `
-                <input class="form-input" placeholder="Nombre" data-item-name style="font-size:0.82rem;padding:8px 10px;">
-                <input class="form-input" placeholder="Precio" type="number" step="0.01" data-item-price style="font-size:0.82rem;padding:8px 10px;">
-                <input class="form-input" placeholder="Descripción" data-item-desc style="font-size:0.82rem;padding:8px 10px;">
-                <button type="button" onclick="this.closest('[data-item-row]').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;"><i class="fas fa-times"></i></button>
-            `;
-            list.appendChild(div);
-        }
-
-        function removeMenuSection(sectionId) { document.getElementById(sectionId)?.remove(); }
-
-        function getMenuData() {
-            const menu = {};
-            document.querySelectorAll('.menu-section-card').forEach(section => {
-                const keyInput = section.querySelector('[data-section-key]');
-                const key = keyInput ? keyInput.value.trim().replace(/\s+/g, '_').toLowerCase() : ''; if (!key) return;
-                const items = [];
-                section.querySelectorAll('[data-item-row]').forEach(row => {
-                    const name = row.querySelector('[data-item-name]')?.value.trim() || '';
-                    const price = parseFloat(row.querySelector('[data-item-price]')?.value) || 0;
-                    const desc = row.querySelector('[data-item-desc]')?.value.trim() || '';
-                    if (name) items.push({ name, price, description: desc });
-                });
-                menu[key] = items;
-            });
-            return menu;
-        }
-
-        // ============================================================
-        // GUARDAR Y ELIMINAR
-        // ============================================================
-
-        function handlePlaceSubmit(event) {
-            event.preventDefault();
-            const placeId = document.getElementById('placeId').value; const name = document.getElementById('placeName').value.trim();
-            const category = document.getElementById('placeCategory').value; const description = document.getElementById('placeDescription').value.trim();
-            const address = document.getElementById('placeAddress').value.trim(); const phone = document.getElementById('placePhone').value.trim();
-            const schedule = document.getElementById('placeSchedule').value.trim(); const priceRange = document.getElementById('placePriceRange').value;
-            const lat = parseFloat(document.getElementById('placeLat').value) || 0; const lng = parseFloat(document.getElementById('placeLng').value) || 0;
-            if (!name || !category || !description || !address || !phone || !schedule || !priceRange) { showToast('Por favor completa todos los campos obligatorios', 'error'); return; }
-            const menuData = getMenuData(); const imageUrl = currentImageData || `https://picsum.photos/seed/${name.replace(/\s/g, '-').toLowerCase()}/800/500.jpg`;
-            if (placeId) {
-                const index = places.findIndex(p => p.id === placeId);
-                if (index === -1) { showToast('Local no encontrado', 'error'); return; }
-                if (places[index].owner_id !== CURRENT_OWNER.id) { showToast('No tienes permiso para editar este local', 'error'); return; }
-                places[index] = { ...places[index], name, category, description, address, schedule, phone, price_range: priceRange, specialties: [...currentSpecialties], image: imageUrl, lat, lng, menu: menuData };
-                showToast(`"${name}" actualizado correctamente`, 'success');
-            } else {
-                const newPlace = { id: 'place_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6), owner_id: CURRENT_OWNER.id, name, category, description, address, schedule, phone, price_range: priceRange, specialties: [...currentSpecialties], image: imageUrl, lat, lng, rating: 0, review_count: 0, favorite_count: 0, menu: menuData, created_at: new Date().toISOString() };
-                places.push(newPlace); showToast(`"${name}" creado correctamente`, 'success');
-            }
-            savePlaces(); closePlaceModal(); renderDashboard(); renderPlaces(); populateSelects(); setTimeout(() => animateCounters(), 100);
-            window.localStorage.setItem('sabormap_last_update', Date.now().toString());
-            window.localStorage.setItem('sabormap_sync_signal', Date.now().toString());
-        }
-
-        function openDeleteModal(placeId) {
-            deleteTargetId = placeId; deleteAllMode = false; const place = places.find(p => p.id === placeId); if (!place) return;
-            if (place.owner_id !== CURRENT_OWNER.id) { showToast('No tienes permiso para eliminar este local', 'error'); return; }
-            document.getElementById('deleteTitle').textContent = 'Eliminar Local';
-            document.getElementById('deleteMessage').textContent = `Se eliminará "${place.name}" permanentemente. Esta acción no se puede deshacer.`;
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
-        function confirmDeleteAll() {
-            deleteAllMode = true; deleteTargetId = null;
-            document.getElementById('deleteTitle').textContent = 'Eliminar Todos los Locales';
-            document.getElementById('deleteMessage').textContent = 'Se eliminarán todos tus locales y sus datos asociados. Esta acción no se puede deshacer.';
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); deleteTargetId = null; deleteAllMode = false; }
-
-        function confirmDelete() {
-            if (deleteAllMode) {
-                const myPlaceIds = getOwnerPlaces().map(p => p.id); places = places.filter(p => !myPlaceIds.includes(p.id));
-                reviews = reviews.filter(r => !myPlaceIds.includes(r.place_id)); savePlaces(); saveReviews(); showToast('Todos tus locales han sido eliminados', 'success');
-            } else if (deleteTargetId) {
-                const place = places.find(p => p.id === deleteTargetId);
-                if (place && place.owner_id !== CURRENT_OWNER.id) { showToast('No tienes permiso para eliminar este local', 'error'); closeDeleteModal(); return; }
-                places = places.filter(p => p.id !== deleteTargetId); reviews = reviews.filter(r => r.place_id !== deleteTargetId);
-                savePlaces(); saveReviews(); showToast(`"${place?.name || 'Local'}" eliminado correctamente`, 'success');
-            }
-            window.localStorage.setItem('sabormap_last_update', Date.now().toString());
-            window.localStorage.setItem('sabormap_sync_signal', Date.now().toString());
-            closeDeleteModal(); renderDashboard(); renderPlaces(); populateSelects(); setTimeout(() => animateCounters(), 100);
-        }
-
-        // ============================================================
-        // DETALLE, ESTADÍSTICAS Y RESEÑAS
-        // ============================================================
-
-        function openDetailModal(placeId) {
-            const place = places.find(p => p.id === placeId); if (!place) return;
-            const catLabels = { restaurant: 'Restaurante', bar: 'Bar', icecream: 'Heladería', streetfood: 'Street Food' };
-            document.getElementById('detailTitle').textContent = place.name;
-            document.getElementById('detailContent').innerHTML = `
-                <img src="${place.image}" alt="${place.name}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;margin-bottom:20px;" onerror="this.src='https://picsum.photos/seed/fallback-detail/800/400.jpg'">
-                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-                    <span class="cat-badge cat-${place.category}">${catLabels[place.category]}</span>
-                    <span class="price-range" style="font-size:0.88rem;">${place.price_range}</span>
-                    <span style="font-size:0.85rem;"><i class="fas fa-star" style="color:var(--warning);"></i> ${place.rating.toFixed(1)} (${place.review_count} reseñas)</span>
-                </div>
-                <p style="color:var(--fg-secondary);font-size:0.9rem;line-height:1.6;margin-bottom:16px;">${place.description}</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-                    <div style="font-size:0.85rem;"><i class="fas fa-map-marker-alt" style="color:var(--accent);width:18px;"></i> ${place.address}</div>
-                    <div style="font-size:0.85rem;"><i class="fas fa-phone" style="color:var(--accent);width:18px;"></i> ${place.phone}</div>
-                    <div style="font-size:0.85rem;"><i class="fas fa-clock" style="color:var(--accent);width:18px;"></i> ${place.schedule}</div>
-                    <div style="font-size:0.85rem;"><i class="fas fa-heart" style="color:var(--danger);width:18px;"></i> ${place.favorite_count} favoritos</div>
-                </div>
-                ${place.specialties.length > 0 ? `<div style="margin-bottom:16px;"><span style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg-secondary);">Especialidades</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${place.specialties.map(s => `<span class="tag">${s}</span>`).join('')}</div></div>` : ''}
-                ${Object.keys(place.menu || {}).length > 0 ? `<div style="margin-bottom:16px;"><span style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg-secondary);">Menú</span>${Object.entries(place.menu).map(([key, items]) => `<div style="margin-top:10px;"><h4 style="font-size:0.92rem;font-weight:700;color:var(--accent);margin-bottom:6px;font-family:'DM Sans',sans-serif;">${key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</h4>${items.map(item => `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);"><div><span style="font-weight:600;font-size:0.85rem;">${item.name}</span><span style="color:var(--fg-secondary);font-size:0.78rem;margin-left:8px;">${item.description || ''}</span></div><span style="font-weight:700;color:var(--success);font-size:0.85rem;white-space:nowrap;margin-left:12px;">${item.price.toFixed(2)}€</span></div>`).join('')}</div>`).join('')}</div>` : ''}
-                ${place.lat && place.lng ? `<div style="font-size:0.85rem;color:var(--fg-secondary);"><i class="fas fa-location-dot" style="color:var(--accent);"></i><a href="https://www.google.com/maps?q=${place.lat},${place.lng}" target="_blank" style="color:var(--accent);text-decoration:none;">Ver en Google Maps</a> (${place.lat.toFixed(4)}, ${place.lng.toFixed(4)})</div>` : ''}
-                <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
-                    <a href="index.html?place=${place.id}" target="_blank" class="btn-primary" style="text-decoration:none;">
-                        <i class="fas fa-external-link-alt"></i> Ver en SaborMap
-                    </a>
-                </div>
-            `;
-            document.getElementById('detailModal').classList.add('show');
-        }
-
-        function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
-
-        function populateSelects() {
-            const myPlaces = getOwnerPlaces(); const options = myPlaces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            const statsSelect = document.getElementById('statsPlaceSelect'); const currentStatsVal = statsSelect.value;
-            statsSelect.innerHTML = '<option value="">— Selecciona un local —</option>' + options; if (currentStatsVal) statsSelect.value = currentStatsVal;
-            const reviewsSelect = document.getElementById('reviewsPlaceSelect'); const currentRevVal = reviewsSelect.value;
-            reviewsSelect.innerHTML = '<option value="">— Selecciona un local —</option>' + options; if (currentRevVal) reviewsSelect.value = currentRevVal;
-        }
-
-        function loadPlaceStats() {
-            const placeId = document.getElementById('statsPlaceSelect').value;
-            if (!placeId) { document.getElementById('statsContent').style.display = 'none'; document.getElementById('statsEmpty').style.display = 'block'; return; }
-            const place = places.find(p => p.id === placeId); if (!place) return;
-            const placeReviews = reviews.filter(r => r.place_id === placeId);
-            const avgRating = placeReviews.length > 0 ? (placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length).toFixed(1) : place.rating.toFixed(1);
-            const dist = [0, 0, 0, 0, 0]; placeReviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++; });
-            document.getElementById('statsEmpty').style.display = 'none'; document.getElementById('statsContent').style.display = 'block';
-            document.getElementById('statsDetailCards').innerHTML = `
-                <div class="stat-card"><div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Puntuación Media</div><div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:2.4rem;font-weight:900;color:var(--accent);font-family:'Playfair Display',serif;">${avgRating}</span><span style="font-size:0.85rem;color:var(--fg-secondary);">/ 5.0</span></div><div style="margin-top:6px;">${renderStarsText(parseFloat(avgRating))}</div></div>
-                <div class="stat-card"><div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Total Reseñas</div><div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:'Playfair Display',serif;">${placeReviews.length}</div><div style="margin-top:6px;font-size:0.78rem;color:var(--success);"><i class="fas fa-arrow-up"></i> +${Math.max(1, Math.floor(placeReviews.length * 0.15))} este mes</div></div>
-                <div class="stat-card"><div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Favoritos</div><div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:'Playfair Display',serif;">${place.favorite_count}</div><div style="margin-top:6px;font-size:0.78rem;color:var(--success);"><i class="fas fa-arrow-up"></i> +${Math.max(1, Math.floor(place.favorite_count * 0.08))} esta semana</div></div>
-                <div class="stat-card"><div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Especialidades</div><div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:'Playfair Display',serif;">${place.specialties.length}</div><div style="margin-top:6px;font-size:0.78rem;color:var(--fg-secondary);">${Object.keys(place.menu || {}).length} secciones en menú</div></div>
-            `;
-            document.getElementById('reviewDistribution').innerHTML = [5,4,3,2,1].map(star => {
-                const count = dist[star - 1]; const pct = placeReviews.length > 0 ? Math.round(count / placeReviews.length * 100) : 0;
-                return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-size:0.82rem;color:var(--fg-secondary);width:16px;text-align:right;">${star}</span><i class="fas fa-star" style="color:var(--warning);font-size:0.7rem;"></i><div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:${pct}%;background:var(--accent);"></div></div><span style="font-size:0.78rem;color:var(--fg-secondary);width:28px;">${count}</span></div>`;
-            }).join('');
-            const recent = placeReviews.slice(-5).reverse();
-            document.getElementById('recentReviews').innerHTML = recent.length > 0 ? recent.map(r => `<div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;font-size:0.85rem;">${r.user_name}</span><span style="font-size:0.75rem;color:var(--muted);">${r.date}</span></div><div style="margin-bottom:4px;">${renderStarsText(r.rating, 0.7)}</div><p style="font-size:0.82rem;color:var(--fg-secondary);line-height:1.4;">${r.comment}</p></div>`).join('') : '<p style="color:var(--muted);font-size:0.88rem;">Aún no hay reseñas para este local.</p>';
-        }
-
-        function loadPlaceReviews() {
-            const placeId = document.getElementById('reviewsPlaceSelect').value;
-            if (!placeId) { document.getElementById('reviewsList').innerHTML = ''; document.getElementById('reviewsEmpty').style.display = 'block'; return; }
-            document.getElementById('reviewsEmpty').style.display = 'none';
-            const placeReviews = reviews.filter(r => r.place_id === placeId).reverse();
-            document.getElementById('reviewsList').innerHTML = `
-                <div style="margin-bottom:20px;display:flex;align-items:center;gap:16px;">
-                    <div style="font-size:2.4rem;font-weight:900;color:var(--accent);font-family:'Playfair Display',serif;">${placeReviews.length > 0 ? (placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length).toFixed(1) : '0.0'}</div>
-                    <div><div>${renderStarsText(placeReviews.length > 0 ? placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length : 0)}</div><div style="font-size:0.82rem;color:var(--fg-secondary);">${placeReviews.length} reseñas en total</div></div>
-                </div>
-                ${placeReviews.map(r => `<div class="stat-card" style="margin-bottom:12px;padding:18px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#FFFFFF;">${r.user_name.charAt(0)}</div><div><div style="font-weight:600;font-size:0.9rem;">${r.user_name}</div><div style="font-size:0.75rem;color:var(--muted);">${r.date}</div></div></div><div>${renderStarsText(r.rating, 0.8)}</div></div><p style="font-size:0.88rem;color:var(--fg-secondary);line-height:1.5;">${r.comment}</p></div>`).join('')}
-            `;
-        }
-
-        function saveSettings() {
-            const name = document.getElementById('settingsNameInput').value.trim();
-            const email = document.getElementById('settingsEmailInput').value.trim();
-            const phone = document.getElementById('settingsPhoneInput').value.trim();
-            if (!name || !email) { showToast('Nombre y email son obligatorios', 'error'); return; }
-            
-            // Actualizar en memoria
-            CURRENT_OWNER.name = name; CURRENT_OWNER.email = email; CURRENT_OWNER.phone = phone;
-            sessionStorage.setItem('sabormap_logged_user', JSON.stringify(CURRENT_OWNER));
-            
-            // Actualizar en la base de datos de usuarios
-            let users = JSON.parse(localStorage.getItem('sabormap_users'));
-            const userIndex = users.findIndex(u => u.id === CURRENT_OWNER.id);
-            if (userIndex !== -1) {
-                users[userIndex].name = name; users[userIndex].email = email; users[userIndex].phone = phone;
-                localStorage.setItem('sabormap_users', JSON.stringify(users));
-            }
-
-            updateOwnerDisplay(); showToast('Perfil actualizado correctamente', 'success');
-        }
-
-        // ============================================================
-        // UTILIDADES
-        // ============================================================
-
-        function renderStarsText(rating, size) {
-            size = size || 1; const fontSize = size + 'rem'; let html = '<span class="stars" style="font-size:' + fontSize + ';">';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.floor(rating)) { html += '<i class="fas fa-star"></i>'; } 
-                else if (i - rating < 1 && i - rating > 0) { html += '<i class="fas fa-star-half-alt"></i>'; } 
-                else { html += '<i class="far fa-star empty"></i>'; }
-            }
-            html += '</span>'; return html;
-        }
-
-        function goToWebsite() { 
-    window.location.href = 'index.html'; 
+    return initPromise;
 }
 
-        function showToast(message, type) {
-            type = type || 'info'; const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div'); toast.className = 'toast ' + type;
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-            const colors = { success: 'var(--success)', error: 'var(--danger)', info: 'var(--accent)' };
-            toast.innerHTML = `<i class="fas ${icons[type]}" style="color:${colors[type]};font-size:1.1rem;"></i><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3500);
+
+
+    function savePlaces() { localStorage.setItem('owner_places', JSON.stringify(places)); }
+    function saveReviews() { localStorage.setItem('owner_reviews', JSON.stringify(reviews)); }
+    function getOwnerPlaces() { return places; } // Ya filtrados por owner_id en carga
+
+    function updateOwnerDisplay() {
+        if (!currentUser) return;
+        const name = currentProfile?.nombre_completo || currentUser.user_metadata?.nombre_completo || currentUser.email?.split('@')[0] || 'Usuario';
+        const initial = name.charAt(0).toUpperCase();
+
+        const elements = {
+            'sidebarAvatar': initial,
+            'headerAvatar': initial,
+            'settingsAvatar': initial,
+            'sidebarOwnerName': name,
+            'sidebarOwnerRole': currentProfile?.rol === 'propietario' ? 'Propietario' : (currentProfile?.rol || 'Propietario'),
+            'settingsName': name,
+            'settingsEmail': currentUser.email || '—',
+            'settingsNameInput': name,
+            'settingsEmailInput': currentUser.email || ''
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value || el.textContent;
+        });
+    }
+
+    // ============================================================
+    // 10. NAVEGACIÓN
+    // ============================================================
+    function switchView(viewName) {
+        document.querySelectorAll('section[id^="view"]').forEach(el => { el.style.display = 'none'; });
+
+        const viewMap = { 'dashboard': 'viewDashboard', 'places': 'viewPlaces', 'stats': 'viewStats', 'reviews': 'viewReviews', 'settings': 'viewSettings' };
+        const viewId = viewMap[viewName];
+        if (viewId) {
+            const el = document.getElementById(viewId);
+            el.style.display = 'block';
+            el.classList.remove('fade-in');
+            void el.offsetWidth;
+            el.classList.add('fade-in');
         }
 
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePlaceModal(); closeDeleteModal(); closeDetailModal(); } });
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', e => { if (e.target === overlay) { closePlaceModal(); closeDeleteModal(); closeDetailModal(); } });
-        });
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        const activeLink = document.querySelector('.sidebar-link[data-view="' + viewName + '"]');
+        if (activeLink) activeLink.classList.add('active');
 
-        // Inicio de la aplicación
-        initAuthSystem();
-        checkAuth();
+        const titles = {
+            'dashboard': ['Panel General', 'Bienvenido de vuelta. Aquí tienes un resumen.'],
+            'places': ['Mis Locales', 'Gestiona todos tus establecimientos.'],
+            'stats': ['Estadísticas', 'Analiza el rendimiento de tus locales.'],
+            'reviews': ['Reseñas', 'Lee lo que opinan tus clientes.'],
+            'settings': ['Configuración', 'Gestiona tu perfil.']
+        };
 
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'owner_reviews') { reviews = JSON.parse(e.newValue || '[]'); }
-            if (e.key === 'owner_places') { places = JSON.parse(e.newValue || '[]'); renderDashboard(); renderPlaces(); populateSelects(); }
+        if (titles[viewName]) {
+            document.getElementById('viewTitle').textContent = titles[viewName][0];
+            document.getElementById('viewSubtitle').textContent = titles[viewName][1];
+        }
+
+        document.getElementById('sidebar').classList.remove('open');
+
+        if (viewName === 'dashboard') { renderDashboard(); setTimeout(() => animateCounters(), 100); }
+        if (viewName === 'places') renderPlaces();
+        if (viewName === 'stats' || viewName === 'reviews') populateSelects();
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function setupResponsive() {
+        const check = () => {
+            const btn = document.getElementById('menuToggle');
+            if (window.innerWidth <= 900) { btn.style.display = 'flex'; }
+            else { btn.style.display = 'none'; document.getElementById('sidebar').classList.remove('open'); }
+        };
+        check();
+        window.addEventListener('resize', check);
+    }
+
+    // ============================================================
+    // 11. DASHBOARD
+    // ============================================================
+    function renderDashboard() {
+        const myPlaces = getOwnerPlaces();
+        const totalReviews = myPlaces.reduce((s, p) => s + (p.review_count || 0), 0);
+        const avgRating = myPlaces.length > 0 ? (myPlaces.reduce((s, p) => s + (p.rating || 0), 0) / myPlaces.length).toFixed(1) : '0.0';
+        const totalFavorites = myPlaces.reduce((s, p) => s + (p.favorite_count || 0), 0);
+
+        document.getElementById('statCards').innerHTML = `
+            <div class="stat-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Locales</span>
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(79,70,229,0.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-store" style="color:var(--accent);font-size:0.9rem;"></i></div>
+                </div>
+                <div class="stat-number" data-target="${myPlaces.length}">0</div>
+                <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">${myPlaces.filter(p => p.category === 'restaurant').length} restaurantes</div>
+            </div>
+            <div class="stat-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Reseñas</span>
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-comments" style="color:var(--success);font-size:0.9rem;"></i></div>
+                </div>
+                <div class="stat-number" data-target="${totalReviews}">0</div>
+                <div style="margin-top:8px;"><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(totalReviews / 5, 100)}%;background:var(--success);"></div></div></div>
+            </div>
+            <div class="stat-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Puntuación</span>
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-star" style="color:var(--warning);font-size:0.9rem;"></i></div>
+                </div>
+                <div class="stat-number" style="color:var(--warning);">${avgRating}</div>
+                <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">${renderStarsText(parseFloat(avgRating))}</div>
+            </div>
+            <div class="stat-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:0.78rem;color:var(--fg-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Favoritos</span>
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-heart" style="color:var(--danger);font-size:0.9rem;"></i></div>
+                </div>
+                <div class="stat-number" data-target="${totalFavorites}">0</div>
+                <div style="margin-top:8px;font-size:0.78rem;color:var(--fg-secondary);">de los usuarios</div>
+            </div>
+        `;
+        renderPlaceCards('dashPlacesGrid', myPlaces.slice(0, 4), true);
+    }
+
+    function animateCounters() {
+        document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+            const target = parseInt(el.dataset.target);
+            const duration = 800;
+            const start = performance.now();
+            function update(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(target * eased);
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
         });
+    }
+
+    // ============================================================
+    // 12. PLACES VIEW
+    // ============================================================
+    function renderPlaces() {
+        let myPlaces = getOwnerPlaces();
+        if (currentFilter !== 'all') { myPlaces = myPlaces.filter(p => p.category === currentFilter); }
+
+        if (myPlaces.length === 0) {
+            document.getElementById('placesGrid').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        } else {
+            document.getElementById('placesGrid').style.display = 'grid';
+            document.getElementById('emptyState').style.display = 'none';
+            renderPlaceCards('placesGrid', myPlaces, false);
+        }
+    }
+
+    function filterPlaces(category, btn) {
+        currentFilter = category;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderPlaces();
+    }
+
+    function renderPlaceCards(containerId, placesList, compact) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const catLabels = { restaurant: 'Restaurante', bar: 'Bar', icecream: 'Heladería', streetfood: 'Street Food' };
+    const catIcons = { restaurant: 'utensils', bar: 'martini-glass', icecream: 'ice-cream', streetfood: 'hotdog' };
+
+    container.innerHTML = placesList.map(place => {
+        const avgRating = (place.rating || 0).toFixed(1);
+        const safeId = escapeAttr(String(place.id));
+        return `
+        <article class="place-card">
+            <div style="overflow:hidden;position:relative;">
+                <img class="place-card-img" src="${escapeAttr(place.image || 'https://picsum.photos/seed/fallback-' + place.id + '/800/500.jpg')}" alt="${escapeAttr(place.name)}" onerror="this.src='https://picsum.photos/seed/fallback-${safeId}/800/500.jpg'">
+                <div style="position:absolute;top:12px;left:12px;">
+                    <span class="cat-badge cat-${escapeAttr(place.category)}"><i class="fas fa-${catIcons[place.category] || 'store'}"></i> ${escapeHtml(catLabels[place.category] || place.category)}</span>
+                </div>
+                <div style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.9);backdrop-filter:blur(6px);padding:4px 10px;border-radius:8px;font-size:0.82rem;font-weight:700;color:#1E293B;">
+                    <i class="fas fa-star" style="color:var(--warning);font-size:0.75rem;"></i> ${avgRating}
+                </div>
+            </div>
+            <div style="padding:20px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+                    <h3 style="font-size:1.15rem;font-weight:900;line-height:1.2;">${escapeHtml(place.name)}</h3>
+                    <span class="price-range">${escapeHtml(place.price_range)}</span>
+                </div>
+                <p style="color:var(--fg-secondary);font-size:0.82rem;line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(place.description)}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">
+                    ${(place.specialties || []).slice(0, 3).map(s => '<span style="background:var(--accent-glow);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;">' + escapeHtml(s) + '</span>').join('')}
+                    ${(place.specialties || []).length > 3 ? '<span style="color:var(--muted);font-size:0.72rem;padding:2px 4px;">+' + (place.specialties.length - 3) + '</span>' : ''}
+                </div>
+                <div style="display:flex;gap:12px;font-size:0.78rem;color:var(--fg-secondary);margin-bottom:16px;">
+                    <span><i class="fas fa-comment" style="margin-right:4px;"></i>${place.review_count || 0} reseñas</span>
+                    <span><i class="fas fa-heart" style="margin-right:4px;color:var(--danger);"></i>${place.favorite_count || 0} favs</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-secondary btn-sm" onclick="openEditModal('${safeId}')" title="Editar"><i class="fas fa-edit"></i> Editar</button>
+                    <button class="btn-secondary btn-sm" onclick="openDetailModal('${safeId}')" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                    <button class="btn-secondary btn-sm" onclick="event.stopPropagation(); window.open('index.html?place=${safeId}', '_blank')" title="Ver en SaborMap"><i class="fas fa-external-link-alt"></i></button>
+                    <button class="btn-danger btn-sm" onclick="openDeleteModal('${safeId}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+        </article>`;
+    }).join('');
+}
+
+    // ============================================================
+    // 13. MODAL: CREAR / EDITAR
+    // ============================================================
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Nuevo Local';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Crear Local';
+        document.getElementById('placeForm').reset();
+        document.getElementById('placeId').value = '';
+        currentSpecialties = [];
+        currentMenu = {};
+        currentImageData = null;
+
+        document.getElementById('uploadPlaceholder').style.display = 'block';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('uploadArea').classList.remove('has-image');
+        document.getElementById('specialtiesTags').innerHTML = '';
+        document.getElementById('menuSections').innerHTML = '';
+
+        addMenuSection('entrantes', 'Entrantes');
+        addMenuSection('platos_fuertes', 'Platos Fuertes');
+        addMenuSection('postres', 'Postres');
+
+        document.getElementById('placeModal').classList.add('show');
+    }
+
+    function openEditModal(placeId) {
+        const place = places.find(p => String(p.id) === String(placeId));
+        if (!place) { showToast('Local no encontrado', 'error'); return; }
+
+        document.getElementById('modalTitle').textContent = 'Editar Local';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        document.getElementById('placeId').value = place.id;
+        document.getElementById('placeName').value = place.name;
+        document.getElementById('placeCategory').value = place.category;
+        document.getElementById('placeDescription').value = place.description;
+        document.getElementById('placeAddress').value = place.address;
+        document.getElementById('placePhone').value = place.phone;
+        document.getElementById('placeSchedule').value = place.schedule;
+        document.getElementById('placePriceRange').value = place.price_range;
+        document.getElementById('placeLat').value = place.lat || '';
+        document.getElementById('placeLng').value = place.lng || '';
+
+        currentImageData = place.image;
+        if (place.image) {
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('imagePreview').src = place.image;
+            document.getElementById('uploadArea').classList.add('has-image');
+        } else {
+            document.getElementById('uploadPlaceholder').style.display = 'block';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadArea').classList.remove('has-image');
+        }
+
+        currentSpecialties = [...(place.specialties || [])];
+        renderSpecialtiesTags();
+
+        currentMenu = JSON.parse(JSON.stringify(place.menu || {}));
+        document.getElementById('menuSections').innerHTML = '';
+        Object.entries(currentMenu).forEach(([key, items]) => {
+            const sectionLabel = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            addMenuSection(key, sectionLabel, items);
+        });
+        if (Object.keys(currentMenu).length === 0) {
+            addMenuSection('entrantes', 'Entrantes');
+            addMenuSection('platos_fuertes', 'Platos Fuertes');
+            addMenuSection('postres', 'Postres');
+        }
+
+        document.getElementById('placeModal').classList.add('show');
+    }
+
+    function closePlaceModal() { document.getElementById('placeModal').classList.remove('show'); }
+
+   function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('La imagen no debe superar 5MB', 'error'); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('imagePreview').src = currentImageData;
+            document.getElementById('uploadArea').classList.add('has-image');
+
+            const sizeKB = Math.round(currentImageData.length * 0.75 / 1024);
+            console.log('[Dashboard] Imagen comprimida:', sizeKB + 'KB');
+        };
+        // ✅ FIX: Manejar imagen corrupta
+        img.onerror = function() {
+            showToast('No se pudo cargar la imagen. Intenta con otro archivo.', 'error');
+            currentImageData = null;
+        };
+        img.src = e.target.result;
+    };
+    // ✅ FIX: Manejar error de lectura del archivo
+    reader.onerror = function() {
+        showToast('Error al leer el archivo.', 'error');
+    };
+    reader.readAsDataURL(file);
+}
+
+    // ============================================================
+    // 14. ESPECIALIDADES
+    // ============================================================
+    function addSpecialty() {
+        const input = document.getElementById('specialtyInput');
+        const value = input.value.trim();
+        if (!value) return;
+        if (currentSpecialties.includes(value)) { showToast('Esta especialidad ya existe', 'error'); return; }
+        currentSpecialties.push(value);
+        input.value = '';
+        renderSpecialtiesTags();
+    }
+
+    function removeSpecialty(index) {
+        currentSpecialties.splice(index, 1);
+        renderSpecialtiesTags();
+    }
+
+    function renderSpecialtiesTags() {
+    document.getElementById('specialtiesTags').innerHTML = currentSpecialties.map((s, i) =>
+        '<span class="tag">' + escapeHtml(s) + '<span class="remove-tag" onclick="removeSpecialty(' + i + ')"><i class="fas fa-times"></i></span></span>'
+    ).join('');
+}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const specInput = document.getElementById('specialtyInput');
+        if (specInput) {
+            specInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); addSpecialty(); }
+            });
+        }
+    });
+
+    // ============================================================
+    // 15. MENÚ
+    // ============================================================
+   function addMenuSection(key, label, items) {
+    key = key || 'seccion_' + Date.now();
+    label = label || 'Nueva Sección';
+    items = items || [];
+
+    const sectionId = 'menu_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    const container = document.getElementById('menuSections');
+    const div = document.createElement('div');
+    div.className = 'menu-section-card';
+    div.id = sectionId;
+
+    div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input class="form-input" style="max-width:200px;font-weight:700;font-size:0.88rem;" value="${escapeAttr(label)}" placeholder="Nombre de sección" data-section-label>
+                <input class="form-input" style="max-width:160px;font-size:0.82rem;" value="${escapeAttr(key)}" placeholder="clave_seccion" data-section-key>
+            </div>
+            <button type="button" onclick="removeMenuSection('${sectionId}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.9rem;padding:4px;"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div class="menu-items-list" data-items>
+            ${items.map((item, idx) => renderMenuItemRow(sectionId, item, idx)).join('')}
+        </div>
+        <button type="button" class="btn-secondary btn-sm" style="margin-top:8px;" onclick="addMenuItem('${sectionId}')"><i class="fas fa-plus"></i> Agregar Plato</button>
+    `;
+    container.appendChild(div);
+
+    // ✅ FIX: Auto-enfocar el campo de nombre para que el usuario lo edite
+    const labelInput = div.querySelector('[data-section-label]');
+    if (labelInput && !label) {
+        labelInput.select();
+        labelInput.focus();
+    }
+}
+
+   function renderMenuItemRow(sectionId, item, idx) {
+    // ✅ FIX: Normalizar formato (web usa item/desc, dashboard usa name/description)
+    const name = item.name || item.item || '';
+    const desc = item.description || item.desc || '';
+    const price = item.price || '';
+
+    return `
+        <div class="menu-item-row" data-item-row>
+            <input class="form-input" placeholder="Nombre" value="${escapeAttr(name)}" data-item-name style="font-size:0.82rem;padding:8px 10px;">
+            <input class="form-input" placeholder="Precio" type="number" step="0.01" value="${escapeAttr(String(price))}" data-item-price style="font-size:0.82rem;padding:8px 10px;">
+            <input class="form-input" placeholder="Descripción" value="${escapeAttr(desc)}" data-item-desc style="font-size:0.82rem;padding:8px 10px;">
+            <button type="button" onclick="this.closest('[data-item-row]').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+}
+
+    function addMenuItem(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+        const list = section.querySelector('[data-items]');
+        const div = document.createElement('div');
+        div.setAttribute('data-item-row', '');
+        div.className = 'menu-item-row';
+        div.innerHTML = `
+            <input class="form-input" placeholder="Nombre" data-item-name style="font-size:0.82rem;padding:8px 10px;">
+            <input class="form-input" placeholder="Precio" type="number" step="0.01" data-item-price style="font-size:0.82rem;padding:8px 10px;">
+            <input class="form-input" placeholder="Descripción" data-item-desc style="font-size:0.82rem;padding:8px 10px;">
+            <button type="button" onclick="this.closest('[data-item-row]').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;"><i class="fas fa-times"></i></button>
+        `;
+        list.appendChild(div);
+    }
+
+    function removeMenuSection(sectionId) {
+        document.getElementById(sectionId)?.remove();
+    }
+
+   function getMenuData() {
+    const menu = {};
+    let sectionCounter = 1;
+    document.querySelectorAll('.menu-section-card').forEach(section => {
+        let keyInput = section.querySelector('[data-section-key]');
+        let key = keyInput ? keyInput.value.trim().replace(/\s+/g, '_').toLowerCase() : '';
+
+        // ✅ FIX: Autogenerar clave si está vacía
+        if (!key) {
+            const labelInput = section.querySelector('[data-section-label]');
+            const label = labelInput ? labelInput.value.trim() : '';
+            if (label) {
+                key = label.replace(/\s+/g, '_').toLowerCase().replace(/[^a-z0-9_áéíóúñ]/gi, '');
+            }
+            if (!key) {
+                key = 'seccion_' + sectionCounter;
+            }
+            // Actualizar el campo para que el usuario vea la clave generada
+            if (keyInput) keyInput.value = key;
+        }
+        sectionCounter++;
+
+        const items = [];
+        section.querySelectorAll('[data-item-row]').forEach(row => {
+            const name = row.querySelector('[data-item-name]')?.value.trim() || '';
+            const price = parseFloat(row.querySelector('[data-item-price]')?.value) || 0;
+            const desc = row.querySelector('[data-item-desc]')?.value.trim() || '';
+            if (name) items.push({ name, price, description: desc });
+        });
+        menu[key] = items;
+    });
+    return menu;
+}
+
+    // ============================================================
+    // 16. GUARDAR Y ELIMINAR
+    // ============================================================
+    async function handlePlaceSubmit(event) {
+    event.preventDefault();
+
+    const placeId = document.getElementById('placeId').value;
+    const name = document.getElementById('placeName').value.trim();
+    const category = document.getElementById('placeCategory').value;
+    const description = document.getElementById('placeDescription').value.trim();
+    const address = document.getElementById('placeAddress').value.trim();
+    const phone = document.getElementById('placePhone').value.trim();
+    const schedule = document.getElementById('placeSchedule').value.trim();
+    const priceRange = document.getElementById('placePriceRange').value;
+    const lat = parseFloat(document.getElementById('placeLat').value) || 0;
+    const lng = parseFloat(document.getElementById('placeLng').value) || 0;
+
+    if (!name || !category || !description || !address || !phone || !schedule || !priceRange) {
+        showToast('Por favor completa todos los campos obligatorios', 'error');
+        return;
+    }
+
+    const menuData = getMenuData();
+    const imageUrl = currentImageData || 'https://picsum.photos/seed/' + name.replace(/\s/g, '-').toLowerCase() + '/800/500.jpg';
+
+    const placeData = {
+        name, category, description, address, schedule, phone,
+        price_range: priceRange,
+        specialties: [...currentSpecialties],
+        image: imageUrl,
+        lat, lng,
+        menu: menuData,
+        owner_id: currentUser.id
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Guardando...';
+
+    try {
+        if (placeId) {
+            // Actualizar
+            const index = places.findIndex(p => String(p.id) === String(placeId));
+            if (index === -1) { showToast('Local no encontrado', 'error'); return; }
+
+            placeData.id = placeId;
+            placeData.rating = places[index].rating || 0;
+            placeData.review_count = places[index].review_count || 0;
+            placeData.favorite_count = places[index].favorite_count || 0;
+            placeData.created_at = places[index].created_at || new Date().toISOString();
+
+            if (supabaseReady) {
+                const result = await savePlaceToSupabase(placeData);
+                if (result) {
+                    const updated = convertSupabaseToDashboard(result);
+                    if (updated) places[index] = updated;
+                    else places[index] = { ...places[index], ...placeData };
+                } else {
+                    // ✅ FIX: Notificar al usuario que falló el guardado remoto
+                    showToast('Error al guardar en el servidor. Intenta de nuevo.', 'error');
+                    return;
+                }
+            } else {
+                places[index] = { ...places[index], ...placeData };
+            }
+
+            showToast('"' + name + '" actualizado correctamente', 'success');
+        } else {
+            // Crear nuevo
+            placeData.rating = 0;
+            placeData.review_count = 0;
+            placeData.favorite_count = 0;
+            placeData.created_at = new Date().toISOString();
+
+            if (supabaseReady) {
+                const result = await savePlaceToSupabase(placeData);
+                if (result) {
+                    const newPlace = convertSupabaseToDashboard(result);
+                    if (newPlace) places.push(newPlace);
+                    else {
+                        placeData.id = 'place_' + Date.now();
+                        places.push(placeData);
+                    }
+                } else {
+                    // ✅ FIX: Notificar al usuario que falló el guardado remoto
+                    showToast('Error al crear en el servidor. Intenta de nuevo.', 'error');
+                    return;
+                }
+            } else {
+                placeData.id = 'place_' + Date.now();
+                places.push(placeData);
+            }
+
+            showToast('"' + name + '" creado correctamente', 'success');
+        }
+
+        savePlaces();
+        closePlaceModal();
+        renderDashboard();
+        renderPlaces();
+        populateSelects();
+        setTimeout(() => animateCounters(), 100);
+
+        localStorage.setItem('sabormap_last_update', Date.now().toString());
+        localStorage.setItem('sabormap_sync_signal', Date.now().toString());
+
+    } catch (err) {
+        console.error('[Dashboard] Error guardando:', err);
+        showToast('Error inesperado al guardar el local', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Local';
+    }
+}
+
+    function openDeleteModal(placeId) {
+        deleteTargetId = placeId;
+        deleteAllMode = false;
+        const place = places.find(p => String(p.id) === String(placeId));
+        if (!place) return;
+
+        document.getElementById('deleteTitle').textContent = 'Eliminar Local';
+        document.getElementById('deleteMessage').textContent = 'Se eliminará "' + place.name + '" permanentemente. Esta acción no se puede deshacer.';
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function confirmDeleteAll() {
+        deleteAllMode = true;
+        deleteTargetId = null;
+        document.getElementById('deleteTitle').textContent = 'Eliminar Todos los Locales';
+        document.getElementById('deleteMessage').textContent = 'Se eliminarán todos tus locales y sus datos asociados. Esta acción no se puede deshacer.';
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+        deleteTargetId = null;
+        deleteAllMode = false;
+    }
+
+    async function confirmDelete() {
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Eliminando...';
+
+    try {
+        if (deleteAllMode) {
+            if (supabaseReady) {
+                let allSuccess = true;
+                for (const place of places) {
+                    const ok = await deletePlaceFromSupabase(place.id);
+                    if (!ok) allSuccess = false;
+                }
+                if (!allSuccess) {
+                    showToast('Algunos lugares no se pudieron eliminar del servidor', 'error');
+                    // Recargar datos reales desde Supabase para mantener consistencia
+                    places = await loadPlacesFromSupabase();
+                    savePlaces();
+                    closeDeleteModal();
+                    renderDashboard();
+                    renderPlaces();
+                    populateSelects();
+                    setTimeout(() => animateCounters(), 100);
+                    return;
+                }
+            }
+            places = [];
+            reviews = [];
+            savePlaces();
+            saveReviews();
+            showToast('Todos tus locales han sido eliminados', 'success');
+        } else if (deleteTargetId) {
+            const place = places.find(p => String(p.id) === String(deleteTargetId));
+            if (place) {
+                if (supabaseReady) {
+                    const ok = await deletePlaceFromSupabase(place.id);
+                    if (!ok) {
+                        showToast('No se pudo eliminar del servidor. Intenta de nuevo.', 'error');
+                        closeDeleteModal();
+                        return;
+                    }
+                }
+                places = places.filter(p => String(p.id) !== String(deleteTargetId));
+                reviews = reviews.filter(r => r.place_id !== deleteTargetId);
+                savePlaces();
+                saveReviews();
+                showToast('"' + (place.name || 'Local') + '" eliminado correctamente', 'success');
+            }
+        }
+
+        localStorage.setItem('sabormap_last_update', Date.now().toString());
+        localStorage.setItem('sabormap_sync_signal', Date.now().toString());
+
+    } catch (err) {
+        console.error('[Dashboard] Error eliminando:', err);
+        showToast('Error inesperado al eliminar', 'error');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Eliminar';
+    }
+
+    closeDeleteModal();
+    renderDashboard();
+    renderPlaces();
+    populateSelects();
+    setTimeout(() => animateCounters(), 100);
+}
+
+    // ============================================================
+    // 17. DETALLE, ESTADÍSTICAS Y RESEÑAS
+    // ============================================================
+   function openDetailModal(placeId) {
+    const place = places.find(p => String(p.id) === String(placeId));
+    if (!place) return;
+
+    const catLabels = { restaurant: 'Restaurante', bar: 'Bar', icecream: 'Heladería', streetfood: 'Street Food' };
+    document.getElementById('detailTitle').textContent = place.name;
+
+    const menuHtml = Object.keys(place.menu || {}).length > 0
+        ? Object.entries(place.menu).map(([key, items]) => {
+            return '<div style="margin-top:10px;"><h4 style="font-size:0.92rem;font-weight:700;color:var(--accent);margin-bottom:6px;font-family:DM Sans,sans-serif;">' + escapeHtml(key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) + '</h4>' +
+                (items || []).map(item => {
+                    // ✅ FIX: Normalizar formato web (item/desc) y dashboard (name/description)
+                    const itemName = escapeHtml(item.name || item.item || '');
+                    const itemDesc = escapeHtml(item.description || item.desc || '');
+                    // ✅ FIX: price puede ser número o string ("12.50€")
+                    let priceText = '';
+                    if (item.price !== undefined && item.price !== null && item.price !== '') {
+                        priceText = typeof item.price === 'number'
+                            ? item.price.toFixed(2) + '€'
+                            : String(item.price);
+                    }
+                    return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);"><div><span style="font-weight:600;font-size:0.85rem;">' + itemName + '</span><span style="color:var(--fg-secondary);font-size:0.78rem;margin-left:8px;">' + itemDesc + '</span></div><span style="font-weight:700;color:var(--success);font-size:0.85rem;white-space:nowrap;margin-left:12px;">' + escapeHtml(priceText) + '</span></div>';
+                }).join('') + '</div>';
+        }).join('')
+        : '<p style="color:var(--muted);font-size:0.85rem;">Sin menú registrado</p>';
+
+    document.getElementById('detailContent').innerHTML = `
+        <img src="${escapeAttr(place.image || 'https://picsum.photos/seed/fallback-detail/800/400.jpg')}" alt="${escapeAttr(place.name)}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;margin-bottom:20px;" onerror="this.src='https://picsum.photos/seed/fallback-detail/800/400.jpg'">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+            <span class="cat-badge cat-${escapeAttr(place.category)}">${escapeHtml(catLabels[place.category] || place.category)}</span>
+            <span class="price-range" style="font-size:0.88rem;">${escapeHtml(place.price_range)}</span>
+            <span style="font-size:0.85rem;"><i class="fas fa-star" style="color:var(--warning);"></i> ${(place.rating || 0).toFixed(1)} (${place.review_count || 0} reseñas)</span>
+        </div>
+        <p style="color:var(--fg-secondary);font-size:0.9rem;line-height:1.6;margin-bottom:16px;">${escapeHtml(place.description)}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="font-size:0.85rem;"><i class="fas fa-map-marker-alt" style="color:var(--accent);width:18px;"></i> ${escapeHtml(place.address)}</div>
+            <div style="font-size:0.85rem;"><i class="fas fa-phone" style="color:var(--accent);width:18px;"></i> ${escapeHtml(place.phone)}</div>
+            <div style="font-size:0.85rem;"><i class="fas fa-clock" style="color:var(--accent);width:18px;"></i> ${escapeHtml(place.schedule)}</div>
+            <div style="font-size:0.85rem;"><i class="fas fa-heart" style="color:var(--danger);width:18px;"></i> ${place.favorite_count || 0} favoritos</div>
+        </div>
+        ${(place.specialties || []).length > 0 ? '<div style="margin-bottom:16px;"><span style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg-secondary);">Especialidades</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">' + place.specialties.map(s => '<span class="tag">' + escapeHtml(s) + '</span>').join('') + '</div></div>' : ''}
+        <div style="margin-bottom:16px;">
+            <span style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg-secondary);">Menú</span>
+            ${menuHtml}
+        </div>
+        ${place.lat && place.lng ? '<div style="font-size:0.85rem;color:var(--fg-secondary);"><i class="fas fa-location-dot" style="color:var(--accent);"></i> <a href="https://www.google.com/maps?q=' + place.lat + ',' + place.lng + '" target="_blank" style="color:var(--accent);text-decoration:none;">Ver en Google Maps</a></div>' : ''}
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
+            <a href="index.html?place=${escapeAttr(String(place.id))}" target="_blank" class="btn-primary" style="text-decoration:none;"><i class="fas fa-external-link-alt"></i> Ver en SaborMap</a>
+        </div>
+    `;
+    document.getElementById('detailModal').classList.add('show');
+}
+
+    function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
+
+   function populateSelects() {
+    const myPlaces = getOwnerPlaces();
+    const options = myPlaces.map(p =>
+        '<option value="' + escapeAttr(String(p.id)) + '">' + escapeHtml(p.name) + '</option>'
+    ).join('');
+
+    const statsSelect = document.getElementById('statsPlaceSelect');
+    const currentStatsVal = statsSelect.value;
+    statsSelect.innerHTML = '<option value="">— Selecciona un local —</option>' + options;
+    if (currentStatsVal) statsSelect.value = currentStatsVal;
+
+    const reviewsSelect = document.getElementById('reviewsPlaceSelect');
+    const currentRevVal = reviewsSelect.value;
+    reviewsSelect.innerHTML = '<option value="">— Selecciona un local —</option>' + options;
+    if (currentRevVal) reviewsSelect.value = currentRevVal;
+}
+
+    function loadPlaceStats() {
+        const placeId = document.getElementById('statsPlaceSelect').value;
+        if (!placeId) {
+            document.getElementById('statsContent').style.display = 'none';
+            document.getElementById('statsEmpty').style.display = 'block';
+            return;
+        }
+
+        const place = places.find(p => String(p.id) === String(placeId));
+        if (!place) return;
+
+        const placeReviews = reviews.filter(r => r.place_id === placeId);
+        const avgRating = placeReviews.length > 0 ? (placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length).toFixed(1) : (place.rating || 0).toFixed(1);
+        const dist = [0, 0, 0, 0, 0];
+        placeReviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++; });
+
+        document.getElementById('statsEmpty').style.display = 'none';
+        document.getElementById('statsContent').style.display = 'block';
+
+        document.getElementById('statsDetailCards').innerHTML = `
+            <div class="stat-card">
+                <div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Puntuación Media</div>
+                <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:2.4rem;font-weight:900;color:var(--accent);font-family:Playfair Display,serif;">${avgRating}</span><span style="font-size:0.85rem;color:var(--fg-secondary);">/ 5.0</span></div>
+                <div style="margin-top:6px;">${renderStarsText(parseFloat(avgRating))}</div>
+            </div>
+            <div class="stat-card">
+                <div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Total Reseñas</div>
+                <div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:Playfair Display,serif;">${placeReviews.length}</div>
+            </div>
+            <div class="stat-card">
+                <div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Favoritos</div>
+                <div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:Playfair Display,serif;">${place.favorite_count || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div style="font-size:0.78rem;color:var(--fg-secondary);text-transform:uppercase;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">Secciones Menú</div>
+                <div style="font-size:2.4rem;font-weight:900;color:var(--fg);font-family:Playfair Display,serif;">${Object.keys(place.menu || {}).length}</div>
+            </div>
+        `;
+
+        document.getElementById('reviewDistribution').innerHTML = [5, 4, 3, 2, 1].map(star => {
+            const count = dist[star - 1];
+            const pct = placeReviews.length > 0 ? Math.round(count / placeReviews.length * 100) : 0;
+            return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-size:0.82rem;color:var(--fg-secondary);width:16px;text-align:right;">' + star + '</span><i class="fas fa-star" style="color:var(--warning);font-size:0.7rem;"></i><div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:' + pct + '%;background:var(--accent);"></div></div><span style="font-size:0.78rem;color:var(--fg-secondary);width:28px;">' + count + '</span></div>';
+        }).join('');
+
+        const recent = placeReviews.slice(-5).reverse();
+       document.getElementById('recentReviews').innerHTML = recent.length > 0
+       ? recent.map(r => '<div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;font-size:0.85rem;">' + escapeHtml(r.user_name) + '</span><span style="font-size:0.75rem;color:var(--muted);">' + escapeHtml(r.date) + '</span></div><div style="margin-bottom:4px;">' + renderStarsText(r.rating, 0.7) + '</div><p style="font-size:0.82rem;color:var(--fg-secondary);line-height:1.4;">' + escapeHtml(r.comment) + '</p></div>').join('')
+    : '<p style="color:var(--muted);font-size:0.88rem;">Aún no hay reseñas para este local.</p>';
+    }
+
+   function loadPlaceReviews() {
+    const placeId = document.getElementById('reviewsPlaceSelect').value;
+    if (!placeId) {
+        document.getElementById('reviewsList').innerHTML = '';
+        document.getElementById('reviewsEmpty').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('reviewsEmpty').style.display = 'none';
+    const placeReviews = reviews.filter(r => r.place_id === placeId).reverse();
+    const avgRating = placeReviews.length > 0 ? (placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length).toFixed(1) : '0.0';
+
+    document.getElementById('reviewsList').innerHTML = `
+        <div style="margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+            <div style="font-size:2.4rem;font-weight:900;color:var(--accent);font-family:Playfair Display,serif;">${avgRating}</div>
+            <div><div>${renderStarsText(placeReviews.length > 0 ? placeReviews.reduce((s, r) => s + r.rating, 0) / placeReviews.length : 0)}</div><div style="font-size:0.82rem;color:var(--fg-secondary);">${placeReviews.length} reseñas</div></div>
+        </div>
+        ${placeReviews.map(r => '<div class="stat-card" style="margin-bottom:12px;padding:18px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#FFFFFF;">' + escapeHtml(r.user_name.charAt(0)) + '</div><div><div style="font-weight:600;font-size:0.9rem;">' + escapeHtml(r.user_name) + '</div><div style="font-size:0.75rem;color:var(--muted);">' + escapeHtml(r.date) + '</div></div></div><div>' + renderStarsText(r.rating, 0.8) + '</div></div><p style="font-size:0.88rem;color:var(--fg-secondary);line-height:1.5;">' + escapeHtml(r.comment) + '</p></div>').join('')}
+    `;
+}
+
+    // ============================================================
+    // 18. SETTINGS
+    // ============================================================
+    async function saveSettings() {
+        const name = document.getElementById('settingsNameInput').value.trim();
+        const email = document.getElementById('settingsEmailInput').value.trim();
+
+        if (!name || !email) { showToast('Nombre y email son obligatorios', 'error'); return; }
+
+        // Actualizar en Supabase
+        if (supabaseReady && currentUser) {
+            try {
+                // Actualizar auth metadata
+                await supabaseClient.auth.updateUser({ data: { nombre_completo: name } });
+
+                // Actualizar perfil
+                await updateProfileInSupabase({ nombre_completo: name });
+
+                // Recargar perfil
+                await loadUserProfile();
+            } catch (err) {
+                console.error('[Dashboard] Error actualizando perfil:', err);
+            }
+        }
+
+        updateOwnerDisplay();
+        showToast('Perfil actualizado correctamente', 'success');
+    }
+
+    // ============================================================
+    // 19. UTILIDADES
+    // ============================================================
+    function renderStarsText(rating, size) {
+        size = size || 1;
+        const fontSize = size + 'rem';
+        let html = '<span class="stars" style="font-size:' + fontSize + ';">';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(rating)) { html += '<i class="fas fa-star"></i>'; }
+            else if (i - rating < 1 && i - rating > 0) { html += '<i class="fas fa-star-half-alt"></i>'; }
+            else { html += '<i class="far fa-star empty"></i>'; }
+        }
+        html += '</span>';
+        return html;
+    }
+
+    function goToWebsite() { window.location.href = 'index.html'; }
+
+   function showToast(message, type) {
+    type = type || 'info';
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+
+    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+    const colors = { success: 'var(--success)', error: 'var(--danger)', info: 'var(--accent)' };
+
+    // ✅ FIX: Usar textContent para el mensaje (previene XSS)
+    toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '" style="color:' + (colors[type] || colors.info) + ';font-size:1.1rem;"></i><span></span>';
+    toast.querySelector('span').textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closePlaceModal(); closeDeleteModal(); closeDetailModal(); }
+    });
+
+    // Click outside modal
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) { closePlaceModal(); closeDeleteModal(); closeDetailModal(); }
+        });
+    });
+
+   window.addEventListener('storage', function(e) {
+    try {
+        if (e.key === 'owner_reviews') {
+            reviews = e.newValue ? JSON.parse(e.newValue) : [];
+        }
+        if (e.key === 'owner_places') {
+            places = e.newValue ? JSON.parse(e.newValue) : [];
+            if (currentUser) places = places.filter(p => p.owner_id === currentUser.id);
+            renderDashboard();
+            renderPlaces();
+            populateSelects();
+        }
+        if (e.key === 'sabormap_sync_signal') {
+            if (supabaseReady && currentUser) {
+                loadPlacesFromSupabase().then(sp => {
+                    // ✅ FIX: Siempre actualizar, incluso con array vacío
+                    places = sp;
+                    renderDashboard();
+                    renderPlaces();
+                    populateSelects();
+                });
+            }
+        }
+    } catch (err) {
+        console.error('[Dashboard] Error procesando storage event:', err);
+    }
+});
+
+    // ============================================================
+    // 20. ARRANQUE DE LA APLICACIÓN
+    // ============================================================
+    (async function boot() {
+        const loading = document.getElementById('loadingOverlay');
+
+        try {
+            if (supabaseReady && authInitPromise) {
+                // Esperar auth con timeout de 5 segundos
+                const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+                await Promise.race([authInitPromise, timeoutPromise]);
+                console.log('[Dashboard] Auth listo. Usuario:', currentUser ? currentUser.email : 'no logueado');
+            }
+
+            await checkAuth();
+
+        } catch (err) {
+            console.error('[Dashboard] Error en boot:', err);
+            currentUser = null;
+            currentProfile = null;
+            await checkAuth();
+        } finally {
+            loading.classList.add('hidden');
+        }
+    })();
     </script>
 </body>
 </html>
