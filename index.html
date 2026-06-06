@@ -1053,12 +1053,25 @@ async function loadPlacesFromSupabase() {
 // 4. CARGA PRINCIPAL
 // ============================================
 async function loadAllPlaces() {
-    const supabasePlaces = await loadPlacesFromSupabase();
-    if (supabasePlaces.length > 0) return supabasePlaces;
+    // ✅ FIX: Intentar Supabase primero
+    if (supabaseReady) {
+        const supabasePlaces = await loadPlacesFromSupabase();
+        if (supabasePlaces.length > 0) return supabasePlaces;
+
+        // Si Supabase retornó vacío, verificar si es un error real o realmente no hay datos
+        // Intentando una segunda consulta sin caché
+        invalidatePlacesCache();
+        const retryPlaces = await loadPlacesFromSupabase();
+        if (retryPlaces.length > 0) return retryPlaces;
+    }
+
+    // Fallback a localStorage (datos del dashboard)
     let dashPlaces = [];
     try { const stored = localStorage.getItem('owner_places'); if (stored) dashPlaces = JSON.parse(stored); } catch (e) {}
     const webPlaces = dashPlaces.filter(p => p.name).map(convertDashboardPlaceToWeb).filter(Boolean);
     if (webPlaces.length > 0) return webPlaces;
+
+    // Último recurso: datos por defecto
     console.log('[SaborMap] Usando datos por defecto');
     return DEFAULT_WEB_PLACES;
 }
@@ -1137,7 +1150,7 @@ window.addEventListener('storage', async function(e) {
 });
 
 // ============================================
-// 8. AUTENTICACIÓN
+// 8. AUTENTICACIÓN (CORREGIDO)
 // ============================================
 let authInitialized = false;
 let authInitPromise = null;
@@ -1147,8 +1160,21 @@ if (supabaseReady) {
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             console.log('[Auth] Evento:', event, session ? 'con sesión' : 'sin sesión');
 
+            // ✅ FIX: Limpiar hash de URL después de callback de auth
+            // (evita que Supabase intente procesar tokens expirados en la URL)
+            if (window.location.hash && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                try {
+                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                } catch (e) {}
+            }
+
             try {
-                if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+                if (session && event === 'TOKEN_REFRESHED') {
+                    // ✅ FIX: Solo actualizar referencia, NO re-ejecutar todo el flujo
+                    currentUser = session.user;
+                    console.log('[Auth] Token refrescado para:', session.user?.email);
+                    // NO llamar loadUserProfile ni updateAuthUI aquí para evitar parpadeos
+                } else if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
                     currentUser = session.user;
                     await loadUserProfile();
                     updateAuthUI();
@@ -1165,8 +1191,17 @@ if (supabaseReady) {
                     currentProfile = null;
                     updateAuthUI();
                 }
+                // ✅ FIX: Manejar PASSWORD_RECOVERY explícitamente
+                else if (event === 'PASSWORD_RECOVERY' && session) {
+                    currentUser = session.user;
+                    updateAuthUI();
+                }
             } catch (err) {
                 console.error('[Auth] Error en onAuthStateChange:', err);
+                // ✅ FIX: Asegurar que currentUser quede consistente incluso si hay error
+                if (session) {
+                    currentUser = session.user;
+                }
                 updateAuthUI();
             }
 
@@ -1178,11 +1213,38 @@ if (supabaseReady) {
     });
 }
 
+// ✅ FIX NUEVO: Función para recuperar sesión explícitamente
+// Este es el respaldo principal cuando onAuthStateChange falla
+async function recoverSessionIfNeeded() {
+    if (!supabaseReady || currentUser) return false;
+
+    try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.warn('[Auth] Error en getSession():', error.message);
+            return false;
+        }
+        if (session && session.user) {
+            currentUser = session.user;
+            await loadUserProfile();
+            updateAuthUI();
+            console.log('[Auth] ✅ Sesión recuperada vía getSession() para:', currentUser.email);
+            return true;
+        }
+    } catch (err) {
+        console.warn('[Auth] Excepción en getSession():', err.message);
+    }
+    return false;
+}
+
 async function loadUserProfile() {
     if (!supabaseReady || !currentUser) return;
     try {
         const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
-        if (error) { if (error.code === 'PGRST116') await createMissingProfile(); return; }
+        if (error) {
+            if (error.code === 'PGRST116') await createMissingProfile();
+            return;
+        }
         currentProfile = data;
         if (data.puntos !== undefined) userPoints = data.puntos;
     } catch (err) {}
@@ -1808,14 +1870,30 @@ async function loadAllPlacesWithRetry(maxRetries = 2) {
 
 (async function initApp() {
     try {
+        // 1. Esperar a que onAuthStateChange dispare el primer evento
         if (supabaseReady && authInitPromise) {
-            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000));
+            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 4000));
             await Promise.race([authInitPromise, timeoutPromise]);
         }
 
+        // ✅ FIX 2: Si onAuthStateChange no restauró la sesión, usar getSession() como respaldo
+        if (supabaseReady && !currentUser) {
+            console.log('[SaborMap] onAuthStateChange no restauró sesión, intentando getSession()...');
+            await recoverSessionIfNeeded();
+        }
+
+        // 2. Cargar lugares
         places = await loadAllPlacesWithRetry();
+
+        // ✅ FIX 3: Si Supabase retornó vacío PERO teníamos caché, usar el caché
+        if ((!places || places.length === 0) && placesCache && placesCache.length > 0) {
+            console.log('[SaborMap] Usando caché como respaldo');
+            places = placesCache;
+        }
+
+        // ✅ FIX 4: Solo usar DEFAULT_WEB_PLACES como último recurso
         if (!places || places.length === 0) {
-            console.warn('[SaborMap] No se cargaron lugares, usando defaults');
+            console.warn('[SaborMap] No se cargaron lugares de ninguna fuente, usando defaults');
             places = DEFAULT_WEB_PLACES;
         }
 
@@ -1823,7 +1901,7 @@ async function loadAllPlacesWithRetry(maxRetries = 2) {
         updateFavCount();
         updateAuthUI();
         checkURLPlaceParam();
-        console.log('[SaborMap] App inicializada -', places.length, 'locales cargados');
+        console.log('[SaborMap] App inicializada -', places.length, 'locales cargados', currentUser ? '- Usuario: ' + currentUser.email : '- Sin sesión');
     } catch (err) {
         console.error('[SaborMap] Error crítico en initApp:', err);
         places = DEFAULT_WEB_PLACES;
@@ -1833,14 +1911,6 @@ async function loadAllPlacesWithRetry(maxRetries = 2) {
         updateAuthUI();
     }
 })();
-
-setInterval(async () => {
-    if (!supabaseReady) return;
-    if (Date.now() - placesCacheTime > CACHE_DURATION) {
-        const newPlaces = await loadAllPlaces();
-        if (newPlaces.length !== places.length) { places = newPlaces; renderPlaces(); }
-    }
-}, 30000);
 
 </script>
 </body>
