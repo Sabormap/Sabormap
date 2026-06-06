@@ -1160,23 +1160,28 @@ function escapeAttr(str) {
 }
 
     // ============================================================
-    // 3. AUTENTICACIÓN CON SUPABASE (CORREGIDO)
-    // ============================================================
-    if (supabaseReady) {
+// 3. AUTENTICACIÓN CON SUPABASE (CORREGIDO v2)
+// ============================================================
+if (supabaseReady) {
     authInitPromise = new Promise((resolve) => {
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             console.log('[Dashboard Auth] Evento:', event, session ? 'con sesión' : 'sin sesión');
 
+            // ✅ FIX: Limpiar hash de URL
+            if (window.location.hash && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                try {
+                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                } catch (e) {}
+            }
+
             try {
-                if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+                if (session && event === 'TOKEN_REFRESHED') {
+                    // ✅ FIX: Solo actualizar la referencia del usuario, NO reiniciar la app
                     currentUser = session.user;
-
-                    if (event === 'TOKEN_REFRESHED') {
-                        // ✅ FIX: Solo actualizar la sesión, NO reiniciar la app
-                        console.log('[Dashboard Auth] Token refrescado');
-                        return;
-                    }
-
+                    console.log('[Dashboard Auth] Token refrescado');
+                    // NO hacer return aquí - necesitamos que resolve() se llame abajo
+                } else if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+                    currentUser = session.user;
                     await loadUserProfile();
                     updateOwnerDisplay();
 
@@ -1193,12 +1198,18 @@ function escapeAttr(str) {
                     currentProfile = null;
                     console.log('[Dashboard Auth] Sesión cerrada');
                     await checkAuth();
+                } else if (event === 'PASSWORD_RECOVERY' && session) {
+                    currentUser = session.user;
+                    updateOwnerDisplay();
+                    await checkAuth();
                 }
             } catch (err) {
                 console.error('[Dashboard Auth] Error en onAuthStateChange:', err);
+                if (session) currentUser = session.user;
                 try { await checkAuth(); } catch (e) {}
             }
 
+            // ✅ FIX CRÍTICO: Siempre resolver el promise, sin importar el evento
             if (!authInitialized) {
                 authInitialized = true;
                 resolve();
@@ -1207,52 +1218,27 @@ function escapeAttr(str) {
     });
 }
 
-    async function loadUserProfile() {
-        if (!supabaseReady || !currentUser) return;
-        try {
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-
-            if (error) {
-                if (error.code === 'PGRST116') {
-                    await createMissingProfile();
-                    return;
-                }
-                console.warn('[Dashboard] Error cargando perfil:', error.message);
-                return;
-            }
-            currentProfile = data;
-        } catch (err) {
-            console.error('[Dashboard] Excepción cargando perfil:', err.message);
+async function recoverDashboardSession() {
+    if (!supabaseReady || currentUser) return false;
+    try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.warn('[Dashboard Auth] Error en getSession():', error.message);
+            return false;
         }
-    }
-
-    async function createMissingProfile() {
-        if (!supabaseReady || !currentUser) return;
-        const meta = currentUser.user_metadata || {};
-        try {
-            const { data, error } = await supabaseClient.from('profiles').insert({
-                id: currentUser.id,
-                email: currentUser.email,
-                nombre_completo: meta.nombre_completo || meta.name || '',
-                rol: meta.rol || 'propietario',
-                puntos: 0,
-                fecha_registro: new Date().toISOString(),
-                avatar_url: meta.avatar_url || null
-            }).select().single();
-
-            if (!error) {
-                currentProfile = data;
-            } else {
-                console.error('[Dashboard] Error creando perfil:', error.message);
-            }
-        } catch (err) {
-            console.error('[Dashboard] Excepción creando perfil:', err.message);
+        if (session && session.user) {
+            currentUser = session.user;
+            // Cargar o crear perfil
+            await loadUserProfile();
+            updateOwnerDisplay();
+            console.log('[Dashboard Auth] ✅ Sesión recuperada vía getSession()');
+            return true;
         }
+    } catch (err) {
+        console.warn('[Dashboard Auth] Excepción en getSession():', err.message);
     }
+    return false;
+}
 
     // ============================================================
     // 4. AUTH UI
@@ -1404,7 +1390,7 @@ function escapeAttr(str) {
         }
     }
 
-    async function logoutUser() {
+   async function logoutUser() {
     if (supabaseReady) {
         try { await supabaseClient.auth.signOut(); } catch (err) {}
     }
@@ -1412,7 +1398,6 @@ function escapeAttr(str) {
     currentProfile = null;
     // ✅ FIX: Resetear estado de inicialización para la próxima sesión
     initCalled = false;
-    initPromise = null;
     places = [];
     reviews = [];
     currentFilter = 'all';
@@ -1425,10 +1410,10 @@ function escapeAttr(str) {
     }, 500);
 }
 
-    // ============================================================
-    // 6. CHECK AUTH (CORREGIDO)
-    // ============================================================
-  async function checkAuth() {
+// ============================================================
+// 6. CHECK AUTH (CORREGIDO)
+// ============================================================
+async function checkAuth() {
     const authView = document.getElementById('authView');
     const appWrapper = document.getElementById('appWrapper');
     const loading = document.getElementById('loadingOverlay');
@@ -1436,6 +1421,7 @@ function escapeAttr(str) {
     if (currentUser) {
         if (!currentProfile) {
             await loadUserProfile();
+            // Si después de cargar sigue nulo, creamos perfil
             if (!currentProfile) {
                 await createMissingProfile();
             }
@@ -1445,7 +1431,6 @@ function escapeAttr(str) {
         appWrapper.style.display = 'block';
         loading.classList.add('hidden');
 
-        // ✅ FIX: Esperar a que init() termine antes de continuar
         await init();
     } else {
         authView.classList.remove('hidden');
@@ -1453,6 +1438,7 @@ function escapeAttr(str) {
         loading.classList.add('hidden');
     }
 }
+
 
     // ============================================================
     // 7. CARGA DE LUGARES DESDE SUPABASE
@@ -1601,66 +1587,71 @@ if (placeData.lng !== undefined && placeData.lng !== null) dbData.lng = placeDat
         }
     }
 
-    // ============================================================
-    // 9. INICIALIZACIÓN
-    // ============================================================
-  let initCalled = false;
-let initPromise = null;
+// ============================================================
+// 9. INICIALIZACIÓN (CORREGIDA)
+// ============================================================
+let initCalled = false;
 
 async function init() {
-    if (initPromise) return initPromise;
-
-    initPromise = (async () => {
+    // ✅ FIX: Permitir re-inicialización si es necesario, pero evitar llamadas simultáneas
+    if (initCalled) {
+        // Solo refrescar datos, no reiniciar todo
         try {
-            // ✅ FIX: Si Supabase está listo, SIEMPRE usar sus datos
-            // (incluso si devuelve [] — significa que el usuario no tiene lugares)
             if (supabaseReady && currentUser) {
                 places = await loadPlacesFromSupabase();
-            } else {
-                // Fallback a localStorage solo si Supabase NO está disponible
-                const storedPlaces = localStorage.getItem('owner_places');
-                if (storedPlaces) {
-                    try {
-                        places = JSON.parse(storedPlaces);
-                        places = places.filter(p => p.owner_id === currentUser.id);
-                    } catch (e) {
-                        places = [];
-                    }
-                } else {
-                    places = [];
-                }
             }
-
-            const storedReviews = localStorage.getItem('owner_reviews');
-            try {
-                reviews = storedReviews ? JSON.parse(storedReviews) : JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
-            } catch (e) {
-                reviews = JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
-            }
-
-            updateOwnerDisplay();
             renderDashboard();
             renderPlaces();
             populateSelects();
-
-            if (!initCalled) {
-                setupResponsive();
-            }
-            initCalled = true;
-
-            setTimeout(() => animateCounters(), 300);
-            console.log('[Dashboard] ✅ Inicializado -', places.length, 'locales');
+            setTimeout(() => animateCounters(), 100);
         } catch (err) {
-            console.error('[Dashboard] ❌ Error en init:', err);
-            places = [];
-            renderDashboard();
-            renderPlaces();
-        } finally {
-            initPromise = null;
+            console.error('[Dashboard] Error refrescando:', err);
         }
-    })();
+        return;
+    }
 
-    return initPromise;
+    initCalled = true;
+
+    try {
+        // ✅ FIX: Si Supabase está listo, SIEMPRE usar sus datos
+        if (supabaseReady && currentUser) {
+            places = await loadPlacesFromSupabase();
+        } else {
+            // Fallback a localStorage solo si Supabase NO está disponible
+            const storedPlaces = localStorage.getItem('owner_places');
+            if (storedPlaces) {
+                try {
+                    places = JSON.parse(storedPlaces);
+                    if (currentUser) places = places.filter(p => p.owner_id === currentUser.id);
+                } catch (e) {
+                    places = [];
+                }
+            } else {
+                places = [];
+            }
+        }
+
+        const storedReviews = localStorage.getItem('owner_reviews');
+        try {
+            reviews = storedReviews ? JSON.parse(storedReviews) : JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
+        } catch (e) {
+            reviews = JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
+        }
+
+        updateOwnerDisplay();
+        renderDashboard();
+        renderPlaces();
+        populateSelects();
+        setupResponsive();
+
+        setTimeout(() => animateCounters(), 300);
+        console.log('[Dashboard] ✅ Inicializado -', places.length, 'locales');
+    } catch (err) {
+        console.error('[Dashboard] ❌ Error en init:', err);
+        places = [];
+        renderDashboard();
+        renderPlaces();
+    }
 }
 
 
@@ -1691,6 +1682,72 @@ async function init() {
             if (el) el.textContent = value || el.textContent;
         });
     }
+
+    // ============================================================
+// FUNCIONES DE PERFIL FALTANTES (CORREGIDO)
+// ============================================================
+
+async function loadUserProfile() {
+    if (!supabaseReady || !currentUser) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') {
+                // Perfil no existe, lo creamos
+                await createMissingProfile();
+                return;
+            }
+            console.error('[Dashboard] Error cargando perfil:', error.message);
+            return;
+        }
+        currentProfile = data;
+        // Sincronizar puntos si existen
+        if (data.puntos !== undefined) {
+            // Opcional: actualizar puntos en localStorage si se usa
+        }
+        updateOwnerDisplay();
+    } catch (err) {
+        console.error('[Dashboard] Excepción en loadUserProfile:', err.message);
+    }
+}
+
+async function createMissingProfile() {
+    if (!supabaseReady || !currentUser) return;
+    const meta = currentUser.user_metadata || {};
+    const nombreCompleto = meta.nombre_completo || currentUser.email?.split('@')[0] || 'Propietario';
+    const rol = meta.rol === 'propietario' ? 'propietario' : 'propietario'; // Forzamos propietario para dashboard
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .insert({
+                id: currentUser.id,
+                email: currentUser.email,
+                nombre_completo: nombreCompleto,
+                rol: rol,
+                puntos: 50,
+                fecha_registro: new Date().toISOString(),
+                avatar_url: null
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[Dashboard] Error creando perfil:', error.message);
+            return;
+        }
+        currentProfile = data;
+        updateOwnerDisplay();
+        console.log('[Dashboard] Perfil creado automáticamente para', currentUser.email);
+    } catch (err) {
+        console.error('[Dashboard] Excepción creando perfil:', err.message);
+    }
+}
 
     // ============================================================
     // 10. NAVEGACIÓN
@@ -2599,31 +2656,37 @@ async function init() {
     }
 });
 
-    // ============================================================
-    // 20. ARRANQUE DE LA APLICACIÓN
-    // ============================================================
-    (async function boot() {
-        const loading = document.getElementById('loadingOverlay');
+// ============================================================
+// 20. ARRANQUE DE LA APLICACIÓN (CORREGIDO)
+// ============================================================
+(async function boot() {
+    const loading = document.getElementById('loadingOverlay');
 
-        try {
-            if (supabaseReady && authInitPromise) {
-                // Esperar auth con timeout de 5 segundos
-                const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
-                await Promise.race([authInitPromise, timeoutPromise]);
-                console.log('[Dashboard] Auth listo. Usuario:', currentUser ? currentUser.email : 'no logueado');
-            }
-
-            await checkAuth();
-
-        } catch (err) {
-            console.error('[Dashboard] Error en boot:', err);
-            currentUser = null;
-            currentProfile = null;
-            await checkAuth();
-        } finally {
-            loading.classList.add('hidden');
+    try {
+        if (supabaseReady && authInitPromise) {
+            // Esperar auth con timeout de 5 segundos
+            const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+            await Promise.race([authInitPromise, timeoutPromise]);
+            console.log('[Dashboard] Auth listo. Usuario:', currentUser ? currentUser.email : 'no logueado');
         }
-    })();
+
+        // ✅ FIX: Si onAuthStateChange no restauró la sesión, intentar getSession()
+        if (supabaseReady && !currentUser) {
+            console.log('[Dashboard] Intentando recuperar sesión vía getSession()...');
+            await recoverDashboardSession();
+        }
+
+        await checkAuth();
+
+    } catch (err) {
+        console.error('[Dashboard] Error en boot:', err);
+        currentUser = null;
+        currentProfile = null;
+        await checkAuth();
+    } finally {
+        loading.classList.add('hidden');
+    }
+})();
     </script>
 </body>
 </html>
