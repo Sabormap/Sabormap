@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="description" content="Descubre los mejores restaurantes, bares y cafés de tu ciudad con SaborMap">
     <meta name="theme-color" content="#FF6B6B">
-    
+
     <title>SaborMap - Descubre los mejores sabores</title>
+
+    <!-- Preconexión para rendimiento -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,8 +38,26 @@
             }
         }
     </script>
-    
+
     <style>
+        /* ===== UTILIDADES FALTANTES ===== */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ===== COMPONENTES ===== */
         .card-hover {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -61,6 +86,7 @@
         }
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
         .star-rating {
@@ -431,6 +457,30 @@
         .password-strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; }
         .confirm-overlay { animation: fadeInOverlay 0.2s ease; }
         @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ===== LAZY-LOAD CORREGIDO ===== */
+        img[data-src] {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        img.loaded,
+        img:not([data-src]) {
+            opacity: 1;
+        }
+
+        /* ===== BANNER FAVORITOS ===== */
+        .favorites-banner {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(255,107,107,0.08) 0%, rgba(255,142,83,0.08) 100%);
+            border: 1px solid rgba(255,107,107,0.2);
+            padding: 14px 20px;
+            border-radius: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
         @media (max-width: 639px) {
             body { padding-bottom: 4rem; }
             #placesGrid { grid-template-columns: 1fr; gap: 1rem; }
@@ -458,7 +508,7 @@
             background: none; border: none; cursor: pointer;
         }
         .mobile-bottom-nav button.active { color: #FF6B6B; }
-        img { opacity: 1; transition: opacity 0.3s; }
+
         @media (prefers-color-scheme: dark) {
             body { background-color: #1a1a1a; color: #e5e5e5; }
             .bg-white { background-color: #2d2d2d; }
@@ -471,6 +521,7 @@
             .user-dropdown-item:hover { background: #374151; }
             .auth-form-input { background: #374151; border-color: #404040; color: #f3f4f6; }
             .auth-form-input:focus { background: #404040; }
+            .favorites-banner { background: rgba(255,107,107,0.12); border-color: rgba(255,107,107,0.3); }
         }
     </style>
 </head>
@@ -616,7 +667,7 @@
                     </div>
                     <div>
                         <h1 class="font-serif text-2xl font-bold text-gray-900 tracking-tight">SaborMap</h1>
-                        <p class="text-xs text-gray-500 font-medium">Descubre sabores unicos</p>
+                        <p class="text-xs text-gray-500 font-medium">Descubre sabores únicos</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -625,8 +676,8 @@
                         <span id="fav-count" class="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
                     <div class="relative" id="userButtonContainer">
-                        <button id="loginTriggerBtn" onclick="openAuthModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-red-600 transition shadow-md hover:shadow-lg" aria-label="Iniciar sesion"><i class="fas fa-user"></i><span class="hidden sm:inline">Iniciar Sesion</span></button>
-                        <button id="userAvatarBtn" onclick="toggleUserDropdown()" class="hidden items-center gap-2 p-1 pr-3 rounded-full border-2 border-gray-200 hover:border-primary transition cursor-pointer" aria-label="Menu de usuario">
+                        <button id="loginTriggerBtn" onclick="openAuthModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-red-600 transition shadow-md hover:shadow-lg" aria-label="Iniciar sesión"><i class="fas fa-user"></i><span class="hidden sm:inline">Iniciar Sesión</span></button>
+                        <button id="userAvatarBtn" onclick="toggleUserDropdown()" class="hidden items-center gap-2 p-1 pr-3 rounded-full border-2 border-gray-200 hover:border-primary transition cursor-pointer" aria-label="Menú de usuario">
                             <div id="userAvatarCircle" class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-[#FF8E53] flex items-center justify-center text-white font-bold text-sm">?</div>
                             <span id="userDisplayName" class="text-sm font-semibold text-gray-700 hidden sm:inline max-w-[100px] truncate">Usuario</span>
                             <i class="fas fa-chevron-down text-xs text-gray-400"></i>
@@ -649,7 +700,7 @@
                                 <button onclick="goToDashboard()" class="user-dropdown-item"><i class="fas fa-store w-5 text-center text-purple-500"></i> Panel de Gestión</button>
                             </div>
                             <div class="border-t border-gray-100 py-1">
-                                <button onclick="handleLogout()" class="user-dropdown-item danger"><i class="fas fa-sign-out-alt w-5 text-center"></i> Cerrar Sesion</button>
+                                <button onclick="handleLogout()" class="user-dropdown-item danger"><i class="fas fa-sign-out-alt w-5 text-center"></i> Cerrar Sesión</button>
                             </div>
                         </div>
                     </div>
@@ -663,10 +714,10 @@
         <div class="absolute inset-0 opacity-30"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200" class="w-full h-full object-cover" alt="Restaurant background"></div>
         <div class="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
             <div class="w-24 h-24 mx-auto mb-6 slide-in"><svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl"><path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#logoGrad)"/><ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/></svg></div>
-            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4 slide-in">Encuentra tu proximo sabor favorito</h2>
-            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto slide-in">Explora los mejores restaurantes, bares, heladerias y puestos de comida de tu ciudad</p>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4 slide-in">Encuentra tu próximo sabor favorito</h2>
+            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto slide-in">Explora los mejores restaurantes, bares, heladerías y puestos de comida de tu ciudad</p>
             <div class="max-w-xl mx-auto relative slide-in">
-                <input type="text" id="searchInput" placeholder="Buscar por nombre, tipo de comida o ubicacion..." class="w-full px-6 py-4 rounded-full text-gray-900 shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/30 pl-14" onkeyup="filterPlaces()">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, tipo de comida o ubicación..." class="w-full px-6 py-4 rounded-full text-gray-900 shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/30 pl-14" onkeyup="filterPlaces()" aria-label="Buscar restaurantes y lugares">
                 <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
             </div>
         </div>
@@ -678,8 +729,8 @@
             <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" id="categoryFilters">
                 <button onclick="filterCategory('all')" class="category-btn active px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary flex items-center gap-2" data-category="all"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Todos</button>
                 <button onclick="filterCategory('restaurant')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="restaurant"><i class="fas fa-utensils mr-2"></i>Restaurantes</button>
-                <button onclick="filterCategory('bar')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="bar"><i class="fas fa-cocktail mr-2"></i>Bares-Cafeterias</button>
-                <button onclick="filterCategory('icecream')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="icecream"><i class="fas fa-ice-cream mr-2"></i>Heladerias</button>
+                <button onclick="filterCategory('bar')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="bar"><i class="fas fa-cocktail mr-2"></i>Bares-Cafeterías</button>
+                <button onclick="filterCategory('icecream')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="icecream"><i class="fas fa-ice-cream mr-2"></i>Heladerías</button>
                 <button onclick="filterCategory('streetfood')" class="category-btn px-6 py-2 rounded-full border border-gray-300 text-sm font-medium transition-all whitespace-nowrap hover:border-primary" data-category="streetfood"><i class="fas fa-hotdog mr-2"></i>Street Food</button>
             </div>
         </div>
@@ -691,7 +742,7 @@
         <div id="emptyState" class="hidden text-center py-20">
             <div class="w-32 h-32 mx-auto mb-6 opacity-30"><svg viewBox="0 0 200 200" class="w-full h-full"><path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="#ccc"/></svg></div>
             <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron lugares</h3>
-            <p class="text-gray-500">Intenta con otros filtros de busqueda</p>
+            <p class="text-gray-500">Intenta con otros filtros de búsqueda</p>
         </div>
     </main>
 
@@ -715,14 +766,14 @@
                 <div class="text-center mb-8">
                     <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"><i class="fas fa-crown text-4xl text-white"></i></div>
                     <h3 class="font-serif text-3xl font-bold text-gray-900">Programa de Recompensas</h3>
-                    <p class="text-gray-600 mt-2">Gana puntos por cada accion y canjealos por experiencias unicas</p>
+                    <p class="text-gray-600 mt-2">Gana puntos por cada acción y canjéalos por experiencias únicas</p>
                     <div id="rewardsPointsDisplay" class="hidden mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-orange-50 px-6 py-3 rounded-full border border-yellow-200"><i class="fas fa-coins text-yellow-600 text-lg"></i><span class="text-2xl font-bold text-gray-900" id="rewardsPointsValue">0</span><span class="text-sm text-gray-500">puntos</span></div>
                 </div>
                 <div class="mb-8">
-                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-plus-circle text-green-500"></i> Como ganar puntos</h4>
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-plus-circle text-green-500"></i> Cómo ganar puntos</h4>
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600"><i class="fas fa-user-plus text-xl"></i></div><div class="flex-1"><p class="font-semibold">Registro completo</p><p class="text-sm text-gray-500">Completa tu perfil</p></div><span class="font-bold text-primary">+50 pts</span></div>
-                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i class="fas fa-star text-xl"></i></div><div class="flex-1"><p class="font-semibold">Escribir resena</p><p class="text-sm text-gray-500">Minimo 100 caracteres</p></div><span class="font-bold text-primary">+25 pts</span></div>
+                        <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i class="fas fa-star text-xl"></i></div><div class="flex-1"><p class="font-semibold">Escribir reseña</p><p class="text-sm text-gray-500">Mínimo 100 caracteres</p></div><span class="font-bold text-primary">+25 pts</span></div>
                         <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600"><i class="fas fa-camera text-xl"></i></div><div class="flex-1"><p class="font-semibold">Subir foto</p><p class="text-sm text-gray-500">De un plato o local</p></div><span class="font-bold text-primary">+15 pts</span></div>
                         <div class="reward-card bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4"><div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600"><i class="fas fa-heart text-xl"></i></div><div class="flex-1"><p class="font-semibold">Agregar favorito</p><p class="text-sm text-gray-500">Guarda tus lugares</p></div><span class="font-bold text-primary">+5 pts</span></div>
                     </div>
@@ -730,9 +781,9 @@
                 <div>
                     <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-gift text-primary"></i> Canjea tus puntos</h4>
                     <div class="grid md:grid-cols-3 gap-4">
-                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary"><i class="fas fa-coffee text-4xl text-primary mb-3"></i><h5 class="font-bold mb-1">Cafe gratis</h5><p class="text-sm text-gray-500 mb-3">En cualquier cafe asociado</p><button onclick="redeemReward('coffee', 100)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">100 pts</button></div>
+                        <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary"><i class="fas fa-coffee text-4xl text-primary mb-3"></i><h5 class="font-bold mb-1">Café gratis</h5><p class="text-sm text-gray-500 mb-3">En cualquier café asociado</p><button onclick="redeemReward('coffee', 100)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">100 pts</button></div>
                         <div class="reward-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center hover:border-primary"><i class="fas fa-utensils text-4xl text-primary mb-3"></i><h5 class="font-bold mb-1">20% descuento</h5><p class="text-sm text-gray-500 mb-3">En restaurantes seleccionados</p><button onclick="redeemReward('discount', 250)" class="w-full bg-gray-100 hover:bg-primary hover:text-white py-2 rounded-lg font-semibold transition text-sm">250 pts</button></div>
-                        <div class="reward-card bg-white border-2 border-primary rounded-xl p-4 text-center relative overflow-hidden"><div class="absolute top-0 right-0 bg-primary text-white text-xs px-2 py-1 rounded-bl-lg">POPULAR</div><i class="fas fa-crown text-4xl text-yellow-500 mb-3"></i><h5 class="font-bold mb-1">Cena para 2</h5><p class="text-sm text-gray-500 mb-3">Experiencia gastronomica</p><button onclick="redeemReward('dinner', 1000)" class="w-full bg-primary text-white py-2 rounded-lg font-semibold transition text-sm hover:bg-red-600">1,000 pts</button></div>
+                        <div class="reward-card bg-white border-2 border-primary rounded-xl p-4 text-center relative overflow-hidden"><div class="absolute top-0 right-0 bg-primary text-white text-xs px-2 py-1 rounded-bl-lg">POPULAR</div><i class="fas fa-crown text-4xl text-yellow-500 mb-3"></i><h5 class="font-bold mb-1">Cena para 2</h5><p class="text-sm text-gray-500 mb-3">Experiencia gastronómica</p><button onclick="redeemReward('dinner', 1000)" class="w-full bg-primary text-white py-2 rounded-lg font-semibold transition text-sm hover:bg-red-600">1,000 pts</button></div>
                     </div>
                 </div>
             </div>
@@ -749,7 +800,7 @@
                         <div class="w-10 h-10"><svg viewBox="0 0 200 200" class="w-full h-full"><defs><linearGradient id="footerLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1"/><stop offset="100%" style="stop-color:#fecfef;stop-opacity:1"/></linearGradient></defs><path d="M100 40 C70 40 50 65 50 95 C50 125 100 170 100 170 C100 170 150 125 150 95 C150 65 130 40 100 40 Z" fill="url(#footerLogoGrad)"/><ellipse cx="100" cy="85" rx="25" ry="20" fill="white" opacity="0.9"/><path d="M85 85 Q100 75 115 85" fill="none" stroke="#ff9a9e" stroke-width="3" stroke-linecap="round"/><circle cx="90" cy="80" r="3" fill="#ff9a9e"/><circle cx="110" cy="80" r="3" fill="#ff9a9e"/><path d="M95 90 Q100 95 105 90" fill="none" stroke="#ff9a9e" stroke-width="2" stroke-linecap="round"/></svg></div>
                         <div><h3 class="font-serif text-xl font-bold">SaborMap</h3></div>
                     </div>
-                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">Tu guia definitiva para descubrir los mejores sabores de la ciudad.</p>
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">Tu guía definitiva para descubrir los mejores sabores de la ciudad.</p>
                 </div>
                 <div>
                     <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-compass text-primary"></i> Explorar</h4>
@@ -757,7 +808,7 @@
                         <li><button onclick="filterCategory('all')" class="footer-btn" data-cat="all"><i class="fas fa-compass"></i> Ver todos</button></li>
                         <li><button onclick="filterCategory('restaurant')" class="footer-btn" data-cat="restaurant"><i class="fas fa-utensils"></i> Restaurantes</button></li>
                         <li><button onclick="filterCategory('bar')" class="footer-btn" data-cat="bar"><i class="fas fa-cocktail"></i> Bares</button></li>
-                        <li><button onclick="filterCategory('icecream')" class="footer-btn" data-cat="icecream"><i class="fas fa-ice-cream"></i> Heladerias</button></li>
+                        <li><button onclick="filterCategory('icecream')" class="footer-btn" data-cat="icecream"><i class="fas fa-ice-cream"></i> Heladerías</button></li>
                         <li><button onclick="filterCategory('streetfood')" class="footer-btn" data-cat="streetfood"><i class="fas fa-hotdog"></i> Street Food</button></li>
                         <li><button onclick="showTopRated()" class="footer-btn"><i class="fas fa-star"></i> Mejor valorados</button></li>
                     </ul>
@@ -772,11 +823,11 @@
                     <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-headset text-brand"></i> Soporte</h4>
                     <ul class="space-y-2 text-sm text-gray-400 mb-4">
                         <li><span onclick="showHelpModal()" class="footer-link hover:text-white flex items-center gap-2"><i class="fas fa-question-circle text-xs w-4"></i> Centro de ayuda</span></li>
-                        <li><span onclick="showPrivacyPolicy()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-shield-alt text-xs w-4"></i>Politica de Privacidad</span></li>
-                        <li><span onclick="showTermsOfUse()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-file-contract text-xs w-4"></i> Terminos de uso</span></li>
+                        <li><span onclick="showPrivacyPolicy()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-shield-alt text-xs w-4"></i> Política de Privacidad</span></li>
+                        <li><span onclick="showTermsOfUse()" class="footer-link hover:text-white flex items-center gap-2 cursor-pointer"><i class="fas fa-file-contract text-xs w-4"></i> Términos de uso</span></li>
                     </ul>
                     <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                        <p class="text-xs text-gray-400 mb-1">Necesitas ayuda?</p>
+                        <p class="text-xs text-gray-400 mb-1">¿Necesitas ayuda?</p>
                         <a href="mailto:sabormap1@gmail.com" class="text-primary font-semibold text-sm hover:underline">sabormap1@gmail.com</a>
                     </div>
                 </div>
@@ -795,7 +846,7 @@
     <nav class="mobile-bottom-nav">
         <button onclick="resetFilters(); window.scrollTo({top:0, behavior:'smooth'})" class="active"><i class="fas fa-home"></i><span>Inicio</span></button>
         <button onclick="toggleFavorites()"><i class="fas fa-heart"></i><span>Favoritos</span></button>
-        <button onclick="openCommunityModal('rewardsModal')"><i class="fas fa-crown"></i><span>Rewards</span></button>
+        <button onclick="openCommunityModal('rewardsModal')"><i class="fas fa-crown"></i><span>Premios</span></button>
         <button onclick="currentUser ? toggleUserDropdown() : openAuthModal()"><i class="fas fa-user"></i><span>Perfil</span></button>
     </nav>
 
@@ -804,7 +855,7 @@
 
 <script>
 // ============================================
-// 1. CONFIGURACION SUPABASE (PRIMERO)
+// 1. CONFIGURACIÓN SUPABASE
 // ============================================
 const SUPABASE_URL = 'https://pevnalzsdzyhroyfaijq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_-3dKeSSVDBEKtBKCsZWGFQ_3dksF1ZA';
@@ -816,9 +867,16 @@ try {
     if (typeof window.supabase === 'undefined') {
         console.error('[SaborMap] La librería supabase-js no se cargó');
     } else if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+                storage: window.localStorage
+            }
+        });
         supabaseReady = true;
-        console.log('[SaborMap] Supabase inicializado');
+        console.log('[SaborMap] Supabase inicializado con persistencia');
     }
 } catch (err) {
     console.error('[SaborMap] Error al inicializar Supabase:', err.message);
@@ -828,13 +886,15 @@ try {
 async function testSupabaseConnection() {
     if (!supabaseReady) return false;
     try {
-        const { data, error } = await supabaseClient.from('profiles').select('id').limit(1);
-        if (error && error.code === '42P01') { console.error('[SaborMap] La tabla "profiles" no existe'); return false; }
-        console.log('[SaborMap] ✅ Conexión verificada');
+        const { data, error } = await supabaseClient.from('places').select('id').limit(1);
+        if (error) {
+            console.warn('[SaborMap] Test de conexión con error:', error.message);
+            return false;
+        }
+        console.log('[SaborMap] Conexión verificada');
         return true;
     } catch (err) {
-        console.error('[SaborMap] ❌ Error de conexión:', err.message);
-        supabaseReady = false;
+        console.warn('[SaborMap] Error de conexión:', err.message);
         return false;
     }
 }
@@ -848,11 +908,11 @@ const DEFAULT_WEB_PLACES = [
         id: 1, name: 'Yo Invito', category: 'restaurant',
         description: 'Contamos con área infantil para el disfrute de los peques.',
         address: '📍Calle 3era, esquina a D, Vedado',
-        hours: '⏰️ Lun-Dom: 12:00pm-23:00pm',
+        hours: '⏰ Lun-Dom: 12:00pm-23:00pm',
         phone: '#', priceRange: '$$$',
         specialties: ['Variedad de comida cubana e internacional'],
         image: 'imagenes/Yo invito.webp',
-        rating: 4.8, reviews: 324,
+        rating: 4.8, reviews: 324, favorite_count: 0,
         menu: {}, mapUrl: ''
     }
 ];
@@ -863,8 +923,21 @@ const MENU_CATEGORY_MAP = {
     'cocteles': 'drinks', 'tapas': 'entrees',
     'helados': 'desserts', 'toppings': 'desserts',
     'ensaladas': 'entrees', 'pasta': 'pasta',
-    'sandwiches': 'sandwiches',
+    'sandwiches': 'sandwiches', 'salads': 'entrees',
 };
+
+// ============================================
+// FIX: Función de escape HTML para prevenir XSS
+// ============================================
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 function convertDashboardPlaceToWeb(dashPlace) {
     if (!dashPlace) return null;
@@ -894,9 +967,10 @@ function convertDashboardPlaceToWeb(dashPlace) {
         phone: dashPlace.phone || '',
         priceRange: dashPlace.price_range || dashPlace.priceRange || '$',
         specialties: dashPlace.specialties || [],
-        image: dashPlace.image || `https://picsum.photos/seed/${(dashPlace.name || 'place').replace(/\s/g, '-')}/800/500.jpg`,
+        image: dashPlace.image || `https://picsum.photos/seed/${encodeURIComponent((dashPlace.name || 'place').replace(/\s/g, '-'))}/800/500.jpg`,
         rating: dashPlace.rating || 0,
         reviews: dashPlace.review_count || dashPlace.reviews || 0,
+        favorite_count: dashPlace.favorite_count || 0,
         menu: webMenu, mapUrl: mapUrl,
         _dashboardId: dashPlace.id, _ownerId: dashPlace.owner_id
     };
@@ -912,23 +986,38 @@ const CACHE_DURATION = 5 * 60 * 1000;
 function convertSupabaseToWeb(dbPlace) {
     if (!dbPlace) return null;
     let specialties = [];
-    try { specialties = typeof dbPlace.specialties === 'string' ? JSON.parse(dbPlace.specialties) : (dbPlace.specialties || []); } catch (e) { specialties = []; }
+    try {
+        specialties = typeof dbPlace.specialties === 'string'
+            ? JSON.parse(dbPlace.specialties)
+            : (Array.isArray(dbPlace.specialties) ? dbPlace.specialties : []);
+    } catch (e) { specialties = []; }
+
     let menu = {};
-    try { menu = typeof dbPlace.menu === 'string' ? JSON.parse(dbPlace.menu) : (dbPlace.menu || {}); } catch (e) { menu = {}; }
+    try {
+        const rawMenu = typeof dbPlace.menu === 'string' ? JSON.parse(dbPlace.menu) : dbPlace.menu;
+        if (rawMenu && typeof rawMenu === 'object') menu = rawMenu;
+    } catch (e) { menu = {}; }
+
+    const priceRange = dbPlace.price_range || dbPlace.priceRange || '$';
+    const mapUrl = dbPlace.map_url || dbPlace.mapUrl || '';
+    const hours = dbPlace.hours || dbPlace.schedule || 'Horario no disponible';
+
     return {
-        id: dbPlace.id, name: dbPlace.name || 'Sin nombre',
+        id: dbPlace.id,
+        name: dbPlace.name || 'Sin nombre',
         category: (dbPlace.category || 'restaurant').toLowerCase(),
         description: dbPlace.description || '',
         address: dbPlace.address || '',
-        hours: dbPlace.hours || 'Horario no disponible',
+        hours: hours,
         phone: dbPlace.phone || '',
-        priceRange: dbPlace.price_range || dbPlace.priceRange || '$',
+        priceRange: priceRange,
         specialties: specialties,
-        image: dbPlace.image || `https://picsum.photos/seed/${(dbPlace.name || 'place').replace(/\s/g, '-')}/800/500.jpg`,
+        image: dbPlace.image || `https://picsum.photos/seed/${encodeURIComponent((dbPlace.name || 'place').replace(/\s/g, '-'))}/800/500.jpg`,
         rating: parseFloat(dbPlace.rating) || 0,
-        reviews: dbPlace.reviews || 0,
+        reviews: dbPlace.reviews || dbPlace.review_count || 0,
+        favorite_count: dbPlace.favorite_count || 0,
         menu: menu,
-        mapUrl: dbPlace.map_url || dbPlace.mapUrl || '',
+        mapUrl: mapUrl,
         _ownerId: dbPlace.owner_id
     };
 }
@@ -938,31 +1027,38 @@ async function loadPlacesFromSupabase() {
     try {
         const now = Date.now();
         if (placesCache && (now - placesCacheTime) < CACHE_DURATION) return placesCache;
+
         const { data, error } = await supabaseClient.from('places').select('*').order('id', { ascending: true });
-        if (error) { console.error('[SaborMap] Error cargando lugares:', error.message); return []; }
+        if (error) {
+            console.error('[SaborMap] Error cargando lugares:', error.message);
+            if (placesCache && placesCache.length > 0) return placesCache;
+            return [];
+        }
+
         if (data && data.length > 0) {
-            placesCache = data.map(convertSupabaseToWeb);
+            placesCache = data.map(convertSupabaseToWeb).filter(Boolean);
             placesCacheTime = now;
-            console.log(`[SaborMap] ✅ ${data.length} lugares cargados desde Supabase`);
+            console.log(`[SaborMap] ${placesCache.length} lugares cargados desde Supabase`);
             return placesCache;
         }
         return [];
-    } catch (err) { console.error('[SaborMap] Error:', err.message); return []; }
+    } catch (err) {
+        console.error('[SaborMap] Excepción cargando lugares:', err.message);
+        if (placesCache && placesCache.length > 0) return placesCache;
+        return [];
+    }
 }
 
 // ============================================
-// 4. UNA SOLA FUNCION loadAllPlaces (ASYNC)
+// 4. CARGA PRINCIPAL
 // ============================================
 async function loadAllPlaces() {
-    // 1. Supabase
     const supabasePlaces = await loadPlacesFromSupabase();
     if (supabasePlaces.length > 0) return supabasePlaces;
-    // 2. localStorage (dashboard)
     let dashPlaces = [];
     try { const stored = localStorage.getItem('owner_places'); if (stored) dashPlaces = JSON.parse(stored); } catch (e) {}
-    const webPlaces = dashPlaces.filter(p => p.name).map(convertDashboardPlaceToWeb);
+    const webPlaces = dashPlaces.filter(p => p.name).map(convertDashboardPlaceToWeb).filter(Boolean);
     if (webPlaces.length > 0) return webPlaces;
-    // 3. Default
     console.log('[SaborMap] Usando datos por defecto');
     return DEFAULT_WEB_PLACES;
 }
@@ -970,7 +1066,7 @@ async function loadAllPlaces() {
 function invalidatePlacesCache() { placesCache = null; placesCacheTime = 0; }
 
 // ============================================
-// 5. ESTADO DE LA APLICACION
+// 5. ESTADO DE LA APLICACIÓN
 // ============================================
 let places = [];
 let currentFilter = 'all';
@@ -982,9 +1078,15 @@ let currentProfile = null;
 let confirmResolver = null;
 let lastUpdateTimestamp = parseInt(localStorage.getItem('sabormap_last_update') || '0');
 
+// FIX: Nuevos estados para favoritos y ordenamiento
+let showFavoritesOnly = false;
+let sortByRating = false;
+
 // ============================================
-// 6. SUSCRIPCION REALTIME (DESPUES DE SUPABASE)
+// 6. SUSCRIPCIÓN REALTIME (con debounce)
 // ============================================
+let realtimeReloadTimeout = null;
+
 if (supabaseReady) {
     try {
         supabaseClient
@@ -992,14 +1094,29 @@ if (supabaseReady) {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'places' }, (payload) => {
                 console.log('[SaborMap] Cambio detectado en places:', payload.eventType);
                 invalidatePlacesCache();
-                loadAllPlaces().then(newPlaces => { places = newPlaces; renderPlaces(); });
+                // FIX: Debounce para evitar recargas múltiples por cambios rápidos
+                clearTimeout(realtimeReloadTimeout);
+                realtimeReloadTimeout = setTimeout(async () => {
+                    const newPlaces = await loadAllPlaces();
+                    const newIds = newPlaces.map(p => p.id).join(',');
+                    const oldIds = places.map(p => p.id).join(',');
+                    const newDataHash = newPlaces.map(p => `${p.id}:${p.name}:${p.rating}:${p.updated_at||''}`).join('|');
+                    const oldDataHash = places.map(p => `${p.id}:${p.name}:${p.rating}:${p.updated_at||''}`).join('|');
+
+         if (newIds !== oldIds || newDataHash !== oldDataHash) {
+            places = newPlaces;
+               renderPlaces();
+        }
+                }, 600);
             })
             .subscribe();
-    } catch (err) { console.warn('[SaborMap] No se pudo suscribir a cambios en tiempo real'); }
+    } catch (err) {
+        console.warn('[SaborMap] No se pudo suscribir a cambios en tiempo real');
+    }
 }
 
 // ============================================
-// 7. SINCRONIZACION CON DASHBOARD
+// 7. SINCRONIZACIÓN CON DASHBOARD
 // ============================================
 async function checkForDashboardUpdates() {
     if (!supabaseReady) return;
@@ -1012,7 +1129,7 @@ async function checkForDashboardUpdates() {
 setInterval(checkForDashboardUpdates, 30000);
 
 window.addEventListener('storage', async function(e) {
-    if (e.key === 'owner_places' || e.key === 'sabormap_last_update') {
+    if (e.key === 'owner_places' || e.key === 'sabormap_last_update' || e.key === 'sabormap_sync_signal') {
         invalidatePlacesCache();
         places = await loadAllPlaces();
         renderPlaces();
@@ -1020,30 +1137,45 @@ window.addEventListener('storage', async function(e) {
 });
 
 // ============================================
-// 8. AUTENTICACION
+// 8. AUTENTICACIÓN
 // ============================================
+let authInitialized = false;
+let authInitPromise = null;
+
 if (supabaseReady) {
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        try {
-            if (event === 'SIGNED_IN' && session) {
-                currentUser = session.user;
-                await loadUserProfile();
+    authInitPromise = new Promise((resolve) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('[Auth] Evento:', event, session ? 'con sesión' : 'sin sesión');
+
+            try {
+                if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+                    currentUser = session.user;
+                    await loadUserProfile();
+                    updateAuthUI();
+
+                    if (event === 'SIGNED_IN') {
+                        closeAuthModal();
+                        showToast(`¡Bienvenido, ${currentProfile?.nombre_completo || ''}!`, 'success');
+                    }
+                    if (event === 'INITIAL_SESSION') {
+                        console.log('[Auth] Sesión restaurada para:', currentUser.email);
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    currentUser = null;
+                    currentProfile = null;
+                    updateAuthUI();
+                }
+            } catch (err) {
+                console.error('[Auth] Error en onAuthStateChange:', err);
                 updateAuthUI();
-                closeAuthModal();
-                showToast(`¡Bienvenido, ${currentProfile?.nombre_completo || ''}!`, 'success');
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null; currentProfile = null; updateAuthUI();
-            } else if (event === 'TOKEN_REFRESHED' && session) {
-                currentUser = session.user;
             }
-        } catch (err) { console.error('[Auth] Error:', err); updateAuthUI(); closeAuthModal(); }
+
+            if (!authInitialized) {
+                authInitialized = true;
+                resolve();
+            }
+        });
     });
-    (async () => {
-        try {
-            const { data, error } = await supabaseClient.auth.getSession();
-            if (!error && data.session) { currentUser = data.session.user; await loadUserProfile(); updateAuthUI(); }
-        } catch (err) {}
-    })();
 }
 
 async function loadUserProfile() {
@@ -1142,107 +1274,328 @@ async function handleForgotPassword(event) {
 }
 
 // ============================================
-// 9. UI DE AUTENTICACION
+// 9. UI DE AUTENTICACIÓN
 // ============================================
-function openAuthModal(tab = 'login') { document.getElementById('authModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; switchAuthTab(tab); hideAuthError('login'); hideAuthError('register'); hideAuthError('forgot'); document.getElementById('forgotSuccess').classList.add('hidden'); }
+function openAuthModal(tab = 'login') {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    switchAuthTab(tab);
+    hideAuthError('login'); hideAuthError('register'); hideAuthError('forgot');
+    document.getElementById('forgotSuccess').classList.add('hidden');
+}
 function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
-function switchAuthTab(tab) { document.querySelectorAll('.auth-tab').forEach(t => { t.classList.remove('active'); if (t.dataset.tab === tab) t.classList.add('active'); }); document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login'); document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register'); document.getElementById('forgotForm').classList.toggle('hidden', tab !== 'forgot'); }
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => { t.classList.remove('active'); if (t.dataset.tab === tab) t.classList.add('active'); });
+    document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+    document.getElementById('forgotForm').classList.toggle('hidden', tab !== 'forgot');
+}
 function showForgotPassword() { switchAuthTab('forgot'); }
 function showAuthError(form, message) { const d = document.getElementById(form + 'Error'); const t = document.getElementById(form + 'ErrorText'); if (d && t) { t.textContent = message; d.classList.remove('hidden'); } }
 function hideAuthError(form) { const d = document.getElementById(form + 'Error'); if (d) d.classList.add('hidden'); }
-function togglePasswordVisibility(inputId, btn) { const input = document.getElementById(inputId); const icon = btn.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); } else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); } }
-function updatePasswordStrength(password) { const fill = document.getElementById('passwordStrengthFill'); const text = document.getElementById('passwordStrengthText'); let strength = 0, label = '', color = ''; if (password.length >= 6) strength += 25; if (password.length >= 10) strength += 25; if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength += 25; if (/[0-9!@#$%^&*]/.test(password)) strength += 25; if (strength <= 25) { label = 'Debil'; color = '#ef4444'; } else if (strength <= 50) { label = 'Regular'; color = '#f59e0b'; } else if (strength <= 75) { label = 'Buena'; color = '#3b82f6'; } else { label = 'Fuerte'; color = '#10b981'; } if (password.length === 0) { strength = 0; label = ''; } fill.style.width = strength + '%'; fill.style.background = color; text.textContent = label; text.style.color = color; }
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); }
+    else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
+}
+function updatePasswordStrength(password) {
+    const fill = document.getElementById('passwordStrengthFill');
+    const text = document.getElementById('passwordStrengthText');
+    let strength = 0, label = '', color = '';
+    if (password.length >= 6) strength += 25;
+    if (password.length >= 10) strength += 25;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength += 25;
+    if (/[0-9!@#$%^&*]/.test(password)) strength += 25;
+    if (strength <= 25) { label = 'Débil'; color = '#ef4444'; }
+    else if (strength <= 50) { label = 'Regular'; color = '#f59e0b'; }
+    else if (strength <= 75) { label = 'Buena'; color = '#3b82f6'; }
+    else { label = 'Fuerte'; color = '#10b981'; }
+    if (password.length === 0) { strength = 0; label = ''; }
+    fill.style.width = strength + '%';
+    fill.style.background = color;
+    text.textContent = label;
+    text.style.color = color;
+}
 
 function updateAuthUI() {
     const loginBtn = document.getElementById('loginTriggerBtn');
     const avatarBtn = document.getElementById('userAvatarBtn');
     const rewardsDisplay = document.getElementById('rewardsPointsDisplay');
     const rewardsValue = document.getElementById('rewardsPointsValue');
-    if (currentUser && currentProfile) {
-        loginBtn.classList.add('hidden'); avatarBtn.classList.remove('hidden'); avatarBtn.classList.add('flex');
-        const name = currentProfile.nombre_completo || currentUser.email;
-        const initials = name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+    if (currentUser) {
+        // FIX: Funcionar incluso si currentProfile es null
+        const profile = currentProfile || {};
+        const name = profile.nombre_completo || currentUser.user_metadata?.nombre_completo || currentUser.email?.split('@')[0] || 'Usuario';
+        const initials = name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const rol = profile.rol || currentUser.user_metadata?.rol || 'cliente';
+
+        loginBtn.classList.add('hidden');
+        avatarBtn.classList.remove('hidden');
+        avatarBtn.classList.add('flex');
+
         document.getElementById('userAvatarCircle').textContent = initials;
         document.getElementById('userDisplayName').textContent = name.split(' ')[0];
         document.getElementById('dropdownAvatar').textContent = initials;
         document.getElementById('dropdownName').textContent = name;
         document.getElementById('dropdownEmail').textContent = currentUser.email;
         document.getElementById('dropdownPoints').textContent = userPoints;
-        document.getElementById('dropdownRoleBadge').innerHTML = '<i class="fas fa-utensils text-[10px]"></i> Cliente';
+
+        const rolLabels = { 'propietario': 'Propietario', 'duenio': 'Dueño', 'cliente': 'Cliente' };
+        const rolIcons = { 'propietario': 'fa-store', 'duenio': 'fa-store', 'cliente': 'fa-utensils' };
+        document.getElementById('dropdownRoleBadge').innerHTML = `<i class="fas ${rolIcons[rol] || 'fa-utensils'} text-[10px]"></i> ${rolLabels[rol] || 'Cliente'}`;
         document.getElementById('dropdownRoleBadge').className = 'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary';
-        isRewardsMember = true; rewardsDisplay.classList.remove('hidden'); rewardsValue.textContent = userPoints;
+
+        if (isRewardsMember || profile.puntos !== undefined) {
+            rewardsDisplay.classList.remove('hidden');
+            rewardsValue.textContent = userPoints;
+        }
     } else {
-        loginBtn.classList.remove('hidden'); avatarBtn.classList.add('hidden'); avatarBtn.classList.remove('flex');
-        rewardsDisplay.classList.toggle('hidden', !isRewardsMember); if (isRewardsMember) rewardsValue.textContent = userPoints;
+        loginBtn.classList.remove('hidden');
+        avatarBtn.classList.add('hidden');
+        avatarBtn.classList.remove('flex');
+        rewardsDisplay.classList.toggle('hidden', !isRewardsMember);
+        if (isRewardsMember) rewardsValue.textContent = userPoints;
     }
 }
 
 function toggleUserDropdown() { document.getElementById('userDropdown').classList.toggle('hidden'); }
 function closeUserDropdown() { document.getElementById('userDropdown').classList.add('hidden'); }
-document.addEventListener('click', (e) => { const c = document.getElementById('userButtonContainer'); if (c && !c.contains(e.target)) document.getElementById('userDropdown').classList.add('hidden'); });
+document.addEventListener('click', (e) => {
+    const c = document.getElementById('userButtonContainer');
+    if (c && !c.contains(e.target)) document.getElementById('userDropdown').classList.add('hidden');
+});
 function openProfileSection() { closeUserDropdown(); if (currentProfile) showToast(`Perfil: ${currentProfile.nombre_completo}`, 'info'); }
 
 // ============================================
-// 10. MODAL DE CONFIRMACION
+// 10. MODAL DE CONFIRMACIÓN
 // ============================================
-function showConfirmModal(message, title = 'Confirmar') { return new Promise((resolve) => { confirmResolver = resolve; document.getElementById('confirmTitle').textContent = title; document.getElementById('confirmMessage').textContent = message; document.getElementById('confirmModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }); }
-function resolveConfirm(result) { document.getElementById('confirmModal').classList.add('hidden'); document.body.style.overflow = 'auto'; if (confirmResolver) { confirmResolver(result); confirmResolver = null; } }
+function showConfirmModal(message, title = 'Confirmar') {
+    return new Promise((resolve) => {
+        confirmResolver = resolve;
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    });
+}
+function resolveConfirm(result) {
+    document.getElementById('confirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    if (confirmResolver) { confirmResolver(result); confirmResolver = null; }
+}
 
 // ============================================
 // 11. SISTEMA DE RECOMPENSAS
 // ============================================
-async function addPoints(points) { if (!isRewardsMember && !currentUser) return; isRewardsMember = true; localStorage.setItem('sabormap_rewards_member', 'true'); userPoints += points; if (supabaseReady && currentUser) { await supabaseClient.from('profiles').update({ puntos: userPoints }).eq('id', currentUser.id); } localStorage.setItem('sabormap_points', userPoints); updateAuthUI(); }
-async function redeemReward(type, cost) { if (!isRewardsMember && !currentUser) { showToast('Únete al programa iniciando sesión', 'info'); return; } if (userPoints < cost) { showToast(`Te faltan ${cost - userPoints} puntos`, 'error'); return; } const rewards = { 'coffee': 'Café gratis', 'discount': '20% de descuento', 'dinner': 'Cena para 2' }; const confirmed = await showConfirmModal(`Canjear ${rewards[type]} por ${cost} puntos?`, 'Canjear Recompensa'); if (!confirmed) return; userPoints -= cost; if (supabaseReady && currentUser) { await supabaseClient.from('profiles').update({ puntos: userPoints }).eq('id', currentUser.id); } localStorage.setItem('sabormap_points', userPoints); updateAuthUI(); showToast(`Canje exitoso! Disfruta tu ${rewards[type]}`, 'success'); }
+async function addPoints(points) {
+    if (!isRewardsMember && !currentUser) return;
+    isRewardsMember = true; localStorage.setItem('sabormap_rewards_member', 'true');
+    userPoints += points;
+    if (supabaseReady && currentUser) {
+        try { await supabaseClient.from('profiles').update({ puntos: userPoints }).eq('id', currentUser.id); } catch(e) {}
+    }
+    localStorage.setItem('sabormap_points', userPoints); updateAuthUI();
+}
+async function redeemReward(type, cost) {
+    if (!isRewardsMember && !currentUser) { showToast('Únete al programa iniciando sesión', 'info'); return; }
+    if (userPoints < cost) { showToast(`Te faltan ${cost - userPoints} puntos`, 'error'); return; }
+    const rewards = { 'coffee': 'Café gratis', 'discount': '20% de descuento', 'dinner': 'Cena para 2' };
+    const confirmed = await showConfirmModal(`¿Canjear ${rewards[type]} por ${cost} puntos?`, 'Canjear Recompensa');
+    if (!confirmed) return;
+    userPoints -= cost;
+    if (supabaseReady && currentUser) {
+        try { await supabaseClient.from('profiles').update({ puntos: userPoints }).eq('id', currentUser.id); } catch(e) {}
+    }
+    localStorage.setItem('sabormap_points', userPoints); updateAuthUI();
+    showToast(`¡Canje exitoso! Disfruta tu ${rewards[type]}`, 'success');
+}
 
 // ============================================
 // 12. TOAST
 // ============================================
-function showToast(message, type = 'success') { const toast = document.getElementById('toast'); const toastMessage = document.getElementById('toastMessage'); const toastIcon = document.getElementById('toastIcon'); toastMessage.textContent = message; const icons = { 'success': 'fa-check-circle text-green-400', 'error': 'fa-exclamation-circle text-red-400', 'info': 'fa-info-circle text-blue-400', 'warning': 'fa-exclamation-triangle text-yellow-400' }; toastIcon.className = 'fas ' + (icons[type] || icons.success); toast.classList.remove('hidden'); clearTimeout(toast._timeout); toast._timeout = setTimeout(() => toast.classList.add('hidden'), 3500); }
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+    toastMessage.textContent = message;
+    const icons = { 'success': 'fa-check-circle text-green-400', 'error': 'fa-exclamation-circle text-red-400', 'info': 'fa-info-circle text-blue-400', 'warning': 'fa-exclamation-triangle text-yellow-400' };
+    toastIcon.className = 'fas ' + (icons[type] || icons.success);
+    toast.classList.remove('hidden');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.add('hidden'), 3500);
+}
 
 // ============================================
 // 13. FUNCIONES PRINCIPALES
 // ============================================
-function getFallbackImage(category, name) { const keywords = category === 'icecream' ? 'icecream' : category === 'bar' ? 'coffee,bar' : category === 'streetfood' ? 'streetfood' : 'restaurant'; const seed = name.replace(/\s+/g, '-').toLowerCase(); return `https://source.unsplash.com/800x600/?${keywords}&sig=${seed}`; }
+
+// FIX: Imagen fallback con picsum.photos (source.unsplash.com está deprecado)
+function getFallbackImage(category, name) {
+    const seed = encodeURIComponent((name || 'place').replace(/\s+/g, '-').toLowerCase());
+    return `https://picsum.photos/seed/${seed}/800/500.jpg`;
+}
+
+// FIX: Observer que espera a que la imagen realmente cargue antes de mostrarla
+const lazyLoadObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            if (!img.dataset.src) return;
+
+            const srcToLoad = img.dataset.src;
+            const fallbackSrc = img.dataset.fallback || '';
+            img.removeAttribute('data-src');
+            lazyLoadObserver.unobserve(img);
+
+            // Crear imagen temporal para precargar
+            const preload = new Image();
+            preload.onload = () => {
+                img.src = srcToLoad;
+                img.classList.add('loaded');
+            };
+            preload.onerror = () => {
+                if (fallbackSrc) {
+                    img.src = fallbackSrc;
+                } else {
+                    img.src = srcToLoad; // mostrar broken image como último recurso
+                }
+                img.classList.add('loaded');
+            };
+            preload.src = srcToLoad;
+        }
+    });
+}, { rootMargin: '100px' });
 
 function renderPlaces() {
     const grid = document.getElementById('placesGrid');
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
     let filtered = places.filter(place => {
         const matchesCategory = currentFilter === 'all' || place.category === currentFilter;
-        const matchesSearch = place.name.toLowerCase().includes(searchTerm) || (place.description && place.description.toLowerCase().includes(searchTerm)) || (place.address && place.address.toLowerCase().includes(searchTerm));
-        return matchesCategory && matchesSearch;
+        const matchesSearch = place.name.toLowerCase().includes(searchTerm)
+            || (place.description && place.description.toLowerCase().includes(searchTerm))
+            || (place.address && place.address.toLowerCase().includes(searchTerm));
+        const matchesFavorites = !showFavoritesOnly || favorites.some(f => String(f) === String(place.id));
+        return matchesCategory && matchesSearch && matchesFavorites;
     });
-    if (filtered.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); grid.innerHTML = ''; return; }
+
+    // FIX: Ordenar por rating si se solicitó
+    if (sortByRating) {
+        filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
+    if (filtered.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+        grid.innerHTML = '';
+        return;
+    }
     document.getElementById('emptyState').classList.add('hidden');
-    grid.innerHTML = filtered.map((place, index) => {
+
+    // FIX: Banner de favoritos con botón para volver
+    let bannerHTML = '';
+    if (showFavoritesOnly) {
+        bannerHTML = `<div class="favorites-banner">
+            <span class="font-semibold text-primary"><i class="fas fa-heart mr-2"></i>Tus Favoritos (${filtered.length})</span>
+            <button onclick="resetFilters()" class="text-sm font-semibold text-gray-600 hover:text-primary transition"><i class="fas fa-times mr-1"></i>Volver</button>
+        </div>`;
+    } else if (sortByRating) {
+        bannerHTML = `<div class="favorites-banner" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(255,107,107,0.08) 100%); border-color: rgba(245,158,11,0.2);">
+            <span class="font-semibold text-yellow-600"><i class="fas fa-star mr-2"></i>Mejor Valorados</span>
+            <button onclick="resetFilters()" class="text-sm font-semibold text-gray-600 hover:text-primary transition"><i class="fas fa-times mr-1"></i>Volver</button>
+        </div>`;
+    }
+
+    grid.innerHTML = bannerHTML + filtered.map((place, index) => {
         const categoryName = getCategoryName(place.category);
-        return `<div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer slide-in place-card" style="animation-delay: ${index * 0.1}s" onclick="openModal('${place.id}')">
-            <div class="relative h-48 overflow-hidden">
-                <img data-src="${place.image}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" loading="lazy" alt="${place.name}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110 lazy-load" onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}'; this.classList.add('loaded');">
-                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold shadow-md"><span class="star-rating"><i class="fas fa-star mr-1"></i>${place.rating}</span></div>
-                <div class="absolute top-4 left-4"><span class="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">${categoryName}</span></div>
-                <button onclick="toggleFavorite(event, '${place.id}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 ${favorites.some(f => String(f) === String(place.id)) ? 'text-red-500' : 'text-gray-400'}"><i class="fas fa-heart"></i></button>
-            </div>
-            <div class="p-6 place-card-content"><div class="place-card-info">
-                <div class="flex justify-between items-start mb-2"><h3 class="font-serif text-xl font-bold text-gray-900 line-clamp-1">${place.name}</h3><span class="text-sm font-semibold text-gray-600">${place.priceRange}</span></div>
-                <p class="text-gray-600 text-sm mb-4 line-clamp-2 place-description">${(place.description || '').substring(0, 100)}${(place.description || '').length > 100 ? '...' : ''}</p>
-                <div class="flex items-center text-sm text-gray-500 mb-3"><i class="fas fa-map-marker-alt text-primary mr-2"></i><span class="truncate">${place.address}</span></div>
-                <div class="flex flex-wrap gap-2 mb-4">${(place.specialties || []).slice(0, 2).map(s => `<span class="bg-orange-50 text-orange-700 px-2 py-1 rounded text-xs font-medium">${s}</span>`).join('')}${(place.specialties || []).length > 2 ? `<span class="text-xs text-gray-400 self-center">+${place.specialties.length - 2}</span>` : ''}</div>
-            </div>
-                <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-primary transition-colors flex items-center justify-center gap-2 group">Ver detalles <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
-            </div></div>`;
+        const isFav = favorites.some(f => String(f) === String(place.id));
+        // FIX: Usar escapeHtml para prevenir XSS
+        const safeName = escapeHtml(place.name);
+        const safeDesc = escapeHtml((place.description || '').substring(0, 100));
+        const safeAddress = escapeHtml(place.address);
+        const safeId = escapeHtml(String(place.id));
+        const safeImage = escapeHtml(place.image);
+        const safeFallback = escapeHtml(getFallbackImage(place.category, place.name));
+
+
+return `<div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer slide-in place-card" style="animation-delay: ${index * 0.1}s" onclick="openModal('${safeId}')">
+    <div class="relative h-48 overflow-hidden">
+        <img data-src="${safeImage}" data-fallback="${safeFallback}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" loading="lazy" alt="${safeName}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold shadow-md"><span class="star-rating"><i class="fas fa-star mr-1"></i>${place.rating}</span></div>
+        <div class="absolute top-4 left-4"><span class="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">${escapeHtml(categoryName)}</span></div>
+        <button onclick="toggleFavorite(event, '${safeId}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 ${isFav ? 'text-red-500' : 'text-gray-400'}"><i class="fas fa-heart"></i></button>
+    </div>
+    <div class="p-6 place-card-content"><div class="place-card-info">
+        <div class="flex justify-between items-start mb-2"><h3 class="font-serif text-xl font-bold text-gray-900 line-clamp-1">${safeName}</h3><span class="text-sm font-semibold text-gray-600">${escapeHtml(place.priceRange)}</span></div>
+        <p class="text-gray-600 text-sm mb-4 line-clamp-2 place-description">${safeDesc}${(place.description || '').length > 100 ? '...' : ''}</p>
+        <div class="flex items-center text-sm text-gray-500 mb-3"><i class="fas fa-map-marker-alt text-primary mr-2"></i><span class="truncate">${safeAddress}</span></div>
+        <div class="flex flex-wrap gap-2 mb-4">${(place.specialties || []).slice(0, 2).map(s => `<span class="bg-orange-50 text-orange-700 px-2 py-1 rounded text-xs font-medium">${escapeHtml(s)}</span>`).join('')}${(place.specialties || []).length > 2 ? `<span class="text-xs text-gray-400 self-center">+${place.specialties.length - 2}</span>` : ''}</div>
+    </div>
+        <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-primary transition-colors flex items-center justify-center gap-2 group">Ver detalles <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
+    </div></div>`;
     }).join('');
-    document.querySelectorAll('img[data-src]').forEach(img => { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { img.src = img.dataset.src; img.classList.add('loaded'); observer.unobserve(img); } }); }); observer.observe(img); });
+
+    // FIX: Observar imágenes con observer compartido
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        lazyLoadObserver.observe(img);
+    });
 }
 
 // ============================================
-// 14. FILTROS Y BUSQUEDA
+// 14. FILTROS Y BÚSQUEDA
 // ============================================
-function filterCategory(category) { currentFilter = category; document.querySelectorAll('.category-btn').forEach(btn => { btn.classList.remove('active'); if (btn.dataset.category === category) btn.classList.add('active'); }); document.querySelectorAll('.footer-btn').forEach(btn => { const btnCat = btn.getAttribute('data-cat'); if (btnCat && btnCat === category) btn.classList.add('active'); else btn.classList.remove('active'); }); renderPlaces(); }
+function filterCategory(category) {
+    currentFilter = category;
+    showFavoritesOnly = false;
+    sortByRating = false;
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === category) btn.classList.add('active');
+    });
+    document.querySelectorAll('.footer-btn').forEach(btn => {
+        const btnCat = btn.getAttribute('data-cat');
+        if (btnCat && btnCat === category) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    renderPlaces();
+}
 function filterPlaces() { renderPlaces(); }
-function resetFilters() { currentFilter = 'all'; document.getElementById('searchInput').value = ''; document.querySelectorAll('.category-btn').forEach(btn => { btn.classList.remove('active'); if (btn.dataset.category === 'all') btn.classList.add('active'); }); document.querySelectorAll('.footer-btn').forEach(btn => { btn.classList.remove('active'); if (btn.getAttribute('data-cat') === 'all') btn.classList.add('active'); }); renderPlaces(); }
-function showTopRated() { currentFilter = 'all'; renderPlaces(); showToast('Mejor valorados', 'info'); }
-function getCategoryName(cat) { const names = { 'restaurant': 'Restaurantes', 'bar': 'Bares', 'icecream': 'Heladerias', 'streetfood': 'Street Food', 'all': 'Todos' }; return names[cat] || cat; }
+function resetFilters() {
+    currentFilter = 'all';
+    showFavoritesOnly = false;
+    sortByRating = false;
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === 'all') btn.classList.add('active');
+    });
+    document.querySelectorAll('.footer-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-cat') === 'all') btn.classList.add('active');
+    });
+    renderPlaces();
+}
+
+// FIX: showTopRated ahora realmente ordena por rating
+function showTopRated() {
+    currentFilter = 'all';
+    showFavoritesOnly = false;
+    sortByRating = true;
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === 'all') btn.classList.add('active');
+    });
+    renderPlaces();
+    window.scrollTo({ top: document.getElementById('filterSection').offsetTop - 80, behavior: 'smooth' });
+    showToast('Mostrando los mejor valorados', 'info');
+}
+
+function getCategoryName(cat) {
+    const names = { 'restaurant': 'Restaurantes', 'bar': 'Bares', 'icecream': 'Heladerías', 'streetfood': 'Street Food', 'all': 'Todos' };
+    return names[cat] || cat;
+}
 
 // ============================================
 // 15. MODAL DE DETALLES
@@ -1273,14 +1626,37 @@ function generateMenuHTML(menu) {
         const items = menu[cat.key];
         contentHTML += `<div id="menu-section-${cat.key}" class="menu-section ${index === 0 ? 'active' : ''}">
             <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100"><h4 class="font-bold text-gray-800 flex items-center gap-2"><i class="fas ${cat.icon} text-primary"></i> ${cat.label}</h4><span class="text-sm text-gray-500">${items.length} platos</span></div>
-            <div class="space-y-3">${items.map(item => `<div class="menu-item-card bg-white rounded-lg p-4 flex justify-between items-start gap-4 cursor-pointer group hover:bg-gray-50"><div class="flex-1"><h4 class="font-bold text-gray-900 group-hover:text-primary transition-colors">${item.item}</h4><p class="text-sm text-gray-500 leading-relaxed">${item.desc}</p></div><span class="menu-price-tag flex-shrink-0">${item.price}</span></div>`).join('')}</div></div>`;
+            <div class="space-y-3">${items.map(item => `<div class="menu-item-card bg-white rounded-lg p-4 flex justify-between items-start gap-4 cursor-pointer group hover:bg-gray-50"><div class="flex-1"><h4 class="font-bold text-gray-900 group-hover:text-primary transition-colors">${escapeHtml(item.item)}</h4><p class="text-sm text-gray-500 leading-relaxed">${escapeHtml(item.desc)}</p></div><span class="menu-price-tag flex-shrink-0">${escapeHtml(item.price)}</span></div>`).join('')}</div></div>`;
     });
     contentHTML += `<div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-center"><p class="text-sm text-blue-800"><i class="fas fa-info-circle mr-2"></i>${availableCategories.reduce((acc, cat) => acc + menu[cat.key].length, 0)} platos disponibles</p></div></div>`;
     return tabsHTML + contentHTML;
 }
-function switchMenuTab(tabName) { document.querySelectorAll('.menu-tab').forEach(tab => { tab.classList.remove('active'); if (tab.dataset.tab === tabName) tab.classList.add('active'); }); document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active')); const target = document.getElementById(`menu-section-${tabName}`); if (target) target.classList.add('active'); updateMenuNavButtons(); }
-function scrollMenuTabs(direction) { const container = document.getElementById('menuTabsScroll'); if (!container) return; container.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' }); setTimeout(updateMenuNavButtons, 300); }
-function updateMenuNavButtons() { const container = document.getElementById('menuTabsScroll'); const prevBtn = document.querySelector('.menu-nav-prev'); const nextBtn = document.querySelector('.menu-nav-next'); const progressBar = document.getElementById('menuScrollProgress'); if (!container) return; const scrollLeft = container.scrollLeft; const maxScroll = container.scrollWidth - container.clientWidth; const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 100; if (progressBar) progressBar.style.width = `${Math.max(20, progress)}%`; if (prevBtn) prevBtn.disabled = scrollLeft <= 0; if (nextBtn) nextBtn.disabled = scrollLeft >= maxScroll - 5; }
+function switchMenuTab(tabName) {
+    document.querySelectorAll('.menu-tab').forEach(tab => { tab.classList.remove('active'); if (tab.dataset.tab === tabName) tab.classList.add('active'); });
+    document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(`menu-section-${tabName}`);
+    if (target) target.classList.add('active');
+    updateMenuNavButtons();
+}
+function scrollMenuTabs(direction) {
+    const container = document.getElementById('menuTabsScroll');
+    if (!container) return;
+    container.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' });
+    setTimeout(updateMenuNavButtons, 300);
+}
+function updateMenuNavButtons() {
+    const container = document.getElementById('menuTabsScroll');
+    const prevBtn = document.querySelector('.menu-nav-prev');
+    const nextBtn = document.querySelector('.menu-nav-next');
+    const progressBar = document.getElementById('menuScrollProgress');
+    if (!container) return;
+    const scrollLeft = container.scrollLeft;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 100;
+    if (progressBar) progressBar.style.width = `${Math.max(20, progress)}%`;
+    if (prevBtn) prevBtn.disabled = scrollLeft <= 0;
+    if (nextBtn) nextBtn.disabled = scrollLeft >= maxScroll - 5;
+}
 
 function openModal(id) {
     const place = places.find(p => String(p.id) === String(id));
@@ -1288,28 +1664,45 @@ function openModal(id) {
     const modal = document.getElementById('detailModal');
     const content = document.getElementById('modalContent');
     const menuHTML = generateMenuHTML(place.menu);
+    const safeName = escapeHtml(place.name);
+    const safeDesc = escapeHtml(place.description);
+    const safeAddress = escapeHtml(place.address);
+    const safePhone = escapeHtml(place.phone);
+    const safeHours = escapeHtml(place.hours);
+    const safeImage = escapeHtml(place.image);
+    const safeFallback = escapeHtml(getFallbackImage(place.category, place.name));
+
     content.innerHTML = `<div class="relative">
         <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition"><i class="fas fa-times text-gray-800"></i></button>
         <div class="h-64 sm:h-80 overflow-hidden relative bg-gray-200">
-            <img src="${place.image}" alt="${place.name}" class="w-full h-full object-cover" style="opacity: 1;" onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}';">
+            <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover" style="opacity:1;" onerror="this.onerror=null;this.src='${safeFallback}';">
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div class="absolute bottom-6 left-6 text-white">
-                <span class="bg-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2 inline-block">${getCategoryName(place.category)}</span>
-                <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-2">${place.name}</h2>
-                <div class="flex items-center gap-4 text-sm"><span class="flex items-center"><i class="fas fa-star text-yellow-400 mr-1"></i> ${place.rating} (${place.reviews} reseñas)</span><span>${place.priceRange}</span></div>
+                <span class="bg-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2 inline-block">${escapeHtml(getCategoryName(place.category))}</span>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-2">${safeName}</h2>
+                <div class="flex items-center gap-4 text-sm"><span class="flex items-center"><i class="fas fa-star text-yellow-400 mr-1"></i> ${place.rating} (${place.reviews} reseñas)</span><span>${escapeHtml(place.priceRange)}</span></div>
             </div>
         </div>
         <div class="p-6 sm:p-8"><div class="grid md:grid-cols-2 gap-8">
             <div>
                 <h3 class="font-serif text-xl font-bold mb-3">Sobre el lugar</h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">${place.description}</p>
+                <p class="text-gray-600 mb-6 leading-relaxed">${safeDesc}</p>
                 <div class="space-y-4 mb-6">
-                    <div class="flex items-start gap-3"><div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-map-marker-alt"></i></div><div><h4 class="font-semibold text-gray-900">Dirección</h4><p class="text-gray-600 text-sm">${place.address}</p></div></div>
-                    <div class="flex items-start gap-3"><div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-clock"></i></div><div><h4 class="font-semibold text-gray-900">Horario</h4><p class="text-gray-600 text-sm">${place.hours}</p></div></div>
-                    <div class="flex items-start gap-3"><div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-phone"></i></div><div><h4 class="font-semibold text-gray-900">Contacto</h4><p class="text-gray-600 text-sm">${place.phone}</p></div></div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-map-marker-alt"></i></div>
+                        <div><h4 class="font-semibold text-gray-900">Dirección</h4><p class="text-gray-600 text-sm">${safeAddress}</p></div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-clock"></i></div>
+                        <div><h4 class="font-semibold text-gray-900">Horario</h4><p class="text-gray-600 text-sm">${safeHours}</p></div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-primary flex-shrink-0"><i class="fas fa-phone"></i></div>
+                        <div><h4 class="font-semibold text-gray-900">Contacto</h4><p class="text-gray-600 text-sm">${safePhone}</p></div>
+                    </div>
                 </div>
-                <div class="mb-6"><h4 class="font-semibold text-gray-900 mb-2">Especialidades</h4><div class="flex flex-wrap gap-2">${(place.specialties || []).map(s => `<span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium border border-orange-200"><i class="fas fa-check mr-1 text-xs"></i>${s}</span>`).join('')}</div></div>
-                ${place.mapUrl ? `<div class="bg-gray-50 rounded-xl p-4 mb-4"><h4 class="font-semibold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-map text-primary"></i> Ubicación</h4><div class="h-48 rounded-lg overflow-hidden"><iframe src="${place.mapUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe></div></div>` : ''}
+                <div class="mb-6"><h4 class="font-semibold text-gray-900 mb-2">Especialidades</h4><div class="flex flex-wrap gap-2">${(place.specialties || []).map(s => `<span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium border border-orange-200"><i class="fas fa-check mr-1 text-xs"></i>${escapeHtml(s)}</span>`).join('')}</div></div>
+                ${place.mapUrl ? `<div class="bg-gray-50 rounded-xl p-4 mb-4"><h4 class="font-semibold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-map text-primary"></i> Ubicación</h4><div class="h-48 rounded-lg overflow-hidden"><iframe src="${escapeHtml(place.mapUrl)}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe></div></div>` : ''}
             </div>
             <div><div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
                 <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white px-6 py-4"><h3 class="font-serif text-xl font-bold flex items-center gap-2"><i class="fas fa-utensils text-primary"></i> Nuestra Carta</h3><p class="text-gray-300 text-sm mt-1">Explora nuestros platos por categoría</p></div>
@@ -1319,6 +1712,7 @@ function openModal(id) {
     modal.classList.remove('hidden'); document.body.style.overflow = 'hidden';
     setTimeout(() => updateMenuNavButtons(), 100);
 }
+
 function closeModal() { document.getElementById('detailModal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
 
 // ============================================
@@ -1333,17 +1727,16 @@ function toggleFavorite(event, id) {
     localStorage.setItem('favorites', JSON.stringify(favorites)); updateFavCount(); renderPlaces();
 }
 function updateFavCount() { const count = favorites.length; const badge = document.getElementById('fav-count'); if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); } else badge.classList.add('hidden'); }
+
+// FIX: toggleFavorites ahora usa renderPlaces con flag y tiene botón para volver
 function toggleFavorites() {
     if (favorites.length === 0) { showToast('No tienes favoritos guardados', 'info'); return; }
-    const grid = document.getElementById('placesGrid');
-    const favPlaces = places.filter(p => favorites.some(f => String(f) === String(p.id)));
-    if (favPlaces.length === 0) { showToast('No hay favoritos para mostrar', 'info'); return; }
-    grid.innerHTML = favPlaces.map((place, index) => `<div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer slide-in place-card" style="animation-delay: ${index * 0.1}s" onclick="openModal('${place.id}')">
-        <div class="relative h-48 overflow-hidden"><img src="${place.image}" loading="lazy" alt="${place.name}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${getFallbackImage(place.category, place.name)}';">
-            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold"><span class="star-rating"><i class="fas fa-star mr-1"></i>${place.rating}</span></div>
-            <button onclick="toggleFavorite(event, '${place.id}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-red-500"><i class="fas fa-heart"></i></button>
-        </div><div class="p-6"><h3 class="font-serif text-xl font-bold text-gray-900 mb-2">${place.name}</h3><p class="text-gray-600 text-sm mb-4">${(place.description || '').substring(0, 100)}${(place.description || '').length > 100 ? '...' : ''}</p><button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-primary transition-colors">Ver detalles</button></div></div>`).join('');
-    showToast('Mostrando tus favoritos', 'info');
+    showFavoritesOnly = !showFavoritesOnly;
+    sortByRating = false;
+    renderPlaces();
+    if (showFavoritesOnly) {
+        window.scrollTo({ top: document.getElementById('filterSection').offsetTop - 80, behavior: 'smooth' });
+    }
 }
 
 // ============================================
@@ -1360,36 +1753,85 @@ function showPrivacyPolicy() { showToast('Política de Privacidad: Tus datos est
 function showTermsOfUse() { showToast('Términos de Uso: Al usar SaborMap aceptas nuestras condiciones.', 'info'); }
 
 // ============================================
-// 19. BOTON IR AL INICIO
+// 19. BOTÓN IR AL INICIO
 // ============================================
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-window.addEventListener('scroll', () => { const btn = document.getElementById('backToTopBtn'); if (window.scrollY > 300) { btn.classList.remove('opacity-0', 'invisible', 'translate-y-10'); btn.classList.add('opacity-100', 'visible', 'translate-y-0'); } else { btn.classList.add('opacity-0', 'invisible', 'translate-y-10'); btn.classList.remove('opacity-100', 'visible', 'translate-y-0'); } });
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('backToTopBtn');
+    if (window.scrollY > 300) { btn.classList.remove('opacity-0', 'invisible', 'translate-y-10'); btn.classList.add('opacity-100', 'visible', 'translate-y-0'); }
+    else { btn.classList.add('opacity-0', 'invisible', 'translate-y-10'); btn.classList.remove('opacity-100', 'visible', 'translate-y-0'); }
+});
 
 // ============================================
-// 20. NAVEGACION AL DASHBOARD
+// 20. NAVEGACIÓN AL DASHBOARD
 // ============================================
 function goToDashboard() { closeUserDropdown(); window.location.href = 'dashboard.html'; }
 
 function checkURLPlaceParam() {
     const params = new URLSearchParams(window.location.search);
     const placeId = params.get('place');
-    if (placeId) { window.history.replaceState({}, '', window.location.pathname); setTimeout(() => { const place = places.find(p => String(p.id) === String(placeId)); if (place) openModal(place.id); }, 500); }
+    if (placeId) {
+        window.history.replaceState({}, '', window.location.pathname);
+        setTimeout(() => { const place = places.find(p => String(p.id) === String(placeId)); if (place) openModal(place.id); }, 500);
+    }
 }
 
 // ============================================
-// 21. INICIALIZACION (ASYNC)
+// 21. INICIALIZACIÓN
 // ============================================
-document.addEventListener('keydown', function(event) { if (event.key === 'Escape') { closeModal(); closeAuthModal(); closeCommunityModal('rewardsModal'); resolveConfirm(false); } });
-const menuObserver = new MutationObserver(() => { const scrollContainer = document.getElementById('menuTabsScroll'); if (scrollContainer) scrollContainer.addEventListener('scroll', updateMenuNavButtons); });
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') { closeModal(); closeAuthModal(); closeCommunityModal('rewardsModal'); resolveConfirm(false); }
+});
+
+const menuObserver = new MutationObserver(() => {
+    const scrollContainer = document.getElementById('menuTabsScroll');
+    if (scrollContainer) scrollContainer.addEventListener('scroll', updateMenuNavButtons);
+});
 menuObserver.observe(document.body, { childList: true, subtree: true });
 
+async function loadAllPlacesWithRetry(maxRetries = 2) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            const result = await loadAllPlaces();
+            if (result && result.length > 0) return result;
+            console.warn(`[SaborMap] Intento ${attempt + 1}: 0 lugares cargados`);
+        } catch (err) {
+            console.error(`[SaborMap] Intento ${attempt + 1} fallido:`, err.message);
+        }
+        if (attempt < maxRetries) {
+            invalidatePlacesCache();
+            await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        }
+    }
+    return [];
+}
+
 (async function initApp() {
-    places = await loadAllPlaces();
-    renderPlaces();
-    updateFavCount();
-    updateAuthUI();
-    checkURLPlaceParam();
-    console.log('[SaborMap] Cargados', places.length, 'locales');
+    try {
+        if (supabaseReady && authInitPromise) {
+            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000));
+            await Promise.race([authInitPromise, timeoutPromise]);
+        }
+
+        places = await loadAllPlacesWithRetry();
+        if (!places || places.length === 0) {
+            console.warn('[SaborMap] No se cargaron lugares, usando defaults');
+            places = DEFAULT_WEB_PLACES;
+        }
+
+        renderPlaces();
+        updateFavCount();
+        updateAuthUI();
+        checkURLPlaceParam();
+        console.log('[SaborMap] App inicializada -', places.length, 'locales cargados');
+    } catch (err) {
+        console.error('[SaborMap] Error crítico en initApp:', err);
+        places = DEFAULT_WEB_PLACES;
+        try { renderPlaces(); } catch (e) {
+            document.getElementById('placesGrid').innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Error al cargar. Recarga la página.</p>';
+        }
+        updateAuthUI();
+    }
 })();
 
 setInterval(async () => {
