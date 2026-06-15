@@ -144,22 +144,327 @@
         .marker-bar { background: var(--accent); }
         .marker-restaurante { background: var(--secondary); }
         .marker-heladeria { background: var(--pink); }
-        .swiper { width: 100%; aspect-ratio: 16/9; border-radius: 24px 24px 0 0; }
+        .swiper { width: 100%; aspect-ratio: 16/9; border-radius: 0; }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
         .swiper-button-next, .swiper-button-prev { color: #fff !important; background: rgba(11,14,23,0.6); width: 40px !important; height: 40px !important; border-radius: 50%; backdrop-filter: blur(8px); transition: background 0.3s ease; }
         .swiper-button-next:after, .swiper-button-prev:after { font-size: 16px !important; font-weight: bold; }
         .swiper-button-next:hover, .swiper-button-prev:hover { background: var(--accent); }
         .swiper-pagination-bullet { background: var(--muted) !important; opacity: 0.5 !important; width: 8px !important; height: 8px !important; transition: all 0.2s ease !important; }
         .swiper-pagination-bullet-active { background: var(--accent) !important; opacity: 1 !important; width: 24px !important; border-radius: 4px !important; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(5,7,15,0.8); backdrop-filter: blur(12px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; padding: 20px; }
+
+        /* ═══════════════════════════════════════════════════
+           NUEVO MODAL — DRAWER LATERAL DERECHO
+           ═══════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(5,7,15,0.7);
+            backdrop-filter: blur(6px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
         .modal-overlay.open { opacity: 1; pointer-events: all; }
-        .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; transform: translateY(30px) scale(0.96); transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); }
-        .modal-overlay.open .modal-content { transform: translateY(0) scale(1); }
-        .modal-content::-webkit-scrollbar { width: 4px; } .modal-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-        .modal-must-order { display: flex; align-items: center; gap: 12px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; }
-        .modal-must-order-icon { width: 42px; height: 42px; border-radius: 12px; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); display: flex; align-items: center; justify-content: center; color: var(--amber); font-size: 1.1rem; flex-shrink: 0; }
-        .modal-must-order-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber); margin-bottom: 2px; }
-        .modal-must-order-text { font-weight: 700; font-size: 1.05rem; color: var(--cream); }
+
+        .modal-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 520px; max-width: 100vw;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 101;
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.22,1,0.36,1);
+            display: flex; flex-direction: column;
+            box-shadow: -20px 0 80px rgba(0,0,0,0.6);
+        }
+        .modal-drawer.open { transform: translateX(0); }
+
+        .modal-drawer-scroll {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+        }
+        .modal-drawer-scroll::-webkit-scrollbar { width: 4px; }
+        .modal-drawer-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* Botón flotante de cerrar */
+        .drawer-close-btn {
+            position: absolute; top: 16px; right: 16px; z-index: 20;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: rgba(11,14,23,0.75); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .drawer-close-btn:hover {
+            background: var(--accent); border-color: var(--accent);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Banner de categoría — la pieza central del rediseño */
+        .drawer-cat-banner {
+            position: relative; padding: 32px 28px 28px;
+            overflow: hidden;
+        }
+        .drawer-cat-banner::before {
+            content: ''; position: absolute; inset: 0;
+            opacity: 0.12;
+            transition: opacity 0.3s ease;
+        }
+        .drawer-cat-banner.cat-bar::before {
+            background: linear-gradient(135deg, var(--accent), #6d28d9, #a855f7);
+        }
+        .drawer-cat-banner.cat-restaurante::before {
+            background: linear-gradient(135deg, var(--secondary), #0891b2, #22d3ee);
+        }
+        .drawer-cat-banner.cat-heladeria::before {
+            background: linear-gradient(135deg, var(--pink), #be185d, #f472b6);
+        }
+        .drawer-cat-banner::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 40%, var(--surface) 100%);
+            pointer-events: none;
+        }
+
+        /* Esfera decorativa animada en el banner */
+        .drawer-cat-orb {
+            position: absolute; border-radius: 50%; filter: blur(40px);
+            opacity: 0.25; pointer-events: none;
+            animation: orbFloat 8s ease-in-out infinite alternate;
+        }
+        .drawer-cat-banner.cat-bar .drawer-cat-orb { background: var(--accent); }
+        .drawer-cat-banner.cat-restaurante .drawer-cat-orb { background: var(--secondary); }
+        .drawer-cat-banner.cat-heladeria .drawer-cat-orb { background: var(--pink); }
+        @keyframes orbFloat {
+            0% { transform: translate(0,0) scale(1); }
+            100% { transform: translate(30px,-20px) scale(1.3); }
+        }
+
+        /* Línea decorativa superior del drawer */
+        .drawer-top-line {
+            height: 3px; width: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), transparent);
+        }
+
+        /* Chip de categoría en el banner */
+        .drawer-cat-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px; border-radius: 100px;
+            font-size: 0.78rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            position: relative; z-index: 2;
+            backdrop-filter: blur(10px);
+            animation: chipSlideIn 0.5s 0.15s both cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes chipSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .drawer-cat-chip.cat-bar {
+            background: rgba(139,92,246,0.2); color: #c4b5fd;
+            border: 1px solid rgba(139,92,246,0.35);
+        }
+        .drawer-cat-chip.cat-restaurante {
+            background: rgba(6,182,212,0.2); color: #67e8f9;
+            border: 1px solid rgba(6,182,212,0.35);
+        }
+        .drawer-cat-chip.cat-heladeria {
+            background: rgba(236,72,153,0.2); color: #f9a8d4;
+            border: 1px solid rgba(236,72,153,0.35);
+        }
+        .drawer-cat-chip i { font-size: 0.85rem; }
+
+        /* Título del lugar en el drawer */
+        .drawer-place-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.85rem; font-weight: 900;
+            line-height: 1.15; margin-top: 14px;
+            position: relative; z-index: 2;
+            animation: nameSlideIn 0.5s 0.25s both cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes nameSlideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Fila de metadatos bajo el título */
+        .drawer-meta-row {
+            display: flex; align-items: center; flex-wrap: wrap;
+            gap: 14px; margin-top: 14px;
+            position: relative; z-index: 2;
+            animation: metaSlideIn 0.5s 0.35s both cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes metaSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .drawer-meta-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.84rem; color: var(--muted);
+        }
+        .drawer-meta-item i { font-size: 0.75rem; }
+        .drawer-rating-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 100px;
+            background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25);
+            font-size: 0.82rem; font-weight: 700; color: var(--secondary);
+        }
+        .drawer-rating-pill i { font-size: 0.7rem; }
+
+        /* Secciones de contenido dentro del drawer */
+        .drawer-section {
+            padding: 0 28px; margin-bottom: 24px;
+            animation: sectionFadeIn 0.5s both cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes sectionFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .drawer-section-label {
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--muted); margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .drawer-section-label::after {
+            content: ''; flex: 1; height: 1px;
+            background: var(--border);
+        }
+
+        /* Tarjetas internas del drawer */
+        .drawer-info-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px 18px;
+            transition: all 0.3s ease;
+        }
+        .drawer-info-card:hover {
+            border-color: rgba(139,92,246,0.3);
+            background: var(--card-hover);
+        }
+
+        /* Must order destacado */
+        .drawer-must-order {
+            display: flex; align-items: center; gap: 14px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03));
+            border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 16px; padding: 16px 18px;
+            transition: all 0.3s ease;
+        }
+        .drawer-must-order:hover {
+            border-color: rgba(245,158,11,0.4);
+            background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.05));
+        }
+        .drawer-must-order-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--amber); font-size: 1.1rem; flex-shrink: 0;
+        }
+        .drawer-must-order-label {
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--amber); margin-bottom: 2px;
+        }
+        .drawer-must-order-text {
+            font-weight: 700; font-size: 1rem; color: var(--cream);
+        }
+
+        /* Editor note en drawer */
+        .drawer-editor-note {
+            position: relative; background: var(--card);
+            border: 1px solid var(--border); border-radius: 16px;
+            padding: 18px 20px 18px 52px;
+            font-style: italic; color: var(--muted);
+            line-height: 1.7; font-size: 0.88rem;
+        }
+        .drawer-editor-note::before {
+            content: '\201C'; position: absolute; top: 10px; left: 18px;
+            font-size: 2.2rem; font-family: 'Playfair Display', serif;
+            color: var(--accent); opacity: 0.5; line-height: 1;
+        }
+
+        /* Tags en drawer */
+        .drawer-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .drawer-tag {
+            padding: 5px 14px; border-radius: 100px;
+            font-size: 0.75rem; font-weight: 500;
+            background: rgba(139,92,246,0.08); color: #c4b5fd;
+            border: 1px solid rgba(139,92,246,0.18);
+            transition: all 0.2s ease;
+        }
+        .drawer-tag:hover {
+            background: rgba(139,92,246,0.15);
+            border-color: rgba(139,92,246,0.35);
+        }
+
+        /* Delivery links en drawer */
+        .drawer-delivery { display: flex; flex-direction: column; gap: 10px; }
+
+        /* Info rows (dirección, teléfono, horario) */
+        .drawer-info-row {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 10px 0;
+        }
+        .drawer-info-row + .drawer-info-row {
+            border-top: 1px solid rgba(42,47,74,0.4);
+        }
+        .drawer-info-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--card); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); font-size: 0.8rem; flex-shrink: 0;
+        }
+        .drawer-info-label {
+            font-size: 0.7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--muted); margin-bottom: 2px;
+        }
+        .drawer-info-value {
+            font-size: 0.9rem; color: var(--cream);
+            line-height: 1.5;
+        }
+
+        /* Botón de menú / carta */
+        .drawer-menu-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 14px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: #fff; font-family: inherit; font-size: 0.9rem;
+            font-weight: 700; cursor: pointer; border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .drawer-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        /* Sub-modal de menú (encima del drawer) */
+        .menu-sub-modal {
+            position: absolute; inset: 0; z-index: 30;
+            background: var(--surface);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+            display: flex; flex-direction: column;
+        }
+        .menu-sub-modal.open { transform: translateX(0); }
+
+        /* Share button en drawer */
+        .drawer-share-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 12px; border-radius: 12px;
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--cream); font-family: inherit; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+        }
+        .drawer-share-btn:hover {
+            border-color: var(--accent); background: var(--card-hover);
+        }
+
+        /* Footer del drawer */
+        .drawer-footer {
+            padding: 16px 28px; border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card); border: 1px solid var(--accent); color: var(--cream); padding: 14px 28px; border-radius: 14px; font-size: 0.9rem; z-index: 200; transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px var(--accent-glow); }
         .toast.show { transform: translateX(-50%) translateY(0); }
         .search-input { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 20px 14px 50px; color: var(--cream); font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; width: 100%; max-width: 320px; transition: all 0.3s ease; outline: none; }
@@ -169,7 +474,6 @@
         @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-item { white-space: nowrap; padding: 0 40px; font-size: clamp(1.2rem,2.5vw,2rem); font-weight: 300; color: var(--muted); opacity: 0.6; }
         .marquee-item .dot { display: inline-block; width: 6px; height: 6px; background: var(--secondary); border-radius: 50%; margin: 0 30px; vertical-align: middle; }
-
         .tag { padding: 4px 12px; border-radius: 8px; font-size: 0.72rem; font-weight: 500; background: rgba(139,92,246,0.1); color: var(--accent); border: 1px solid rgba(139,92,246,0.2); }
         .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.22,1,0.36,1); }
         .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -188,7 +492,6 @@
         .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
         .whatsapp-float .wa-tooltip { position: absolute; left: 66px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; font-weight: 500; white-space: nowrap; color: var(--cream); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
         .whatsapp-float:hover .wa-tooltip { opacity: 1; }
-
         .share-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--cream); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; }
         .share-btn:hover { border-color: var(--accent); background: var(--card-hover); }
         .copy-address { cursor: pointer; transition: color 0.2s ease; }
@@ -210,7 +513,6 @@
         .footer-social { display: flex; gap: 10px; margin-top: 20px; }
         .footer-social a { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: 1rem; transition: all 0.3s ease; }
         .footer-social a:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
-
         .footer-bottom { border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .footer-bottom-link { color: var(--muted); text-decoration: none; font-size: 0.8rem; transition: color 0.3s ease; }
         .footer-bottom-link:hover { color: var(--cream); }
@@ -220,6 +522,7 @@
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .clear-col { background: none; border: none; color: var(--muted); cursor: pointer; font-family: inherit; font-size: 0.82rem; margin-left: auto; text-decoration: underline; }
         .clear-col:hover { color: var(--cream); }
+
         @media (max-width: 768px) {
             .bento-grid { grid-template-columns: 1fr; } .place-card.featured { grid-column: span 1; } .place-card.featured .card-img { aspect-ratio: 4/3; }
             .about-grid, .footer-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -231,6 +534,8 @@
             .nav-desktop { display: none !important; }
             .hamburger { display: block; }
             .whatsapp-float { bottom: 20px; left: 16px; width: 50px; height: 50px; font-size: 1.3rem; }
+            .modal-drawer { width: 100vw; }
+            .drawer-place-name { font-size: 1.5rem; }
         }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
     </style>
@@ -247,7 +552,6 @@
             <div class="nav-desktop" style="display:flex;align-items:center;gap:28px;">
                 <a href="#colecciones" class="nav-link">Colecciones</a>
                 <a href="#directorios" class="nav-link">Directorio</a>
-
                 <button onclick="document.getElementById('searchInput').focus()" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:0.85rem;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" aria-label="Buscar">
                     <i class="fas fa-search" style="font-size:0.8rem;"></i> Buscar
                 </button>
@@ -260,12 +564,10 @@
         <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Cerrar menu"><i class="fas fa-times"></i></button>
         <a href="#colecciones" onclick="closeMobileMenu()">Colecciones</a>
         <a href="#directorios" onclick="closeMobileMenu()">Directorio</a>
-
         <a href="#" onclick="event.preventDefault();closeMobileMenu();document.getElementById('searchInput').focus()">Buscar</a>
     </div>
 
     <main style="position:relative;z-index:2;">
-
         <section style="max-width:1280px;margin:0 auto;padding:80px 24px 40px;">
             <div class="reveal" style="max-width:800px;">
                 <p style="color:var(--accent);font-weight:600;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:20px;"><i class="fas fa-map-marker-alt" style="margin-right:6px;"></i> La Habana, sabores reales</p>
@@ -324,12 +626,8 @@
             </div>
 
             <div class="animated-line" style="margin-bottom:36px;"></div>
-
-            <div id="gridView">
-                <div class="bento-grid" id="placesGrid"></div>
-            </div>
+            <div id="gridView"><div class="bento-grid" id="placesGrid"></div></div>
             <div id="mapView"></div>
-
             <div id="noResults" style="display:none;text-align:center;padding:80px 20px;">
                 <i class="fas fa-search" style="font-size:3rem;color:var(--border);margin-bottom:20px;"></i>
                 <p style="font-size:1.2rem;font-weight:600;margin-bottom:8px;">No encontramos resultados</p>
@@ -345,7 +643,6 @@
                 <div><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;"><div style="width:40px;height:40px;background:linear-gradient(135deg, var(--accent), #6d28d9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;color:#fff;">S</div><span style="font-weight:700;font-size:1.3rem;">Sabormap</span></div><p style="color:var(--muted);font-size:0.88rem;line-height:1.7;margin-bottom:24px;max-width:320px;">Descubri los mejores bares, restaurantes y heladerias de La Habana.</p><div class="footer-social"><a href="https://instagram.com/sabormap.hab" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a><a href="https://facebook.com/sabormap.hab" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a><a href="https://wa.me/5356578961" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></div></div>
                 <div><h4 class="footer-heading">Navegacion</h4><a href="#colecciones" class="footer-link">Colecciones</a><a href="#directorios" class="footer-link">Directorio</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('bar')">Bares / Cafeterias</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('restaurante')">Restaurantes</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('heladeria')">Heladerias</a></div>
                 <div><h4 class="footer-heading">Legal</h4><a href="#" class="footer-link" onclick="event.preventDefault();openLegalModal('terminos')">Terminos</a><a href="#" class="footer-link" onclick="event.preventDefault();openLegalModal('privacidad')">Privacidad</a><a href="mailto:hola@sabormap.hab" class="footer-link">Contacto</a></div>
-
             </div>
             <div class="animated-line" style="margin:40px 0 24px;"></div>
             <div class="footer-bottom"><p style="color:var(--muted);font-size:0.8rem;">2026 Sabormap. Hecho con <i class="fas fa-heart" style="color:var(--accent);"></i> en La Habana.</p><div style="display:flex;gap:20px;"><a href="#" class="footer-bottom-link" onclick="event.preventDefault();openLegalModal('terminos')">Terminos</a><a href="#" class="footer-bottom-link" onclick="event.preventDefault();openLegalModal('privacidad')">Privacidad</a></div></div>
@@ -362,7 +659,25 @@
         <span class="wa-tooltip">Chatea con nosotros</span>
     </a>
 
-    <div class="modal-overlay" id="modal" onclick="closeModal(event)"><div class="modal-content" id="modalContent"></div></div>
+    <!-- ═══════════════════════════════════════════════════
+         NUEVO MODAL — Drawer lateral + overlay
+         ═══════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="modal-drawer" id="modalDrawer">
+        <div class="drawer-top-line"></div>
+        <button class="drawer-close-btn" onclick="closeModal()" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        <div class="modal-drawer-scroll" id="modalDrawerScroll"></div>
+        <!-- Sub-modal de menú -->
+        <div class="menu-sub-modal" id="menuSubModal">
+            <div class="menu-modal-header">
+                <button class="menu-back-btn" onclick="closeMenuSubModal()"><i class="fas fa-arrow-left"></i> Volver</button>
+                <span class="menu-modal-title" id="menuSubTitle">Carta</span>
+                <div style="width:80px;"></div>
+            </div>
+            <div class="menu-body" id="menuSubBody"></div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -375,439 +690,636 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const staticPlaces = [
-        { id:1, name:"Yo Invito", category:"restaurante", neighborhood:"Vedado", address:"🗺️📍Calle 3era, esquina a D", rating:4.7, priceLevel:3, tags:["Variedad de comida cubana e internacional"], description:"Contamos con área infantil para el disfrute de los peques. Siéntete como en casa 😊😌.", mustOrder:"Daiquiri de lavanda con miel de cana", editorNote:"Si encontras la puerta, ya ganaste la noche.", hours:"⏰️ Lun-Dom: 12:00pm-23:00pm", phone:"", featured:true, isOpen:true, lat:23.137, lng:-82.356, images:["imagenes/Yo invito.webp","imagenes/Yo invito.webp","",""],
+        { id:1, name:"Yo Invito", category:"restaurante", neighborhood:"Vedado", address:"Calle 3era, esquina a D", rating:4.7, priceLevel:3, tags:["Variedad de comida cubana e internacional"], description:"Contamos con area infantil para el disfrute de los peques. Siéntete como en casa.", mustOrder:"Daiquiri de lavanda con miel de cana", editorNote:"Si encontras la puerta, ya ganaste la noche.", hours:"Lun-Dom: 12:00pm-23:00pm", phone:"", featured:true, isOpen:true, lat:23.137, lng:-82.356, images:["imagenes/Yo invito.webp","imagenes/Yo invito.webp","",""],
             menu: [{ category:"Cocteles de autor", items:[{name:"Daiquiri de lavanda", desc:"Ron blanco, limon, miel de cana, esencia de lavanda", price:"$350"},{name:"Mojito de hierbabuena", desc:"Ron, hierbabuena fresca, limon, azucar, soda", price:"$280"},{name:"Cuba Libre premium", desc:"Ron anejo, Coca-Cola, limon exprimido", price:"$250"},{name:"Piña colada ahumada", desc:"Ron, crema de coco, piña, humo de guayaba", price:"$380"}]},{ category:"Picadas", items:[{name:"Tabla de quesos cubanos", desc:"Queso de mano, gouda tropical, frutos secos, galletas", price:"$500"},{name:"Croquetas de jamon", desc:"6 unidades, mostaza de miel casera", price:"$350"}]}],
             links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
         },
-        { id:2, name:"5 Esquinas Trattoria", category:"restaurante", neighborhood:"Habana Vieja", address:"🗺️📍Calle Habana esq. Cuarteles", rating:4.9, priceLevel:4, tags:["Comida Italiana"], description:"Creamos verdaderas obras de arte con el más puro sabor italiano.", mustOrder:"Ropa vieja con tostones", editorNote:"El tipo que atiende sabe mas de leña que un carbonero.", hours:"⏰️ Lun–Dom 12:00pm–00:00am", phone:"", featured:true, isOpen:true, lat:23.138, lng:-82.364, images:["imagenes/5 esquinas.jpg","","",""],
-            menu: [{ category:"Entradas", items:[{name:"Tostones con mojo", desc:"Platano verde frito, mojo criollo de ajo y naranja agria", price:"$200"},{name:"Croquetas de malanga", desc:"Con salsa de ají cubano", price:"$250"},{name:"Ensalada de aguacate", desc:"Aguacate, tomate, cebolla, limon, aceite de oliva", price:"$280"}]},{ category:"Principales", items:[{name:"Ropa vieja con tostones", desc:"Carne desmechada en salsa de tomate, pimiento, tostones crujientes", price:"$650"},{name:"Cerdo asado a la leña", desc:"Piernil marinado en mojo, 6 horas a fuego lento", price:"$750"},{name:"Vaca frita", desc:"Carne de res desmechada, ajo, limon, cebolla", price:"$600"},{name:"Pollo a la cacerola", desc:"Con vino seco, aceitunas, alcaparras, papas", price:"$500"}]},{ category:"Postres", items:[{name:"Flan de coco", desc:"Flan casero con coco rallado y caramelo", price:"$180"},{name:"Helado de mamey", desc:"Con salsa de chocolate y nuez tostada", price:"$200"}]}],
+        { id:2, name:"5 Esquinas Trattoria", category:"restaurante", neighborhood:"Habana Vieja", address:"Calle Habana esq. Cuarteles", rating:4.9, priceLevel:4, tags:["Comida Italiana"], description:"Creamos verdaderas obras de arte con el mas puro sabor italiano.", mustOrder:"Ropa vieja con tostones", editorNote:"El tipo que atiende sabe mas de lena que un carbonero.", hours:"Lun-Dom 12:00pm-00:00am", phone:"", featured:true, isOpen:true, lat:23.138, lng:-82.364, images:["imagenes/5 esquinas.jpg","","",""],
+            menu: [{ category:"Entradas", items:[{name:"Tostones con mojo", desc:"Platano verde frito, mojo criollo de ajo y naranja agria", price:"$200"},{name:"Croquetas de malanga", desc:"Con salsa de aji cubano", price:"$250"},{name:"Ensalada de aguacate", desc:"Aguacate, tomate, cebolla, limon, aceite de oliva", price:"$280"}]},{ category:"Principales", items:[{name:"Ropa vieja con tostones", desc:"Carne desmechada en salsa de tomate, pimiento, tostones crujientes", price:"$650"},{name:"Cerdo asado a la lena", desc:"Piernil marinado en mojo, 6 horas a fuego lento", price:"$750"},{name:"Vaca frita", desc:"Carne de res desmechada, ajo, limon, cebolla", price:"$600"},{name:"Pollo a la cacerola", desc:"Con vino seco, aceitunas, alcaparras, papas", price:"$500"}]},{ category:"Postres", items:[{name:"Flan de coco", desc:"Flan casero con coco rallado y caramelo", price:"$180"},{name:"Helado de mamey", desc:"Con salsa de chocolate y nuez tostada", price:"$200"}]}],
             links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
         },
-        { id:3, name:"Sapori", category:"bar", neighborhood:"Playa", address:"🗺️📍| Calle 31 entre 6 y 8. Miramar", rating:4.5, priceLevel:2, tags:["Dulcería-Brunch"], description:"Con amor y con sabor. Postres peligrosamente adictivos.", mustOrder:"Mamey al chocolate", editorNote:"Volve en verano, el mamey es una religion.", hours:"⏰️ Lun-Dom: 08:00am-22:00pm", phone:"#", featured:false, isOpen:true, lat:23.128, lng:-82.385, images:["imagenes/Sapori.jpg","","",""],
-            menu: [{ category:"Helados artesanales", items:[{name:"Mamey al chocolate", desc:"Pulpa de mamey, chocolate amargo cubano", price:"$120"},{name:"Dulce de leche cubano", desc:"Leche entera, 4 horas de coccion lenta", price:"$100"},{name:"Guayaba con queso", desc:"Guayaba fresca, base de queso crema", price:"$120"},{name:"Pistacho tropical", desc:"Pistacho con coco tostado", price:"$150"},{name:"Limón de la abuela", desc:"Limón criollo, refrescante, sin colorantes", price:"$90"}]},{ category:"Postres", items:[{name:"Coppelia especial", desc:"3 bochas, salsa, crema, granas", price:"$250"},{name:"Malteada de mamey", desc:"Mamey, leche helada, vainilla", price:"$200"}]}],
+        { id:3, name:"Sapori", category:"bar", neighborhood:"Playa", address:"Calle 31 entre 6 y 8. Miramar", rating:4.5, priceLevel:2, tags:["Dulceria-Brunch"], description:"Con amor y con sabor. Postres peligrosamente adictivos.", mustOrder:"Mamey al chocolate", editorNote:"Volve en verano, el mamey es una religion.", hours:"Lun-Dom: 08:00am-22:00pm", phone:"#", featured:false, isOpen:true, lat:23.128, lng:-82.385, images:["imagenes/Sapori.jpg","","",""],
+            menu: [{ category:"Helados artesanales", items:[{name:"Mamey al chocolate", desc:"Pulpa de mamey, chocolate amargo cubano", price:"$120"},{name:"Dulce de leche cubano", desc:"Leche entera, 4 horas de coccion lenta", price:"$100"},{name:"Guayaba con queso", desc:"Guayaba fresca, base de queso crema", price:"$120"},{name:"Pistacho tropical", desc:"Pistacho con coco tostado", price:"$150"},{name:"Limon de la abuela", desc:"Limon criollo, refrescante, sin colorantes", price:"$90"}]},{ category:"Postres", items:[{name:"Coppelia especial", desc:"3 bochas, salsa, crema, granas", price:"$250"},{name:"Malteada de mamey", desc:"Mamey, leche helada, vainilla", price:"$200"}]}],
             links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
         },
-        { id:4, name:"El Portal de Cojímar", category:"restaurante", neighborhood:"Habana del Este", address:"📍Calle Morro, Esq. K, Cojímar", rating:4.6, priceLevel:2, tags:["🔥 Parrilladas", "🦐 Mariscos", "🍕 Pizzas"], description:"🍽 Restaurante familiar en Cojímar. A minutos del mar", mustOrder:"Pescado entero a la sal", editorNote:"Los domingos hay pescado fresco y se arma fila. Llega temprano.", hours:"⏰️ 08:00am-22:00pm", phone:"+53 55422269", featured:false, isOpen:true, lat:23.150, lng:-82.300, images:["","","",""],
-            menu: [{ category:"Entradas", items:[{name:"Ceviche de pargo", desc:"Pargo fresco, limon, cebolla, cilantro, ají", price:"$300"},{name:"Tostones de plátano", desc:"Con mojo de ajo casero", price:"$150"}]},{ category:"Mariscos", items:[{name:"Pescado entero a la sal", desc:"Pargo o cherna, cocido en costra de sal", price:"$550"},{name:"Langosta a la parrilla", desc:"Cola de langosta, mantequilla de ajo, limon", price:"$800"},{name:"Camarones al ajillo", desc:"Con aceite de oliva, ajo, guindilla, pan", price:"$500"},{name:"Filete de pargo frito", desc:"Con arroz moro y ensalada", price:"$400"}]},{ category:"Postres", items:[{name:"Flan de calabaza", desc:"Con dulce de leche y canela", price:"$150"},{name:"Helado de guayaba", desc:"Con queso crema y galleta", price:"$180"}]}],
+        { id:4, name:"El Portal de Cojimar", category:"restaurante", neighborhood:"Habana del Este", address:"Calle Morro, Esq. K, Cojimar", rating:4.6, priceLevel:2, tags:["Parrilladas", "Mariscos", "Pizzas"], description:"Restaurante familiar en Cojimar. A minutos del mar", mustOrder:"Pescado entero a la sal", editorNote:"Los domingos hay pescado fresco y se arma fila. Llega temprano.", hours:"08:00am-22:00pm", phone:"+53 55422269", featured:false, isOpen:true, lat:23.150, lng:-82.300, images:["","","",""],
+            menu: [{ category:"Entradas", items:[{name:"Ceviche de pargo", desc:"Pargo fresco, limon, cebolla, cilantro, aji", price:"$300"},{name:"Tostones de platano", desc:"Con mojo de ajo casero", price:"$150"}]},{ category:"Mariscos", items:[{name:"Pescado entero a la sal", desc:"Pargo o cherna, cocido en costra de sal", price:"$550"},{name:"Langosta a la parrilla", desc:"Cola de langosta, mantequilla de ajo, limon", price:"$800"},{name:"Camarones al ajillo", desc:"Con aceite de oliva, ajo, guindilla, pan", price:"$500"},{name:"Filete de pargo frito", desc:"Con arroz moro y ensalada", price:"$400"}]},{ category:"Postres", items:[{name:"Flan de calabaza", desc:"Con dulce de leche y canela", price:"$150"},{name:"Helado de guayaba", desc:"Con queso crema y galleta", price:"$180"}]}],
             links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"}]
         },
-        { id:5, name:"Los 3 Chinitos", category:"restaurante", neighborhood:"Playa", address:"📍Calle 10 entre 3ra y 5ta Miramar", rating:4.3, priceLevel:2, tags:["pizzas grandes con agregos exóticos"], description:"Bienvenidos a Los 3 Chinitos en Miramar. Servicio a Domicilio en toda la Habana.", mustOrder:"Mojito de hierbabuena fresca", editorNote:"Llega temprano para conseguir mesa. El saxo suena a las 10.", hours:"⏰️ Lun-Dom: 8:00am-22:00pm", phone:"+53 56143419", featured:false, isOpen:false, lat:23.129, lng:-82.387, images:["imagenes/Los 3 Chinitos.jpg","","",""],
-            menu: [{ category:"Cocteles", items:[{name:"Mojito de hierbabuena", desc:"Ron blanco, hierbabuena del patio, limon, azucar, soda", price:"$250"},{name:"Daiquiri clasico", desc:"Ron blanco, limon, maraschino, azucar", price:"$220"},{name:"Cuba Libre", desc:"Ron, Coca-Cola, limon", price:"$180"},{name:"Presidente", desc:"Ron anejo, vermut seco, granadina, curaçao", price:"$300"}]},{ category:"Para picar", items:[{name:"Picada cubana para dos", desc:"Quesos, jamon, aceitunas, galletas, frutos", price:"$450"},{name:"Nachos con guacamole", desc:"Con jalapenos, queso, sour cream", price:"$280"}]}],
+        { id:5, name:"Los 3 Chinitos", category:"restaurante", neighborhood:"Playa", address:"Calle 10 entre 3ra y 5ta Miramar", rating:4.3, priceLevel:2, tags:["Pizzas grandes con agregos exoticos"], description:"Bienvenidos a Los 3 Chinitos en Miramar. Servicio a Domicilio en toda la Habana.", mustOrder:"Mojito de hierbabuena fresca", editorNote:"Llega temprano para conseguir mesa. El saxo suena a las 10.", hours:"Lun-Dom: 8:00am-22:00pm", phone:"+53 56143419", featured:false, isOpen:false, lat:23.129, lng:-82.387, images:["imagenes/Los 3 Chinitos.jpg","","",""],
+            menu: [{ category:"Cocteles", items:[{name:"Mojito de hierbabuena", desc:"Ron blanco, hierbabuena del patio, limon, azucar, soda", price:"$250"},{name:"Daiquiri clasico", desc:"Ron blanco, limon, maraschino, azucar", price:"$220"},{name:"Cuba Libre", desc:"Ron, Coca-Cola, limon", price:"$200"}]},{ category:"Pizzas", items:[{name:"Pizza Margarita", desc:"Salsa, mozzarella, albahaca fresca", price:"$350"},{name:"Pizza de jamon y queso", desc:"Jamon, mozzarella, oregano", price:"$400"},{name:"Pizza tropical", desc:"Jamon, piña, queso", price:"$420"}]}],
+            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"}]
+        },
+        { id:6, name:"Coppelia", category:"heladeria", neighborhood:"Vedado", address:"Calle 23 e/ L y M, Vedado", rating:4.2, priceLevel:1, tags:["Helados artesanales", "Postres"], description:"La catedral del helado cubano. Un clasico que nunca falla.", mustOrder:"Helado de chocolate con almendras", editorNote:"El enclave es parte del ritual. Lleva paciencia y hambre.", hours:"Lun-Dom: 10:00am-22:00pm", phone:"", featured:false, isOpen:true, lat:23.135, lng:-82.365, images:["","","",""],
+            menu: [{ category:"Helados", items:[{name:"Chocolate con almendras", desc:"Chocolate cubano, almendras tostadas", price:"$80"},{name:"Fresa natural", desc:"Fresas frescas de la temporada", price:"$80"},{name:"Mango de la casa", desc:"Pulpa de mango, toque de limon", price:"$80"},{name:"Vainilla de Madagascar", desc:"Vainilla natural, semillas", price:"$90"}]},{ category:"Especiales", items:[{name:"Sundae Coppelia", desc:"3 bochas, salsa caliente, crema, nuez", price:"$200"},{name:"Banana split", desc:"3 bochas, banana, chocolate, crema", price:"$220"}]}],
             links: []
         },
-        { id:6, name:"Ela & Paleta", category:"heladeria", neighborhood:"Vedado", address:"Calle 9na. e/ F y G", rating:4.8, priceLevel:1, tags:["🍦Helado artesanal, inclusivo y sabroso."], description:"Dicen que los colores hacen la vida más bonita... 🌈Y si la disfrutas con un helado, puede ser perfecta. 🍨💕", mustOrder:"Copa fiesta de 3 bochas", editorNote:"Nada sofisticado, y eso es exactamente lo que lo hace perfecto.", hours:"⏰️ Lun-Dom: 10:00am-1:00am", phone:"#", featured:false, isOpen:true, lat:23.100, lng:-82.367, images:["imagenes/Ela & Paleta.jpg","","",""],
-            menu: [{ category:"Helados clasicos", items:[{name:"Dulce de leche", desc:"El de toda la vida, receta familiar", price:"$60"},{name:"Chocolate con almendras", desc:"Con trozos de almendra tostada", price:"$60"},{name:"Fresa", desc:"Fresas frescas de temporada", price:"$60"},{name:"Vainilla", desc:"Vainilla Madagascar, suave y cremoso", price:"$60"},{name:"Pina", desc:"Pina fresca de la isla", price:"$60"}]},{ category:"Copas", items:[{name:"Copa fiesta", desc:"3 bochas, salsa, crema, granas", price:"$120"},{name:"Banana split", desc:"3 bochas, banana, crema, chocolate", price:"$150"}]}],
-            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
-        },
-        { id:7, name:"Café de la Esquina", category:"restaurante", neighborhood:"Vedado", address:"📍5ta y Paseo", rating:4.8, priceLevel:4, tags:["Fusión entre comida cubana e italiana"], description:"¡No pierdas la oportunidad, únete a esta experiencia de sabores únicos!", mustOrder:"Menu degustacion 7 pasos", editorNote:"12 asientos, 7 pasos, cero distracciones.", hours:"⏰️ Lun-Dom: 10:30am-23:30pm", phone:"78362565", featured:false, isOpen:true, lat:23.139, lng:-82.358, images:["imagenes/Café de la Esquina.webp","","",""],
-            menu: [{ category:"Entradas", items:[{name:"Tartar de atun", desc:"Atun fresco, aguacate, ají limo, crujiente de yuca", price:"$350"},{name:"Ceviche de camaron", desc:"Con leche de tigre de maracuya", price:"$400"}]},{ category:"Degustacion", items:[{name:"Menu degustacion 7 pasos", desc:"Recorrido completo por la cocina cubana contemporanea", price:"$1.500"},{name:"Menu degustacion 5 pasos", desc:"Version reducida, ideal para primeras visitas", price:"$1.100"}]},{ category:"Principales", items:[{name:"Langosta termidor", desc:"Langosta caribena, salsa bechamel, queso gratin", price:"$900"},{name:"Lechon confitado", desc:"Lechon 8 horas, mojo criollo, puré de malanga", price:"$700"},{name:"Atun rojo sellado", desc:"Con reduccion de ron anejo y coco", price:"$800"}]}],
+        { id:7, name:"La Bodeguita del Medio", category:"bar", neighborhood:"Habana Vieja", address:"Empedrado 207 e/ San Ignacio y Cuba", rating:4.8, priceLevel:4, tags:["Cocteles legendarios", "Cocina criolla"], description:"Donde el mojito se hizo leyenda. Paredes con historia y sabor que se siente.", mustOrder:"Mojito original", editorNote:"Pide el mojito, obvio. Pero la ropa vieja tambien sorprende.", hours:"Lun-Dom: 12:00pm-00:00am", phone:"+53 78668846", featured:true, isOpen:true, lat:23.139, lng:-82.358, images:["","","",""],
+            menu: [{ category:"Cocteles", items:[{name:"Mojito original", desc:"La receta de Hemingway: ron, hierbabuena, limon, azucar, soda", price:"$400"},{name:"Daiquiri Floridita", desc:"Ron blanco, limon, maraschino, granizado", price:"$350"}]},{ category:"Principales", items:[{name:"Ropa vieja", desc:"La de la abuela, sin atajos", price:"$550"},{name:"Cerdo asado", desc:"Pierna 8 horas en mojo criollo", price:"$650"}]}],
             links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
         },
-        { id:8, name:"Crispy Chicken", category:"restaurante", neighborhood:"Diez de Octubre", address:"📍Ave. Acosta, esq Juan Delgado, Monaco", rating:4.4, priceLevel:2, tags:["Variedades de Pollo y otras delicias 🍗🧋"], description:"El secreto de la felicidad está en un pollito.", mustOrder:"Canchanchara con miel de abeja", editorNote:"Tarde de domingo + arte + canchanchara = plan infalible.", hours:"⏰️ Lun-Dom: 10:00am-23:30pm", phone:"+53 63182745", featured:false, isOpen:false, lat:23.131, lng:-82.390, images:["imagenes/Crispy Chicken.jpg","","",""],
-            menu: [{ category:"Cocteles", items:[{name:"Canchanchara", desc:"Ron, miel de abeja, limon, agua caliente", price:"$200"},{name:"Mojito de toronja", desc:"Ron, toronja rosada, hierbabuena, soda", price:"$250"},{name:"Saoco", desc:"Ron, jugo de cana, limon", price:"$180"}]},{ category:"Para picar", items:[{name:"Empanaditas de picadillo", desc:"6 unidades, salsa de ají", price:"$200"},{name:"Tostones rellenos", desc:"Con camarones al ajillo", price:"$280"},{name:"Queso frito con mermelada", desc:"Queso de mano frito, mermelada de guayaba", price:"$220"}]}],
-            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
-        },
-        { id:9, name:"Cafetería Pilón", category:"bar", neighborhood:"Vedado", address:"Calle 25 entre M y N", rating:4.6, priceLevel:3, tags:["Descubrelo"], description:"Nuevos espacios para pilonear junto a nosotros.", mustOrder:"Chocolate con ron anejo 7 años", editorNote:"Chocolate helado con ron anejo. Suena raro, es espectacular.", hours:"Lun-Vie: 08:00am-20:00pm, Sáb-Dom: 09:00am-21:00pm", phone:"", featured:false, isOpen:true, lat:23.147, lng:-82.433, images:["imagenes/Cafetería Pilón.jpg","","",""],
-            menu: [{ category:"Helados de autor", items:[{name:"Chocolate con ron anejo", desc:"Chocolate cubano, reduccion de ron anejo 7 años", price:"$180"},{name:"Guayaba al champagne", desc:"Guayaba fresca, reduccion de champagne", price:"$180"},{name:"Cafe cubano", desc:"Cafe torrefacto, base de leche condensada", price:"$160"}]},{ category:"Maridajes", items:[{name:"Chocolate con ron anejo", desc:"Bocha de chocolate + copa de ron anejo 7 años", price:"$350"},{name:"Guayaba con espumante", desc:"Bocha de guayaba + copa de espumante", price:"$300"},{name:"Cafe con ron oscuro", desc:"Bocha de cafe + copa de ron oscuro 15 años", price:"$400"}]}],
+        { id:8, name:"El Floridita", category:"bar", neighborhood:"Habana Vieja", address:"Obispo 557 esq. Monserrate", rating:4.9, priceLevel:5, tags:["Daiquiri de autor", "Mariscos premium"], description:"La cuna del daiquiri. Cocteleria de clase mundial desde 1817.", mustOrder:"Daiquiri Hemingway", editorNote:"Si te sientas en la barra, pide el Hemingway doble. Confia.", hours:"Lun-Dom: 11:00am-00:00am", phone:"+53 78668850", featured:true, isOpen:true, lat:23.140, lng:-82.360, images:["","","",""],
+            menu: [{ category:"Daiquiris", items:[{name:"Daiquiri Hemingway", desc:"Ron blanco, pomelo, licor de marrasquino, limon", price:"$500"},{name:"Daiquiri Floridita clasico", desc:"Ron, limon, maraschino, azucar, granizado", price:"$450"},{name:"Daiquiri de fresa", desc:"Ron, fresas frescas, limon, azucar", price:"$480"}]},{ category:"Mariscos", items:[{name:"Langosta Thermidor", desc:"Langosta, salsa bechamel, gruyere, gratinada", price:"$1200"},{name:"Ceviche de camarones", desc:"Camarones, limon, cebolla, cilantro, aji", price:"$650"}]}],
             links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
         },
-        { id:10, name:"Parranda Grill Bar", category:"restaurante", neighborhood:"Diez de Octubre", address:"📍O'farrill #366 % D'strampes y Figueroa. La víbora.", rating:4.7, priceLevel:3, tags:["picadera Parrandas te garantiza una experiencia agradable y entretenida"], description:"✨Una vista perfecta al horizonte habanero✨", mustOrder:"Lechon asado 8 horas", editorNote:"Si te dicen que el pan es de ayer, mienten.", hours:"⏰️ Lun-Dom: 12:00am-00:00pm", phone:"", featured:true, isOpen:true, lat:23.105, lng:-82.370, images:["imagenes/Parranda Grill Bar.jpg","","",""],
-            menu: [{ category:"Entradas", items:[{name:"Pan de masa madre", desc:"Con manteca ahumada y sal de mar", price:"$150"},{name:"Empanada de carne al disco", desc:"Masa al fuego, carne cortada a cuchillo", price:"$200"},{name:"Yuca con mojo", desc:"Yuca hervida, mojo de ajo y naranja agria", price:"$180"}]},{ category:"Principales", items:[{name:"Lechon asado 8 horas", desc:"Con puré de malanga ahumado y mojo criollo", price:"$600"},{name:"Pargo a la brasa", desc:"Con cremoso de papa y ensalada de aguacate", price:"$650"},{name:"Coliflor entero asado", desc:"Con tahini, granada y pipas de calabaza", price:"$450"}]},{ category:"Menu degustacion", items:[{name:"Degustacion 7 pasos", desc:"Recorrido completo por los fuegos de la casa", price:"$1.200"}]},{ category:"Postres", items:[{name:"Platano caramelizado", desc:"Con dulce de leche y helado de canela", price:"$200"},{name:"Tarta tibia de guayaba", desc:"Con helado de queso crema", price:"$220"}]}],
-            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
+        { id:9, name:"Helados Su", category:"heladeria", neighborhood:"Centro Habana", address:"Galiano 258 e/ San Jose y Concordia", rating:4.1, priceLevel:1, tags:["Helados artesanales", "Batidos"], description:"Helados con sabor a infancia. Los mejores precios de la ciudad.", mustOrder:"Batido de mamey", editorNote:"El batido de mamey en agosto es un acto de fe.", hours:"Lun-Sab: 09:00am-21:00pm", phone:"", featured:false, isOpen:true, lat:23.133, lng:-82.362, images:["","","",""],
+            menu: [{ category:"Helados", items:[{name:"Mamey", desc:"Pulpa de mamey natural", price:"$60"},{name:"Guayaba", desc:"Guayaba fresca de la temporada", price:"$60"},{name:"Chocolate", desc:"Cacao cubano, intenso", price:"$60"}]},{ category:"Batidos", items:[{name:"Batido de mamey", desc:"Mamey, leche, hielo, azucar", price:"$120"},{name:"Batido de mango", desc:"Mango, leche, vainilla", price:"$120"}]}],
+            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"}]
         },
-        { id:11, name:"Sloppy Joe's", category:"bar", neighborhood:"Habana Vieja", address:"Calle Obra Pia 252", rating:4.1, priceLevel:1, tags:["Mojito","Bocaditos","Historico"], description:"El bar mas historico de La Habana, reabierto con la misma alma.", mustOrder:"Mojito clasico con bocaditos", editorNote:"Entra, no mordemos.", hours:"Lun–Dom 12:00–01:00", phone:"+53 7 8600 0201", featured:false, isOpen:true, lat:23.136, lng:-82.354, images:["https://picsum.photos/seed/sloppy1/800/600.jpg","https://picsum.photos/seed/sloppy2/800/600.jpg","https://picsum.photos/seed/sloppy3/800/600.jpg","https://picsum.photos/seed/sloppy4/800/600.jpg"],
-            menu: [{ category:"Tragos", items:[{name:"Mojito clasico", desc:"Ron, hierbabuena, limon, azucar, soda", price:"$150"},{name:"Daiquiri", desc:"Ron, limon, maraschino, azucar", price:"$140"},{name:"Cerveza Bucanero", desc:"500ml, rubia, cubana", price:"$80"},{name:"Ron de la casa", desc:"Copa de ron blanco o anejo", price:"$70"}]},{ category:"Bocaditos", items:[{name:"Bocadito de jamon", desc:"Pan cubano, jamon, mostaza", price:"$50"},{name:"Bocadito de pollo", desc:"Pollo desmechado, mayo, pan", price:"$50"},{name:"Croqueta de jamon", desc:"2 unidades, mostaza", price:"$40"},{name:"Empanadita de guayaba", desc:"Con queso crema", price:"$40"}]}],
-            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
-        },
-        { id:12, name:"Helados de Gelia", category:"heladeria", neighborhood:"Marianao", address:"Calle 49 y 112", rating:4.4, priceLevel:2, tags:["Helado artesanal","Sabores tropicales","Conos artesanales"], description:"Helados con frutas tropicales de la propia finca.", mustOrder:"Dulce de leche de coco", editorNote:"Va a cambiar tu vida.", hours:"Mar–Dom 12:00–22:00", phone:"+53 7 8600 0223", featured:false, isOpen:true, lat:23.083, lng:-82.417, images:["https://picsum.photos/seed/gelia1/800/600.jpg","https://picsum.photos/seed/gelia2/800/600.jpg","https://picsum.photos/seed/gelia3/800/600.jpg","https://picsum.photos/seed/gelia4/800/600.jpg"],
-            menu: [{ category:"Helados tropicales", items:[{name:"Dulce de leche de coco", desc:"Leche de coco, dulce de leche casero, vanilla", price:"$100"},{name:"Mango con chile", desc:"Mango cubano, toque de chile habanero", price:"$100"},{name:"Maracuya", desc:"Pulpa de maracuya, base de leche de avena", price:"$90"},{name:"Guanabana", desc:"Fruta tropical, suave, refrescante", price:"$100"}]},{ category:"Conos", items:[{name:"Cono de chocolate", desc:"Masa artesanal con cacao cubano", price:"$30"},{name:"Cono clasico", desc:"Masa de vainilla, receta propia", price:"$20"}]}],
-            links: [{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
-        },
-        { id:13, name:"La Guarida", category:"restaurante", neighborhood:"Centro Habana", address:"Concordia 418", rating:4.5, priceLevel:3, tags:["Paladar historica","Cocina cubana contemporanea","Terraza"], description:"La paladar mas famosa de Cuba, en un edificio colonial del Centro Habana.", mustOrder:"Enchilado de camarones", editorNote:"La terraza del tercer piso es una pelicula.", hours:"Mar–Dom 12:00–23:00", phone:"+53 7 8600 0245", featured:false, isOpen:true, lat:23.140, lng:-82.362, images:["https://picsum.photos/seed/guarida1/800/600.jpg","https://picsum.photos/seed/guarida2/800/600.jpg","https://picsum.photos/seed/guarida3/800/600.jpg","https://picsum.photos/seed/guarida4/800/600.jpg"],
-            menu: [{ category:"Entradas", items:[{name:"Carpaccio de pargo", desc:"Con aceite de oliva, alcaparras, rucula", price:"$300"},{name:"Tostones de platano con ceviche", desc:"Ceviche de camaron sobre tostones", price:"$280"},{name:"Crema de malanga", desc:"Con crutones de ajo y aceite de trufa", price:"$220"}]},{ category:"Principales", items:[{name:"Enchilado de camarones", desc:"Camarones en salsa de tomate, vino seco, pimiento", price:"$600"},{name:"Ropa vieja de lujo", desc:"Carne desmechada, salsa criolla, arroz moro", price:"$550"},{name:"Filete de pargo a la plancha", desc:"Con vegetales salteados y puré de boniato", price:"$500"}]},{ category:"Postres", items:[{name:"Tres leches tropical", desc:"Con leche de coco, guayaba y merengue", price:"$200"},{name:"Flan de cafe cubano", desc:"Con cafe espresso y caramelo oscuro", price:"$180"}]}],
-            links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
-        },
-        { id:14, name:"Bar Monserrate", category:"bar", neighborhood:"Habana Vieja", address:"O'Reilly 508", rating:4.0, priceLevel:1, tags:["Tragos clasicos","Noches de son","Precio justo"], description:"Bar de barrio con actitud habanera.", mustOrder:"Canchanchara clasica", editorNote:"Son, canchanchara, precio justo.", hours:"Mie–Dom 18:00–02:00", phone:"+53 7 8600 0267", featured:false, isOpen:false, lat:23.135, lng:-82.357, images:["https://picsum.photos/seed/monse1/800/600.jpg","https://picsum.photos/seed/monse2/800/600.jpg","https://picsum.photos/seed/monse3/800/600.jpg","https://picsum.photos/seed/monse4/800/600.jpg"],
-            menu: [{ category:"Tragos clasicos", items:[{name:"Canchanchara", desc:"Ron, miel, limon, agua caliente", price:"$120"},{name:"Mojito", desc:"Ron, hierbabuena, limon, azucar, soda", price:"$140"},{name:"Daiquiri", desc:"Ron, limon, maraschino", price:"$130"},{name:"Cuba Libre", desc:"Ron, Coca, limon", price:"$100"}]},{ category:"Para picar", items:[{name:"Chicharrones", desc:"Con mojo y limon", price:"$120"},{name:"Bocadito de jamon", desc:"Pan cubano, jamon, mostaza", price:"$50"}]}],
+        { id:10, name:"Bar Monserrate", category:"bar", neighborhood:"Habana Vieja", address:"O'Reilly 502 esq. Monserrate", rating:4.4, priceLevel:2, tags:["Tapas cubanas", "Cocteles"], description:"Tapas con alma habanera y tragos que cuentan historias.", mustOrder:"Cuba Libre especial", editorNote:"Las tapas de malanga son adictivas, ya estas avisado.", hours:"Lun-Dom: 12:00pm-01:00am", phone:"", featured:false, isOpen:true, lat:23.141, lng:-82.359, images:["","","",""],
+            menu: [{ category:"Tapas", items:[{name:"Malanga frita", desc:"Laminas crujientes de malanga con mojo", price:"$180"},{name:"Chicharrones de pollo", desc:"Crujientes, con salsa barbacoa casera", price:"$220"}]},{ category:"Cocteles", items:[{name:"Cuba Libre especial", desc:"Ron anejo 7 anos, Coca-Cola, limon", price:"$280"},{name:"Mojito de toronja", desc:"Ron, toronja, hierbabuena, soda", price:"$260"}]}],
             links: []
-        },
-        { id:15, name:"Cafe del Oriente", category:"restaurante", neighborhood:"Habana Vieja", address:"Plaza de San Francisco 6", rating:4.8, priceLevel:3, tags:["Cocina fusion","Vista a la plaza","Cena romantica"], description:"Cocina fusion cubano-mediterranea frente a la Plaza de San Francisco.", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"Mar–Sab 12:00–23:30", phone:"+53 7 8600 0289", featured:false, isOpen:true, lat:23.133, lng:-82.350, images:["https://picsum.photos/seed/oriente1/800/600.jpg","https://picsum.photos/seed/oriente2/800/600.jpg","https://picsum.photos/seed/oriente3/800/600.jpg","https://picsum.photos/seed/oriente4/800/600.jpg"],
-            menu: [{ category:"Entradas", items:[{name:"Bruschetta de malanga", desc:"Con ajo confitado y tomate cubano", price:"$200"},{name:"Ensalada mediterranea", desc:"Queso de cabra, aceitunas, tomate, albahaca", price:"$250"},{name:"Gazpacho tropical", desc:"Con mango y ají dulce", price:"$180"}]},{ category:"Principales", items:[{name:"Risotto de camarones y coco", desc:"Arroz arborio, camarones, leche de coco, limon", price:"$550"},{name:"Lechon confitado", desc:"Con puré de boniato y reduccion de ron", price:"$500"},{name:"Pargo en costra de coco", desc:"Con salsa de maracuya y arroz jazmin", price:"$600"},{name:"Ravioli de guayaba", desc:"Con salsa de queso azul y nueces", price:"$480"}]},{ category:"Postres", items:[{name:"Tiramisu de cafe cubano", desc:"Con cafe espresso cubano y ron", price:"$220"},{name:"Coulant de chocolate", desc:"Con helado de vainilla y ron anejo", price:"$250"}]}],
-            links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
         }
     ];
 
-    const collections = [
-        { id:"citas", name:"Citas que impresionan", desc:"Donde la velada se recuerde.", icon:"fa-heart", color:"#ec4899", bg:"rgba(236,72,153,0.12)", border:"rgba(236,72,153,0.2)", placeIds:[1,2,7,9,13] },
-        { id:"nocturna", name:"Cena despues de las 23", desc:"Cocina que no cierra temprano.", icon:"fa-moon", color:"#8b5cf6", bg:"rgba(139,92,246,0.12)", border:"rgba(139,92,246,0.2)", placeIds:[1,2,5,8,10,11,14] },
-        { id:"amigos", name:"Salir con amigos", desc:"Mesas grandes, picadas para compartir.", icon:"fa-users", color:"#f59e0b", bg:"rgba(245,158,11,0.12)", border:"rgba(245,158,11,0.2)", placeIds:[5,8,11,14,15] },
-        { id:"budget", name:"Presupuesto friendly", desc:"Buena onda sin vaciar el bolsillo.", icon:"fa-wallet", color:"#22c55e", bg:"rgba(34,197,94,0.12)", border:"rgba(34,197,94,0.2)", placeIds:[4,6,8,11,14] }
-    ];
-
-    let places = [...staticPlaces];
+    /* ═══════════════════════════════════════════
+       ESTADO GLOBAL
+       ═══════════════════════════════════════════ */
     let currentFilter = 'todos';
+    let currentBarrio = 'todos';
+    let openNowOnly = false;
     let searchQuery = '';
     let activeCollection = null;
-    let isOpenFilter = false;
-    let selectedBarrio = 'todos';
-    let viewMode = 'grid';
+    let currentView = 'grid';
     let map = null;
     let markers = [];
     let swiperInstance = null;
+    let currentModalPlace = null;
 
-    function cleanPhone(phone) { return phone.replace(/[^0-9+]/g, ''); }
+    /* ═══════════════════════════════════════════
+       COLECCIONES
+       ═══════════════════════════════════════════ */
+    const collections = [
+        { id:'cena-romantica', title:'Cena Romantica', desc:'Candlelight, vino y esa mesa esquinada', icon:'fa-heart', color:'#ec4899', bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.2)', ids:[1,2,7] },
+        { id:'mejores-cocteles', title:'Mejores Cocteles', desc:'Donde el ron se vuelve arte', icon:'fa-martini-glass', color:'#8b5cf6', bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.2)', ids:[7,8,10] },
+        { id:'familiar', title:'En Familia', desc:'Menus para todos y espacio para los peques', icon:'fa-people-group', color:'#06b6d4', bg:'rgba(6,182,212,0.12)', border:'rgba(6,182,212,0.2)', ids:[1,4,6] },
+        { id:'mariscos-frescos', title:'Mariscos Frescos', desc:'Directo del mar al plato', icon:'fa-fish', color:'#10b981', bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.2)', ids:[4,8] },
+        { id:'helados-artesanales', title:'Helados Artesanales', desc:'Bochas que valen la espera', icon:'fa-ice-cream', color:'#f472b6', bg:'rgba(244,114,182,0.12)', border:'rgba(244,114,182,0.2)', ids:[3,6,9] },
+        { id:'delivery-noche', title:'Delivery Nocturno', desc:'Antojos a las 2am? Resueltos', icon:'fa-moon', color:'#f59e0b', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.2)', ids:[1,5,9] },
+    ];
 
-    function checkIsOpen(hoursStr) {
-        if (!hoursStr) return false;
-        const now = new Date();
-        const dayNames = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
-        const today = dayNames[now.getDay()];
-        const hour = now.getHours();
-        const min = now.getMinutes();
-        const nowMins = hour * 60 + min;
-        const dayRangeMatch = hoursStr.match(/^([\w]+)(?:–([\w]+))?\s+(\d{1,2}):(\d{2})\s*–\s*(\d{1,2}):(\d{2})/);
-        if (!dayRangeMatch) return false;
-        const startDay = dayRangeMatch[1];
-        const endDay = dayRangeMatch[2] || startDay;
-        const openH = parseInt(dayRangeMatch[3]); const openM = parseInt(dayRangeMatch[4]);
-        const closeH = parseInt(dayRangeMatch[5]); const closeM = parseInt(dayRangeMatch[6]);
-        const openMins = openH * 60 + openM; const closeMins = closeH * 60 + closeM;
-        const dayOrder = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
-        const startIdx = dayOrder.indexOf(startDay); const endIdx = dayOrder.indexOf(endDay);
-        const todayIdx = dayOrder.indexOf(today);
-        let inRange = false;
-        if (startIdx <= endIdx) { inRange = todayIdx >= startIdx && todayIdx <= endIdx; }
-        else { inRange = todayIdx >= startIdx || todayIdx <= endIdx; }
-        if (!inRange) return false;
-        if (closeMins <= openMins) { return nowMins >= openMins || nowMins <= closeMins; }
-        return nowMins >= openMins && nowMins <= closeMins;
-    }
+    /* ═══════════════════════════════════════════
+       MAPEO DE CATEGORÍAS
+       ═══════════════════════════════════════════ */
+    const catMeta = {
+        bar: { label:'Bar / Cafeteria', icon:'fa-wine-glass-alt', cssClass:'cat-bar' },
+        restaurante: { label:'Restaurante', icon:'fa-utensils', cssClass:'cat-restaurante' },
+        heladeria: { label:'Heladeria', icon:'fa-ice-cream', cssClass:'cat-heladeria' }
+    };
 
-    function updateAllOpenStatus() {
-        places.forEach(p => { p.isOpen = checkIsOpen(p.hours); });
-    }
-
-    async function loadSupabasePlaces() {
-        try {
-            const { data, error } = await db.from('places').select('*').eq('status', 'published');
-            if (error) { console.warn('[Sabormap] Error cargando locales de Supabase:', error.message); return; }
-            if (!data || data.length === 0) { console.log('[Sabormap] No hay locales publicados en Supabase'); return; }
-            const supabasePlaces = data.map(p => ({
-                id: p.id, name: p.name || '', category: p.category || 'bar', neighborhood: p.neighborhood || '',
-                address: p.address || '', rating: parseFloat(p.rating) || 0, priceLevel: p.price_level || 2,
-                tags: Array.isArray(p.tags) ? p.tags : [], description: p.description || '',
-                mustOrder: p.must_order || '', editorNote: p.editor_note || '',
-                hours: p.hours || '', phone: p.phone || '', featured: false,
-                isOpen: checkIsOpen(p.hours || '') || p.is_open !== false,
-                lat: parseFloat(p.lat) || 23.11 + Math.random() * 0.05,
-                lng: parseFloat(p.lng) || -82.40 + Math.random() * 0.08,
-                images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [`https://picsum.photos/seed/${p.id}/800/600.jpg`],
-                menu: Array.isArray(p.menu) ? p.menu : [],
-                links: Array.isArray(p.links) ? p.links : []
-            }));
-            const staticIds = new Set(staticPlaces.map(p => p.id));
-            const newPlaces = supabasePlaces.filter(p => !staticIds.has(p.id));
-            newPlaces.forEach(p => places.push(p));
-            console.log(`[Sabormap] ${newPlaces.length} locales cargados desde Supabase (${places.length} total)`);
-            updateStatCounters();
-            populateBarrios();
-            renderPlaces();
-        } catch (err) { console.warn('[Sabormap] No se pudo conectar a Supabase:', err); }
-    }
-
-    function updateStatCounters() {
-        const statNumbers = document.querySelectorAll('.stat-number[data-target]');
-        if (statNumbers.length > 0) { statNumbers[0].setAttribute('data-target', places.length); statNumbers[0].textContent = places.length; }
-        const uniqueBarrios = new Set(places.map(p => p.neighborhood));
-        if (statNumbers.length > 1) { statNumbers[1].setAttribute('data-target', uniqueBarrios.size); statNumbers[1].textContent = uniqueBarrios.size; }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        updateAllOpenStatus();
-        renderCollections(); populateBarrios(); renderPlaces();
-        setupSearch(); setupKeyboardShortcuts(); animateCounters(); setupScrollReveal(); setupScrollButtons();
-        await loadSupabasePlaces();
-        setInterval(updateAllOpenStatus, 60000);
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+    /* ═══════════════════════════════════════════
+       INICIALIZACIÓN
+       ═══════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCollections();
+        renderPlaces();
+        populateBarrios();
+        setupSearch();
+        setupScrollReveal();
+        setupScrollBtns();
+        animateStats();
     });
 
-    function populateBarrios() {
-        const barrios = [...new Set(places.map(p => p.neighborhood))].sort();
-        const select = document.getElementById('barrioFilter');
-        const firstOpt = select.querySelector('option[value="todos"]');
-        select.innerHTML = ''; select.appendChild(firstOpt);
-        barrios.forEach(b => { const opt = document.createElement('option'); opt.value = b; opt.textContent = b; select.appendChild(opt); });
-    }
-
-    function setView(mode) {
-        viewMode = mode;
-        document.getElementById('gridViewBtn').classList.toggle('active', mode === 'grid');
-        document.getElementById('mapViewBtn').classList.toggle('active', mode === 'map');
-        document.getElementById('gridView').style.display = mode === 'grid' ? 'block' : 'none';
-        document.getElementById('mapView').classList.toggle('visible', mode === 'map');
-        if (mode === 'map') { if (!map) initMap(); else updateMapMarkers(); setTimeout(() => map.invalidateSize(), 100); }
-    }
-
-    function initMap() {
-        map = L.map('mapView', { zoomControl: false }).setView([23.113, -82.380], 13);
-        L.control.zoom({ position: 'bottomleft' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '©OpenStreetMap, ©CartoDB', maxZoom: 19
-        }).addTo(map);
-        updateMapMarkers();
-    }
-
-    function updateMapMarkers() {
-        if (!map) return; markers.forEach(m => map.removeLayer(m)); markers = [];
-        const filtered = getFilteredPlaces(); const bounds = [];
-        filtered.forEach(place => {
-            const catClass = (place.category === 'bar' || place.category === 'cafeteria') ? 'marker-bar' : place.category === 'restaurante' ? 'marker-restaurante' : 'marker-heladeria';
-            const iconHtml = `<div class="marker-pin ${catClass}"><i class="fas ${(place.category === 'bar' || place.category === 'cafeteria') ? 'fa-glass-martini-alt' : place.category === 'restaurante' ? 'fa-utensils' : 'fa-ice-cream'}"></i></div>`;
-            const customIcon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30] });
-            const popupContent = `<div class="map-popup-content"><div class="map-popup-title">${place.name}</div><div class="map-popup-info"><i class="fas fa-map-pin" style="color:var(--secondary);font-size:0.7rem;"></i> ${place.neighborhood} · ${place.isOpen ? '<span style="color:#22c55e">Abierto</span>' : '<span style="color:#ef4444">Cerrado</span>'}</div><button class="map-popup-btn" onclick="openModal('${place.id}')">Ver detalle</button></div>`;
-            const marker = L.marker([place.lat, place.lng], { icon: customIcon }).bindPopup(popupContent, { maxWidth: 200 }).addTo(map);
-            markers.push(marker); bounds.push([place.lat, place.lng]);
-        });
-        if (bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
-    }
-
-    function getFilteredPlaces() {
-        let filtered = places;
-        if (activeCollection) { const col = collections.find(c => c.id === activeCollection); if (col) filtered = filtered.filter(p => col.placeIds.includes(p.id)); }
-        if (currentFilter !== 'todos') filtered = filtered.filter(p => p.category === currentFilter || (currentFilter === 'bar' && p.category === 'cafeteria'));
-        if (isOpenFilter) filtered = filtered.filter(p => p.isOpen);
-        if (selectedBarrio !== 'todos') filtered = filtered.filter(p => p.neighborhood === selectedBarrio);
-        if (searchQuery) { filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery) || p.neighborhood.toLowerCase().includes(searchQuery) || p.tags.some(t => t.toLowerCase().includes(searchQuery)) || p.category.toLowerCase().includes(searchQuery) || (p.mustOrder && p.mustOrder.toLowerCase().includes(searchQuery))); }
-        return filtered;
-    }
-
-    function applyFilters() { selectedBarrio = document.getElementById('barrioFilter').value; renderPlaces(); }
-    function toggleOpenNow() { isOpenFilter = !isOpenFilter; document.getElementById('openNowBtn').classList.toggle('active', isOpenFilter); renderPlaces(); }
-    function setFilter(filter, btn) { currentFilter = filter; document.querySelectorAll('#filterContainer .filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderPlaces(); }
-
+    /* ═══════════════════════════════════════════
+       RENDERIZAR COLECCIONES
+       ═══════════════════════════════════════════ */
     function renderCollections() {
         const container = document.getElementById('collectionsScroll');
-        container.innerHTML = collections.map(col => {
-            return `<div class="collection-card" data-collection="${col.id}" onclick="setCollection('${col.id}', this)" style="--collection-color:${col.color}; --collection-bg:${col.bg}; --collection-border:${col.border};"><div class="collection-icon"><i class="fas ${col.icon}"></i></div><div class="collection-title">${col.name}</div><div class="collection-desc">${col.desc}</div><div class="collection-count"><i class="fas fa-store" style="font-size:0.65rem;"></i> ${col.placeIds.length} locales</div></div>`;
-        }).join('');
+        container.innerHTML = collections.map(c => `
+            <div class="collection-card" style="--collection-color:${c.color};--collection-bg:${c.bg};--collection-border:${c.border};"
+                 onclick="toggleCollection('${c.id}')" id="col-${c.id}">
+                <div class="collection-icon"><i class="fas ${c.icon}"></i></div>
+                <div class="collection-title">${c.title}</div>
+                <div class="collection-desc">${c.desc}</div>
+                <div class="collection-count"><i class="fas fa-store"></i> ${c.ids.length} lugares</div>
+            </div>
+        `).join('');
     }
-    function setCollection(colId, el) {
-        if (activeCollection === colId) { clearCollection(); return; }
-        activeCollection = colId; const col = collections.find(c => c.id === colId);
-        document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
-        document.getElementById('activeCollectionName').textContent = col.name;
+
+    function toggleCollection(id) {
+        if (activeCollection === id) { clearCollection(); return; }
+        activeCollection = id;
+        document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('col-' + id).classList.add('active');
+        const col = collections.find(c => c.id === id);
         document.getElementById('activeCollectionBar').classList.add('show');
-        currentFilter = 'todos'; document.querySelectorAll('#filterContainer .filter-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('#filterContainer .filter-btn[data-filter="todos"]').classList.add('active'); renderPlaces();
+        document.getElementById('activeCollectionName').textContent = col.title;
+        applyFilters();
     }
-    function clearCollection() { activeCollection = null; document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active')); document.getElementById('activeCollectionBar').classList.remove('show'); renderPlaces(); }
+
+    function clearCollection() {
+        activeCollection = null;
+        document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('activeCollectionBar').classList.remove('show');
+        applyFilters();
+    }
+
+    /* ═══════════════════════════════════════════
+       RENDERIZAR LUGARES
+       ═══════════════════════════════════════════ */
+    function getFilteredPlaces() {
+        let places = [...staticPlaces];
+        if (activeCollection) {
+            const col = collections.find(c => c.id === activeCollection);
+            places = places.filter(p => col.ids.includes(p.id));
+        }
+        if (currentFilter !== 'todos') places = places.filter(p => p.category === currentFilter);
+        if (currentBarrio !== 'todos') places = places.filter(p => p.neighborhood === currentBarrio);
+        if (openNowOnly) places = places.filter(p => p.isOpen);
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            places = places.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                p.neighborhood.toLowerCase().includes(q) ||
+                p.category.toLowerCase().includes(q) ||
+                p.tags.some(t => t.toLowerCase().includes(q))
+            );
+        }
+        return places;
+    }
 
     function renderPlaces() {
-        const filtered = getFilteredPlaces(); const grid = document.getElementById('placesGrid'); const noResults = document.getElementById('noResults');
-        document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}`;
-        if (viewMode === 'map') { updateMapMarkers(); }
-        if (filtered.length === 0) { grid.innerHTML = ''; noResults.style.display = 'block'; return; }
+        const places = getFilteredPlaces();
+        const grid = document.getElementById('placesGrid');
+        const noResults = document.getElementById('noResults');
+        document.getElementById('resultCount').textContent = `${places.length} resultado${places.length !== 1 ? 's' : ''}`;
+
+        if (places.length === 0) {
+            grid.innerHTML = '';
+            noResults.style.display = 'block';
+            return;
+        }
         noResults.style.display = 'none';
-        grid.innerHTML = filtered.map((place) => {
-            const catClass = (place.category === 'bar' || place.category === 'cafeteria') ? 'cat-bar' : place.category === 'restaurante' ? 'cat-restaurante' : 'cat-heladeria';
-            const catLabel = place.category === 'bar' ? 'Bar' : place.category === 'cafeteria' ? 'Cafeteria' : place.category === 'restaurante' ? 'Restaurante' : 'Heladeria';
-            let priceDots = ''; for (let i = 1; i <= 4; i++) priceDots += `<span class="price-dot ${i <= place.priceLevel ? 'filled' : 'empty'}"></span>`;
-            const fullStars = Math.floor(place.rating); const halfStar = place.rating % 1 >= 0.5;
-            let starsHtml = ''; for (let i = 0; i < fullStars; i++) starsHtml += '<i class="fas fa-star rating-star"></i>'; if (halfStar) starsHtml += '<i class="fas fa-star-half-alt rating-star"></i>';
+
+        grid.innerHTML = places.map(p => {
+            const meta = catMeta[p.category] || catMeta.bar;
+            const priceDots = Array.from({length:4}, (_,i) =>
+                `<span class="price-dot ${i < p.priceLevel ? 'filled' : 'empty'}"></span>`
+            ).join('');
+
             return `
-            <article class="place-card ${place.featured ? 'featured' : ''} reveal" onclick="openModal('${place.id}')">
+            <article class="place-card${p.featured ? ' featured' : ''}" onclick="openModal(${p.id})" tabindex="0"
+                     onkeydown="if(event.key==='Enter')openModal(${p.id})" role="button" aria-label="Ver ${p.name}">
                 <div class="card-img-wrapper">
-                    <img class="card-img" src="${place.images[0]}" alt="${place.name}" loading="lazy">
-                    <span class="cat-badge ${catClass}">${catLabel}</span>
+                    <span class="cat-badge ${meta.cssClass}"><i class="fas ${meta.icon}" style="margin-right:4px;font-size:0.6rem;"></i>${meta.label}</span>
+                    ${p.images[0] ? `<img class="card-img" src="${p.images[0]}" alt="${p.name}" loading="lazy">` :
+                    `<div class="card-img" style="background:linear-gradient(135deg, var(--card), var(--card-hover));display:flex;align-items:center;justify-content:center;"><i class="fas ${meta.icon}" style="font-size:2.5rem;color:var(--border);"></i></div>`}
                 </div>
-                <div style="padding:20px 22px 24px;">
-                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                        <h3 style="font-size:1.2rem;font-weight:700;">${place.name}</h3>
-                        <span class="open-badge ${place.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${place.isOpen ? 'Abierto' : 'Cerrado'}</span>
+                <div style="padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+                        <h3 style="font-weight:700;font-size:1.1rem;line-height:1.3;">${p.name}</h3>
+                        <span class="open-badge ${p.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${p.isOpen ? 'Abierto' : 'Cerrado'}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;color:var(--muted);font-size:0.82rem;">
-                        <span><i class="fas fa-map-pin" style="margin-right:4px;color:var(--secondary);font-size:0.7rem;"></i>${place.neighborhood}</span>
-                        <span style="display:flex;gap:3px;">${priceDots}</span>
+                    <div style="display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--muted);margin-bottom:8px;">
+                        <span><i class="fas fa-map-pin" style="margin-right:4px;font-size:0.7rem;"></i>${p.neighborhood}</span>
+                        <span style="display:flex;align-items:center;gap:3px;"><i class="fas fa-star rating-star" style="font-size:0.7rem;"></i>${p.rating}</span>
+                        <span style="display:flex;align-items:center;gap:2px;">${priceDots}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                        <span style="font-size:0.8rem;display:flex;gap:2px;">${starsHtml}</span>
-                        <span style="font-size:0.85rem;font-weight:600;">${place.rating}</span>
-                    </div>
-                    ${place.mustOrder ? `<div class="must-order-badge"><i class="fas fa-fire"></i>${place.mustOrder}</div>` : ''}
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">${place.tags.slice(0,3).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                    <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.description}</p>
+                    ${p.mustOrder ? `<div class="must-order-badge"><i class="fas fa-fire"></i>${p.mustOrder}</div>` : ''}
                 </div>
             </article>`;
         }).join('');
-        setupScrollReveal();
+
+        if (currentView === 'map') renderMapMarkers(places);
     }
 
-    function openModal(id) {
-        const place = places.find(p => p.id == id); if (!place) return;
-        const catClass = (place.category === 'bar' || place.category === 'cafeteria') ? 'cat-bar' : place.category === 'restaurante' ? 'cat-restaurante' : 'cat-heladeria';
-        const catLabel = place.category === 'bar' ? 'Bar' : place.category === 'cafeteria' ? 'Cafeteria' : place.category === 'restaurante' ? 'Restaurante' : 'Heladeria';
-        let priceDots = ''; for (let i = 1; i <= 4; i++) priceDots += `<span class="price-dot ${i <= place.priceLevel ? 'filled' : 'empty'}"></span>`;
-        const fullStars = Math.floor(place.rating); const halfStar = place.rating % 1 >= 0.5;
-        let starsHtml = ''; for (let i = 0; i < fullStars; i++) starsHtml += '<i class="fas fa-star rating-star"></i>'; if (halfStar) starsHtml += '<i class="fas fa-star-half-alt rating-star"></i>';
-        const slidesHtml = place.images.map(img => `<div class="swiper-slide"><img src="${img}" alt="${place.name}"></div>`).join('');
-        let menuBtnHtml = '';
-        if (place.menu && place.menu.length > 0) {
-            menuBtnHtml = `<div style="margin-bottom:24px;"><button onclick="openMenuModal('${place.id}')" style="width:100%;padding:16px 20px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--cream);font-family:'Space Grotesk',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.35s cubic-bezier(0.22,1,0.36,1);" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--card-hover)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'"><i class="fas fa-book-open" style="color:var(--accent);"></i> Ver Carta Completa</button></div>`;
-        }
-        let deliverySectionHtml = '';
-        if (place.links && place.links.length > 0) {
-            const linksHtml = place.links.map(link => {
-                const cssClass = link.cssClass || 'delivery-pedidosya'; const icon = link.icon || 'fa-motorcycle';
-                return `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${cssClass}" aria-label="${link.platform}"><i class="fas ${icon}"></i> ${link.platform}</a>`;
-            }).join('');
-            deliverySectionHtml = `<div class="delivery-section">${linksHtml}</div>`;
-        }
-        // Descripción opcional: solo se muestra si existe
-        const descHtml = place.description ? `<p style="color:var(--muted);line-height:1.8;margin-bottom:24px;font-size:0.95rem;">${place.description}</p>` : '';
+    /* ═══════════════════════════════════════════
+       FILTROS
+       ═══════════════════════════════════════════ */
+    function setFilter(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('#filterContainer .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters();
+    }
+    function toggleOpenNow() {
+        openNowOnly = !openNowOnly;
+        document.getElementById('openNowBtn').classList.toggle('active', openNowOnly);
+        applyFilters();
+    }
+    function applyFilters() { renderPlaces(); }
+    function navigateToFilter(cat) {
+        const btn = document.querySelector(`#filterContainer .filter-btn[data-filter="${cat}"]`);
+        if (btn) setFilter(cat, btn);
+    }
 
-        document.getElementById('modalContent').innerHTML = `
-            <div style="position:relative;">
-                <div class="swiper" id="modalSwiper">
-                    <div class="swiper-wrapper">${slidesHtml}</div>
-                    <div class="swiper-pagination"></div>
-                    <div class="swiper-button-prev"></div>
-                    <div class="swiper-button-next"></div>
+    function populateBarrios() {
+        const barrios = [...new Set(staticPlaces.map(p => p.neighborhood))].sort();
+        const sel = document.getElementById('barrioFilter');
+        barrios.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; sel.appendChild(o); });
+    }
+
+    function setupSearch() {
+        const input = document.getElementById('searchInput');
+        let debounce;
+        input.addEventListener('input', () => {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => { searchQuery = input.value.trim(); applyFilters(); }, 250);
+        });
+    }
+
+    /* ═══════════════════════════════════════════
+       VISTA MAPA
+       ═══════════════════════════════════════════ */
+    function setView(view) {
+        currentView = view;
+        document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
+        document.getElementById('mapViewBtn').classList.toggle('active', view === 'map');
+        document.getElementById('gridView').style.display = view === 'grid' ? 'block' : 'none';
+        document.getElementById('mapView').classList.toggle('visible', view === 'map');
+        if (view === 'map') {
+            if (!map) initMap();
+            else { setTimeout(() => map.invalidateSize(), 100); renderMapMarkers(getFilteredPlaces()); }
+        }
+    }
+
+    function initMap() {
+        map = L.map('mapView').setView([23.136, -82.360], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+        }).addTo(map);
+        setTimeout(() => map.invalidateSize(), 200);
+        renderMapMarkers(getFilteredPlaces());
+    }
+
+    function renderMapMarkers(places) {
+        if (!map) return;
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        places.forEach(p => {
+            if (!p.lat || !p.lng) return;
+            const meta = catMeta[p.category] || catMeta.bar;
+            const markerClass = `marker-${p.category}`;
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-pin ${markerClass}"><i class="fas ${meta.icon}"></i></div>`,
+                iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30]
+            });
+            const marker = L.marker([p.lat, p.lng], { icon }).addTo(map);
+            marker.bindPopup(`
+                <div class="map-popup-content">
+                    <div class="map-popup-title">${p.name}</div>
+                    <div class="map-popup-info"><i class="fas fa-star" style="color:var(--secondary);font-size:0.7rem;"></i> ${p.rating} &middot; ${p.neighborhood}</div>
+                    <button class="map-popup-btn" onclick="openModal(${p.id})">Ver detalle</button>
                 </div>
-                <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(11,14,23,0.7);backdrop-filter:blur(8px);border:none;color:white;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;z-index:10;transition:all 0.3s ease;" onmouseover="this.style.background='var(--accent)'" onmouseout="this.style.background='rgba(11,14,23,0.7)'" aria-label="Cerrar"><i class="fas fa-times"></i></button>
-                <span class="cat-badge ${catClass}" style="position:absolute;bottom:20px;left:20px;font-size:0.78rem;padding:6px 16px;z-index:10;">${catLabel}</span>
+            `);
+            markers.push(marker);
+        });
+    }
+
+    /* ═══════════════════════════════════════════
+       MODAL — DRAWER LATERAL REDISEÑADO
+       ═══════════════════════════════════════════ */
+    function openModal(id) {
+        const p = staticPlaces.find(pl => pl.id === id);
+        if (!p) return;
+        currentModalPlace = p;
+
+        const meta = catMeta[p.category] || catMeta.bar;
+        const priceDots = Array.from({length:4}, (_,i) =>
+            `<span class="price-dot ${i < p.priceLevel ? 'filled' : 'empty'}"></span>`
+        ).join('');
+
+        const hasImages = p.images.some(img => img && img.trim() !== '');
+        const validImages = p.images.filter(img => img && img.trim() !== '');
+
+        // Construir HTML del drawer
+        let html = '';
+
+        // Galería de imágenes con Swiper
+        if (hasImages) {
+            html += `
+            <div class="swiper" id="modalSwiper" style="aspect-ratio:16/10;">
+                <div class="swiper-wrapper">
+                    ${validImages.map(img => `<div class="swiper-slide"><img src="${img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;"></div>`).join('')}
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>`;
+        }
+
+        // Banner de categoría — la pieza central
+        html += `
+        <div class="drawer-cat-banner ${meta.cssClass}" style="${!hasImages ? 'padding-top:60px;' : ''}">
+            <div class="drawer-cat-orb" style="width:180px;height:180px;top:-40px;right:-30px;"></div>
+            <div class="drawer-cat-orb" style="width:120px;height:120px;bottom:-20px;left:20px;animation-delay:-4s;"></div>
+            <div class="drawer-cat-chip ${meta.cssClass}">
+                <i class="fas ${meta.icon}"></i> ${meta.label}
             </div>
-            <div style="padding:28px 28px 32px;">
-                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;flex-wrap:wrap;gap:12px;">
-                    <h2 class="font-display" style="font-size:1.8rem;font-weight:700;">${place.name}</h2>
-                    <span class="open-badge ${place.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${place.isOpen ? 'Abierto ahora' : 'Cerrado'}</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;margin:16px 0;flex-wrap:wrap;">
-                    <span style="display:flex;align-items:center;gap:6px;font-size:0.9rem;">${starsHtml}<strong style="margin-left:4px;">${place.rating}</strong></span>
-                    <span style="display:flex;gap:4px;">${priceDots}</span>
-                </div>
-                ${place.mustOrder ? `<div class="modal-must-order"><div class="modal-must-order-icon"><i class="fas fa-fire"></i></div><div><div class="modal-must-order-label">Lo que tenes que pedir</div><div class="modal-must-order-text">${place.mustOrder}</div></div></div>` : ''}
-                ${place.editorNote ? `<div class="editor-note"><div class="editor-note-label"><i class="fas fa-pen-nib" style="font-size:0.6rem;"></i> Nota del editor</div>${place.editorNote}</div>` : ''}
-                ${descHtml}
-                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">${place.tags.map(t => `<span class="tag" style="font-size:0.8rem;padding:6px 14px;">${t}</span>`).join('')}</div>
-                ${menuBtnHtml}
-                ${deliverySectionHtml}
-                <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-                    <div><div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;"><i class="fas fa-map-marker-alt" style="margin-right:4px;color:var(--accent);"></i>Direccion</div><div class="copy-address" style="font-size:0.9rem;font-weight:500;" onclick="copyToClipboard(this.textContent.trim())" title="Click para copiar">${place.address} <i class="fas fa-copy" style="font-size:0.7rem;margin-left:4px;opacity:0.5;"></i></div></div>
-                    <div><div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;"><i class="fas fa-clock" style="margin-right:4px;color:var(--accent);"></i>Horario</div><div style="font-size:0.9rem;font-weight:500;">${place.hours}</div></div>
-                    <div><div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;"><i class="fas fa-phone" style="margin-right:4px;color:var(--accent);"></i>Telefono</div><div style="font-size:0.9rem;font-weight:500;">${place.phone}</div></div>
-                    <div><div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;"><i class="fas fa-map" style="margin-right:4px;color:var(--accent);"></i>Municipio</div><div style="font-size:0.9rem;font-weight:500;">${place.neighborhood}</div></div>
-                </div>
-                <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
-                    <a href="tel:${cleanPhone(place.phone)}" style="flex:1;min-width:140px;padding:14px 20px;border-radius:14px;border:none;background:linear-gradient(135deg, var(--accent), #6d28d9);color:#fff;font-family:inherit;font-size:0.9rem;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px var(--accent-glow);">
-                        <i class="fas fa-phone"></i>Llamar
-                    </a>
-                    <a href="https://wa.me/5356578961?text=${encodeURIComponent('Hola, quiero info sobre ' + place.name)}" target="_blank" rel="noopener noreferrer" class="share-btn" style="flex:1;min-width:140px;background:#25D366;border-color:#25D366;color:#fff;">
-                        <i class="fab fa-whatsapp"></i>WhatsApp
-                    </a>
-                </div>
-                <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-                    <button class="share-btn" onclick="sharePlace(${place.id},'wa')"><i class="fab fa-whatsapp" style="color:#25D366;"></i> Compartir por WA</button>
-                    <button class="share-btn" onclick="sharePlace(${place.id},'copy')"><i class="fas fa-link" style="color:var(--accent);"></i> Copiar link</button>
+            <h2 class="drawer-place-name">${p.name}</h2>
+            <div class="drawer-meta-row">
+                <span class="drawer-rating-pill"><i class="fas fa-star"></i> ${p.rating}</span>
+                <span class="drawer-meta-item">
+                    <span class="open-badge ${p.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${p.isOpen ? 'Abierto' : 'Cerrado'}</span>
+                </span>
+                <span class="drawer-meta-item" style="display:flex;align-items:center;gap:3px;">${priceDots}</span>
+                <span class="drawer-meta-item"><i class="fas fa-map-pin"></i> ${p.neighborhood}</span>
+            </div>
+        </div>`;
+
+        // Must order
+        if (p.mustOrder) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.1s;">
+                <div class="drawer-must-order">
+                    <div class="drawer-must-order-icon"><i class="fas fa-fire"></i></div>
+                    <div>
+                        <div class="drawer-must-order-label">Lo que tenes que pedir</div>
+                        <div class="drawer-must-order-text">${p.mustOrder}</div>
+                    </div>
                 </div>
             </div>`;
-        document.getElementById('modal').classList.add('open'); document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-            if (swiperInstance) swiperInstance.destroy(true, true);
-            swiperInstance = new Swiper('#modalSwiper', { loop: true, spaceBetween: 0, grabCursor: true, pagination: { el: '.swiper-pagination', clickable: true }, navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' } });
-        }, 100);
-    }
-
-    function openMenuModal(id) {
-        const place = places.find(p => p.id == id); if (!place || !place.menu) return;
-        const categoriesHtml = place.menu.map(cat => {
-            const dishesHtml = cat.items.map(dish => `<div class="menu-dish"><div class="menu-dish-info"><div class="menu-dish-name">${dish.name}</div><div class="menu-dish-desc">${dish.desc}</div></div><div class="menu-dish-price">${dish.price}</div></div>`).join('');
-            return `<div class="menu-section"><h3 class="menu-section-title">${cat.category}</h3>${dishesHtml}</div>`;
-        }).join('');
-        const content = `<div class="menu-modal-header"><button class="menu-back-btn" onclick="openModal('${place.id}')"><i class="fas fa-arrow-left" style="font-size:0.75rem;"></i> Volver</button><div class="menu-modal-title">Carta de ${place.name}</div><button onclick="closeModal()" style="background:var(--card);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;flex-shrink:0;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--muted)'" aria-label="Cerrar"><i class="fas fa-times"></i></button></div><div class="menu-body">${categoriesHtml}</div>`;
-        const modalContent = document.getElementById('modalContent'); modalContent.scrollTop = 0; modalContent.innerHTML = content;
-    }
-
-    function closeModal(e) {
-        if (e && e.target !== e.currentTarget) return;
-        document.getElementById('modal').classList.remove('open'); document.body.style.overflow = '';
-        if (swiperInstance) { swiperInstance.destroy(true, true); swiperInstance = null; }
-    }
-
-    function setupSearch() { document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderPlaces(); }); }
-    function setupKeyboardShortcuts() { document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); } if (e.key === 'Escape') closeModal(); }); }
-    function setupScrollButtons() { window.addEventListener('scroll', () => { const s = window.scrollY, d = document.documentElement.scrollHeight - window.innerHeight; document.getElementById('scrollTopBtn').classList.toggle('visible', s > 400); document.getElementById('scrollBottomBtn').classList.toggle('visible', s < d - 400); }, { passive: true }); window.dispatchEvent(new Event('scroll')); }
-    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    function scrollToBottom() { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); }
-    function navigateToFilter(filter) {
-        document.getElementById('directorios').scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => {
-            const btn = document.querySelector(`#filterContainer .filter-btn[data-filter="${filter}"]`);
-            if (btn) setFilter(filter, btn);
-        }, 500);
-    }
-
-    const legalContent = {
-        terminos: {
-            title: 'Terminos de Uso',
-            body: `<div style="line-height:1.8;color:var(--muted);font-size:0.92rem;">
-                <p style="margin-bottom:16px;">Al acceder y utilizar Sabormap, aceptas los siguientes terminos y condiciones de uso.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">1. Uso del servicio.</strong> Sabormap es un directorio gastronomico informativo. Las recomendaciones, opiniones y notas del editor son de caracter subjetivo y no constituyen una garantia sobre la calidad de los establecimientos listados.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">2. Precios y disponibilidad.</strong> Los precios, horarios y disponibilidad mostrados pueden variar sin previo aviso. Recomendamos confirmar directamente con cada establecimiento antes de visitar.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">3. Propiedad intelectual.</strong> Todo el contenido original de Sabormap — textos, fotografias, diseno y codigo — es propiedad de sus creadores. No se permite la reproduccion total o parcial sin autorizacion.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">4. Responsabilidad.</strong> Sabormap no se responsabiliza por experiencias directas en los establecimientos listados. Nuestro rol es puramente informativo y de guia.</p>
-                <p><strong style="color:var(--cream);">5. Modificaciones.</strong> Nos reservamos el derecho de actualizar estos terminos en cualquier momento. El uso continuado del sitio implica la aceptacion de los cambios.</p>
-            </div>`
-        },
-        privacidad: {
-            title: 'Politica de Privacidad',
-            body: `<div style="line-height:1.8;color:var(--muted);font-size:0.92rem;">
-                <p style="margin-bottom:16px;">En Sabormap nos importa tu privacidad. Esta politica explica como manejamos tu informacion.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">1. Datos que recopilamos.</strong> No recopilamos datos personales de forma automatica. Navegar por Sabormap no requiere registro ni proporcionarnos informacion personal.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">2. Cookies.</strong> Utilizamos unicamente cookies tecnicas esenciales para el funcionamiento del sitio (preferencias de tema, filtros guardados). No utilizamos cookies de rastreo ni de publicidad.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">3. Informacion de contacto.</strong> Si nos escribes por correo electronico, tu direccion de email sera utilizada unicamente para responder tu consulta y no sera compartida con terceros.</p>
-                <p style="margin-bottom:12px;"><strong style="color:var(--cream);">4. Datos locales.</strong> Cualquier preferencia que guardes se almacena localmente en tu navegador (localStorage). No se envia a ningun servidor.</p>
-                <p><strong style="color:var(--cream);">5. Cambios.</strong> Cualquier cambio a esta politica sera publicado en esta pagina.</p>
-            </div>`
         }
-    };
 
-    function openLegalModal(type) {
-        const content = legalContent[type];
-        if (!content) return;
-        const modal = document.getElementById('modal');
-        const modalContent = document.getElementById('modalContent');
-        modalContent.innerHTML = `
-            <div style="padding:32px;max-width:600px;width:100%;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
-                    <h2 class="font-display" style="font-size:1.5rem;font-weight:700;color:var(--cream);">${content.title}</h2>
-                    <button onclick="closeModal()" style="width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all 0.3s;" onmouseover="this.style.color='var(--cream)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'"><i class="fas fa-times"></i></button>
+        // Editor note
+        if (p.editorNote) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.15s;">
+                <div class="drawer-editor-note">
+                    <div class="editor-note-label" style="margin-bottom:6px;"><i class="fas fa-pen-nib" style="font-size:0.6rem;"></i> Nota del editor</div>
+                    ${p.editorNote}
                 </div>
-                ${content.body}
+            </div>`;
+        }
+
+        // Descripción
+        if (p.description) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.2s;">
+                <div class="drawer-section-label">Sobre el lugar</div>
+                <p style="font-size:0.9rem;color:var(--muted);line-height:1.7;">${p.description}</p>
+            </div>`;
+        }
+
+        // Tags
+        if (p.tags && p.tags.length) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.25s;">
+                <div class="drawer-section-label">Especialidades</div>
+                <div class="drawer-tags">
+                    ${p.tags.map(t => `<span class="drawer-tag">${t}</span>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        // Info práctica (horario, dirección, teléfono)
+        html += `
+        <div class="drawer-section" style="animation-delay:0.3s;">
+            <div class="drawer-section-label">Informacion practica</div>
+            <div class="drawer-info-card">
+                ${p.hours ? `
+                <div class="drawer-info-row">
+                    <div class="drawer-info-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="drawer-info-label">Horario</div>
+                        <div class="drawer-info-value">${p.hours}</div>
+                    </div>
+                </div>` : ''}
+                ${p.address ? `
+                <div class="drawer-info-row">
+                    <div class="drawer-info-icon"><i class="fas fa-location-dot"></i></div>
+                    <div>
+                        <div class="drawer-info-label">Direccion</div>
+                        <div class="drawer-info-value copy-address" onclick="copyText('${p.address.replace(/'/g, "\\'")}');event.stopPropagation();">${p.address} <i class="fas fa-copy" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></div>
+                    </div>
+                </div>` : ''}
+                ${p.phone && p.phone !== '#' ? `
+                <div class="drawer-info-row">
+                    <div class="drawer-info-icon"><i class="fas fa-phone"></i></div>
+                    <div>
+                        <div class="drawer-info-label">Telefono</div>
+                        <div class="drawer-info-value"><a href="tel:${p.phone}" style="color:var(--secondary);text-decoration:none;">${p.phone}</a></div>
+                    </div>
+                </div>` : ''}
+            </div>
+        </div>`;
+
+        // Delivery / Reservas
+        if (p.links && p.links.length) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.35s;">
+                <div class="drawer-section-label">Delivery y reservas</div>
+                <div class="drawer-delivery">
+                    ${p.links.map(l => `
+                        <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
+                            <i class="fas ${l.icon}"></i> ${l.platform}
+                        </a>
+                    `).join('')}
+                </div>
+            </div>`;
+        }
+
+        // Botón de ver carta / menú
+        if (p.menu && p.menu.length) {
+            html += `
+            <div class="drawer-section" style="animation-delay:0.4s;">
+                <button class="drawer-menu-btn" onclick="openMenuSubModal()">
+                    <i class="fas fa-book-open"></i> Ver la carta completa
+                </button>
+            </div>`;
+        }
+
+        // Compartir
+        html += `
+        <div class="drawer-section" style="animation-delay:0.45s;margin-bottom:32px;">
+            <button class="drawer-share-btn" onclick="sharePlace(${p.id})">
+                <i class="fas fa-share-nodes"></i> Compartir este lugar
+            </button>
+        </div>`;
+
+        // Inyectar HTML
+        document.getElementById('modalDrawerScroll').innerHTML = html;
+
+        // Abrir drawer y overlay
+        document.getElementById('modalOverlay').classList.add('open');
+        document.getElementById('modalDrawer').classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        // Inicializar Swiper si hay imágenes
+        if (hasImages && validImages.length > 1) {
+            setTimeout(() => {
+                swiperInstance = new Swiper('#modalSwiper', {
+                    loop: true, grabCursor: true,
+                    pagination: { el: '.swiper-pagination', clickable: true },
+                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                    autoplay: { delay: 4000, disableOnInteraction: true },
+                });
+            }, 100);
+        }
+
+        // Scroll al inicio del drawer
+        document.getElementById('modalDrawerScroll').scrollTop = 0;
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        document.getElementById('modalDrawer').classList.remove('open');
+        document.getElementById('menuSubModal').classList.remove('open');
+        document.body.style.overflow = '';
+        if (swiperInstance) { swiperInstance.destroy(); swiperInstance = null; }
+        currentModalPlace = null;
+    }
+
+    /* ═══════════════════════════════════════════
+       SUB-MODAL DE MENÚ (dentro del drawer)
+       ═══════════════════════════════════════════ */
+    function openMenuSubModal() {
+        const p = currentModalPlace;
+        if (!p || !p.menu) return;
+        document.getElementById('menuSubTitle').textContent = `Carta — ${p.name}`;
+
+        let html = '';
+        p.menu.forEach(section => {
+            html += `<div class="menu-section">
+                <h3 class="menu-section-title">${section.category}</h3>`;
+            section.items.forEach(item => {
+                html += `<div class="menu-dish">
+                    <div class="menu-dish-info">
+                        <div class="menu-dish-name">${item.name}</div>
+                        <div class="menu-dish-desc">${item.desc}</div>
+                    </div>
+                    <div class="menu-dish-price">${item.price}</div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+
+        // Delivery links dentro del menú
+        if (p.links && p.links.length) {
+            html += `<div class="delivery-section">${p.links.map(l => `
+                <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
+                    <i class="fas ${l.icon}"></i> ${l.platform}
+                </a>
+            `).join('')}</div>`;
+        }
+
+        document.getElementById('menuSubBody').innerHTML = html;
+        document.getElementById('menuSubModal').classList.add('open');
+    }
+
+    function closeMenuSubModal() {
+        document.getElementById('menuSubModal').classList.remove('open');
+    }
+
+    /* ═══════════════════════════════════════════
+       UTILIDADES
+       ═══════════════════════════════════════════ */
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => showToast('Direccion copiada')).catch(() => showToast('No se pudo copiar'));
+    }
+
+    function sharePlace(id) {
+        const p = staticPlaces.find(pl => pl.id === id);
+        if (!p) return;
+        const text = `${p.name} — ${p.neighborhood}, La Habana | Sabormap`;
+        if (navigator.share) {
+            navigator.share({ title: p.name, text, url: window.location.href }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(text + ' ' + window.location.href)
+                .then(() => showToast('Enlace copiado')).catch(() => showToast('No se pudo copiar'));
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    /* ═══════════════════════════════════════════
+       MODAL LEGAL
+       ═══════════════════════════════════════════ */
+    function openLegalModal(type) {
+        const titles = { terminos: 'Terminos de Uso', privacidad: 'Politica de Privacidad' };
+        const bodies = {
+            terminos: '<p style="color:var(--muted);line-height:1.8;">Al usar Sabormap aceptas que la informacion de locales, precios y horarios puede variar y es referencial. No nos responsabilizamos por cambios en los comercios listados.</p>',
+            privacidad: '<p style="color:var(--muted);line-height:1.8;">Respetamos tu privacidad. No recopilamos datos personales sin tu consentimiento. Las cookies se usan unicamente para mejorar la experiencia de navegacion.</p>'
+        };
+        // Reutilizar el drawer para contenido legal
+        currentModalPlace = null;
+        const html = `
+            <div class="drawer-cat-banner cat-bar" style="padding-top:60px;">
+                <div class="drawer-cat-orb" style="width:180px;height:180px;top:-40px;right:-30px;"></div>
+                <h2 class="drawer-place-name">${titles[type] || 'Legal'}</h2>
+            </div>
+            <div class="drawer-section">
+                ${bodies[type] || ''}
             </div>
         `;
-        modal.classList.add('open');
+        document.getElementById('modalDrawerScroll').innerHTML = html;
+        document.getElementById('menuSubModal').classList.remove('open');
+        document.getElementById('modalOverlay').classList.add('open');
+        document.getElementById('modalDrawer').classList.add('open');
         document.body.style.overflow = 'hidden';
     }
-    function setupScrollReveal() { const o = new IntersectionObserver((e) => { e.forEach((en, i) => { if (en.isIntersecting) { setTimeout(() => en.target.classList.add('visible'), i * 80); o.unobserve(en.target); } }); }, { threshold: 0.1 }); document.querySelectorAll('.reveal').forEach(el => o.observe(el)); }
-    function animateCounters() { const o = new IntersectionObserver((e) => { e.forEach(en => { if (en.isIntersecting) { const el = en.target, t = parseInt(el.dataset.target); let c = 0; const inc = t / 60; const timer = setInterval(() => { c += inc; if (c >= t) { c = t; clearInterval(timer); } el.textContent = Math.floor(c).toLocaleString(); }, 25); o.unobserve(el); } }); }, { threshold: 0.5 }); document.querySelectorAll('.stat-number[data-target]').forEach(c => o.observe(c)); }
-    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
+    /* ═══════════════════════════════════════════
+       MENÚ MÓVIL
+       ═══════════════════════════════════════════ */
     function openMobileMenu() { document.getElementById('mobileMenu').classList.add('open'); document.body.style.overflow = 'hidden'; }
     function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); document.body.style.overflow = ''; }
 
-    function copyToClipboard(text) {
-        text = text.replace(/\s*$/, '');
-        if (navigator.clipboard) { navigator.clipboard.writeText(text).then(() => showToast('Copiado al portapapeles')); }
-        else { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Copiado al portapapeles'); }
+    /* ═══════════════════════════════════════════
+       SCROLL REVEAL
+       ═══════════════════════════════════════════ */
+    function setupScrollReveal() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     }
 
-    function sharePlace(id, method) {
-        const place = places.find(p => p.id == id); if (!place) return;
-        const text = `${place.name} — ${place.address}, ${place.neighborhood}. ${place.hours}. Rating: ${place.rating}/5`;
-        const url = window.location.href.split('#')[0] + '#place-' + id;
-        if (method === 'wa') { window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank'); }
-        else if (method === 'copy') { copyToClipboard(url); }
+    /* ═══════════════════════════════════════════
+       BOTONES DE SCROLL
+       ═══════════════════════════════════════════ */
+    function setupScrollBtns() {
+        const topBtn = document.getElementById('scrollTopBtn');
+        const bottomBtn = document.getElementById('scrollBottomBtn');
+        window.addEventListener('scroll', () => {
+            const show = window.scrollY > 400;
+            topBtn.classList.toggle('visible', show);
+            bottomBtn.classList.toggle('visible', show);
+        });
+    }
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function scrollToBottom() { document.getElementById('siteFooter').scrollIntoView({ behavior: 'smooth' }); }
+
+    /* ═══════════════════════════════════════════
+       ANIMAR ESTADÍSTICAS
+       ═══════════════════════════════════════════ */
+    function animateStats() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const el = e.target;
+                    const target = parseInt(el.dataset.target);
+                    let current = 0;
+                    const step = Math.ceil(target / 50);
+                    const interval = setInterval(() => {
+                        current += step;
+                        if (current >= target) { current = target; clearInterval(interval); }
+                        el.textContent = current;
+                    }, 30);
+                    observer.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('.stat-number').forEach(el => observer.observe(el));
     }
 
-</script>
+    /* Cerrar drawer con tecla Escape */
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (document.getElementById('menuSubModal').classList.contains('open')) {
+                closeMenuSubModal();
+            } else if (document.getElementById('modalDrawer').classList.contains('open')) {
+                closeModal();
+            }
+        }
+    });
+    </script>
 </body>
 </html>
