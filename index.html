@@ -1538,5 +1538,37 @@
         }
     });
     </script>
+    
+    <script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .then(reg => {
+                console.log('[SW] Registrado con scope:', reg.scope);
+            })
+            .catch(err => {
+                console.error('[SW] Error al registrar:', err);
+            });
+    });
+
+    // Opcional: avisar al usuario cuando hay nueva versión
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+    });
+}
+
+/* ============================================================
+   Detectar offline y avisar a la UI
+   ============================================================ */
+window.addEventListener('online', () => {
+    showToast('Conexion restablecida');
+});
+window.addEventListener('offline', () => {
+    showToast('Sin conexion — modo offline activo');
+});
+</script>
 </body>
 </html>
