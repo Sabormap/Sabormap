@@ -521,12 +521,13 @@
         .toast.show { transform: translateX(-50%) translateY(0); }
 
         /* Open / Closed badges */
-        .open-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 100px; }
+        .open-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 100px; max-width: 100%; white-space: nowrap; }
         .open-badge.open { background: var(--badge-open-bg); color: #10b981; border: 1px solid var(--badge-open-border); }
         .open-badge.closed { background: var(--badge-closed-bg); color: #ef4444; border: 1px solid var(--badge-closed-border); }
-        .pulse { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .pulse { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
         .open-badge.open .pulse { background: #10b981; animation: pulse 2s ease-in-out infinite; }
         .open-badge.closed .pulse { background: #ef4444; }
+        .badge-sub { font-weight: 500; opacity: 0.85; font-size: 0.68rem; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         /* Footer */
@@ -964,6 +965,185 @@
     ];
 
     /* ═══════════════════════════════════════════
+       CÁLCULO AUTOMÁTICO DE "ABIERTO / CERRADO"
+       Lee el campo `hours` de cada local y determina
+       si está abierto según la hora actual del navegador.
+       ═══════════════════════════════════════════ */
+    const DAY_MAP = {
+        'lun':1, 'lunes':1,
+        'mar':2, 'martes':2,
+        'mie':3, 'mié':3, 'miercoles':3, 'miércoles':3,
+        'jue':4, 'jueves':4,
+        'vie':5, 'viernes':5,
+        'sab':6, 'sáb':6, 'sabado':6, 'sábado':6,
+        'dom':0, 'domingo':0
+    };
+
+    // Convierte "12:00pm", "08:00am", "22:00pm", "00:00am" → minutos desde 00:00
+    function parseTimeToMinutes(raw) {
+        if (!raw) return null;
+        const m = String(raw).trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/);
+        if (!m) return null;
+        let h = parseInt(m[1], 10);
+        const min = parseInt(m[2], 10);
+        const suffix = m[3];
+        if (h === 0) return 0;                  // 00:00 → medianoche
+        if (h > 12) return h * 60 + min;        // 13–23, ignorar am/pm
+        if (suffix === 'pm') return (h === 12 ? 12 : h + 12) * 60 + min;
+        // am o sin sufijo
+        return (h === 12 ? 0 : h) * 60 + min;
+    }
+
+    // Devuelve lista de días (0=Dom … 6=Sáb) a partir de "Lun-Dom", "Dom-Jue", "Vie"
+    function parseDayRange(raw) {
+        if (!raw) return null;
+        const cleaned = raw.trim().toLowerCase();
+        if (DAY_MAP[cleaned] !== undefined) return [DAY_MAP[cleaned]];
+        const parts = cleaned.split(/[-–]/).map(s => s.trim());
+        if (parts.length !== 2) return null;
+        const start = DAY_MAP[parts[0]];
+        const end = DAY_MAP[parts[1]];
+        if (start === undefined || end === undefined) return null;
+        const days = [];
+        if (start === end) days.push(start);
+        else if (start < end) { for (let d = start; d <= end; d++) days.push(d); }
+        else { for (let d = start; d <= 6; d++) days.push(d); for (let d = 0; d <= end; d++) days.push(d); }
+        return days;
+    }
+
+    // Parsea el string completo de `hours` → [{ days:[0..6], open, close }]
+    function parseHours(hoursStr) {
+        if (!hoursStr) return [];
+        const cleaned = String(hoursStr)
+            .replace(/⏰️|⏰|🕐|🕒|⏰/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!cleaned) return [];
+        // Detecta TODOS los rangos horarios del string (no solo el primero),
+        // para soportar formatos con varias franjas separadas por coma o por
+        // otro rango de días, p.ej. "Lun-Jue: 10:00am-23:00pm Vie-Dom: 10:00am-00:00am"
+        const timeRegex = /(\d{1,2}:\d{2}\s*[ap]m)\s*[-–]\s*(\d{1,2}:\d{2}\s*[ap]m)/gi;
+        const timeMatches = [...cleaned.matchAll(timeRegex)];
+        if (!timeMatches.length) return [];
+        const result = [];
+        for (let i = 0; i < timeMatches.length; i++) {
+            const tm = timeMatches[i];
+            const open = parseTimeToMinutes(tm[1]);
+            const close = parseTimeToMinutes(tm[2]);
+            if (open === null || close === null) continue;
+            // Toma el texto entre el rango horario anterior y el actual → rango de días
+            const prevEnd = i > 0 ? timeMatches[i-1].index + timeMatches[i-1][0].length : 0;
+            const between = cleaned.substring(prevEnd, tm.index).trim().replace(/[:：]\s*$/, '').trim();
+            let days;
+            if (!between) {
+                days = [0,1,2,3,4,5,6];
+            } else {
+                const tokens = between.split(/\s+/);
+                const lastToken = tokens[tokens.length - 1];
+                const dayRange = parseDayRange(lastToken);
+                days = dayRange || [0,1,2,3,4,5,6];
+            }
+            result.push({ days, open, close });
+        }
+        return result;
+    }
+
+    // Devuelve true si el local está abierto AHORA según su campo `hours`
+    function isPlaceOpenNow(p, now) {
+        const t = now instanceof Date ? now : new Date();
+        const schedule = parseHours(p.hours);
+        if (!schedule.length) return !!p.isOpen; // fallback al valor manual si no hay horas
+        const day = t.getDay();                  // 0=Dom … 6=Sáb
+        const minutes = t.getHours() * 60 + t.getMinutes();
+        // 1) ¿Hoy tiene franja activa?
+        for (const slot of schedule) {
+            if (!slot.days.includes(day)) continue;
+            if (slot.close <= slot.open) {       // franja que cruza medianoche
+                if (minutes >= slot.open || minutes < slot.close) return true;
+            } else {
+                if (minutes >= slot.open && minutes < slot.close) return true;
+            }
+        }
+        // 2) ¿Pertenece al cierre tardío del día anterior? (ej. abierto hasta la 1am)
+        const prevDay = (day + 6) % 7;
+        for (const slot of schedule) {
+            if (!slot.days.includes(prevDay)) continue;
+            if (slot.close <= slot.open && minutes < slot.close) return true;
+        }
+        return false;
+    }
+
+    // Formatea minutos (0..1439) como "HH:MM" en formato 24h o 12h según preferencia
+    function formatMinutes(totalMin) {
+        let m = ((totalMin % 1440) + 1440) % 1440;
+        const h24 = Math.floor(m / 60);
+        const mm = String(m % 60).padStart(2, '0');
+        return `${String(h24).padStart(2, '0')}:${mm}`;
+    }
+
+    /* Devuelve { open:bool, label:"Cierra a las HH:MM" | "Abre a las HH:MM" | "" }
+       - Si está abierto → calcula a qué hora cierra (hoy o cruzando medianoche)
+       - Si está cerrado  → calcula a qué hora abre (hoy, o el próximo día con horario) */
+    function getPlaceStatus(p, now) {
+        const t = now instanceof Date ? now : new Date();
+        const schedule = parseHours(p.hours);
+        if (!schedule.length) {
+            return { open: !!p.isOpen, label: '' };
+        }
+        const day = t.getDay();
+        const minutes = t.getHours() * 60 + t.getMinutes();
+
+        // ¿Está abierto ahora? → buscar el cierre
+        for (const slot of schedule) {
+            if (!slot.days.includes(day)) continue;
+            const open = slot.open;
+            const close = slot.close;
+            const inSlot = (close <= open)
+                ? (minutes >= open || minutes < close)
+                : (minutes >= open && minutes < close);
+            if (inSlot) {
+                // Si close <= open el cierre cae en la madrugada del día siguiente
+                return { open: true, label: 'Cierra a las ' + formatMinutes(close) };
+            }
+        }
+        // ¿Está en el cierre tardío del día anterior?
+        const prevDay = (day + 6) % 7;
+        for (const slot of schedule) {
+            if (!slot.days.includes(prevDay)) continue;
+            if (slot.close <= slot.open && minutes < slot.close) {
+                return { open: true, label: 'Cierra a las ' + formatMinutes(slot.close) };
+            }
+        }
+
+        // Está cerrado → buscar próxima apertura
+        // Itera hasta 8 días hacia adelante para no colgarse en locales sin horario
+        const DAY_NAMES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+        for (let offset = 0; offset < 8; offset++) {
+            const checkDay = (day + offset) % 7;
+            for (const slot of schedule) {
+                if (!slot.days.includes(checkDay)) continue;
+                // Si offset === 0, solo considerar aperturas futuras (mayor a `minutes`)
+                if (offset === 0 && slot.open <= minutes) continue;
+                let prefix;
+                if (offset === 0) prefix = 'Abre hoy a las ';
+                else if (offset === 1) prefix = 'Abre mañana a las ';
+                else prefix = 'Abre el ' + DAY_NAMES[checkDay] + ' a las ';
+                return { open: false, label: prefix + formatMinutes(slot.open) };
+            }
+        }
+        return { open: false, label: '' };
+    }
+
+    // Helper para render del badge con estado + hora
+    function renderOpenBadge(p) {
+        const st = getPlaceStatus(p);
+        const cls = st.open ? 'open' : 'closed';
+        const main = st.open ? 'Abierto' : 'Cerrado';
+        const sub = st.label ? `<span class="badge-sub">· ${st.label}</span>` : '';
+        return `<span class="open-badge ${cls}"><span class="pulse"></span>${main}${sub}</span>`;
+    }
+
+    /* ═══════════════════════════════════════════
        ESTADO GLOBAL
        ═══════════════════════════════════════════ */
     let currentFilter = 'todos';
@@ -1010,6 +1190,23 @@
         setupScrollBtns();
         animateStats();
         handleMobileThemeToggle();
+        // Refresca los badges "Abierto/Cerrado" cada 60s sin intervención manual
+        setInterval(() => {
+            if (currentView === 'grid') renderPlaces();
+            if (currentModalPlace) {
+                // Si hay un modal abierto, actualiza solo el badge dentro del drawer
+                const badges = document.querySelectorAll('.drawer-meta-row .open-badge');
+                if (badges.length) {
+                    const st = getPlaceStatus(currentModalPlace);
+                    const main = st.open ? 'Abierto' : 'Cerrado';
+                    const sub = st.label ? `<span class="badge-sub">· ${st.label}</span>` : '';
+                    badges.forEach(b => {
+                        b.className = 'open-badge ' + (st.open ? 'open' : 'closed');
+                        b.innerHTML = '<span class="pulse"></span>' + main + sub;
+                    });
+                }
+            }
+        }, 60000);
     });
 
     /* ═══════════════════════════════════════════
@@ -1057,7 +1254,7 @@
         }
         if (currentFilter !== 'todos') places = places.filter(p => p.category === currentFilter);
         if (currentBarrio !== 'todos') places = places.filter(p => p.neighborhood === currentBarrio);
-        if (openNowOnly) places = places.filter(p => p.isOpen);
+        if (openNowOnly) places = places.filter(p => isPlaceOpenNow(p));
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             places = places.filter(p =>
@@ -1100,7 +1297,7 @@
                 <div style="padding:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
                         <h3 style="font-weight:700;font-size:1.1rem;line-height:1.3;">${p.name}</h3>
-                        <span class="open-badge ${p.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${p.isOpen ? 'Abierto' : 'Cerrado'}</span>
+                        ${renderOpenBadge(p)}
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--muted);margin-bottom:8px;">
                         <span><i class="fas fa-map-pin" style="margin-right:4px;font-size:0.7rem;"></i>${p.neighborhood}</span>
@@ -1243,7 +1440,7 @@
             <div class="drawer-meta-row">
                 <span class="drawer-rating-pill"><i class="fas fa-star"></i> ${p.rating}</span>
                 <span class="drawer-meta-item">
-                    <span class="open-badge ${p.isOpen ? 'open' : 'closed'}"><span class="pulse"></span>${p.isOpen ? 'Abierto' : 'Cerrado'}</span>
+                    ${renderOpenBadge(p)}
                 </span>
                 <span class="drawer-meta-item" style="display:flex;align-items:center;gap:3px;">${priceDots}</span>
                 <span class="drawer-meta-item"><i class="fas fa-map-pin"></i> ${p.neighborhood}</span>
