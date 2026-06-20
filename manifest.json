@@ -2,8 +2,8 @@
     "name": "Sabormap — Directorio Gastronomico de La Habana",
     "short_name": "Sabormap",
     "description": "Descubre los mejores bares, restaurantes y heladerias de La Habana.",
-    "start_url": "./",
-    "scope": "./",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#0b0e17",
     "theme_color": "#8b5cf6",
@@ -11,25 +11,25 @@
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "icon-192x192.png",
+            "src": "/icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "icon-512x512.png",
+            "src": "/icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "icon-192x192-maskable.png",
+            "src": "/icon-192x192-maskable.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "icon-512x512-maskable.png",
+            "src": "/icon-512x512-maskable.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
@@ -41,13 +41,13 @@
         {
             "name": "Buscar restaurantes",
             "short_name": "Buscar",
-            "url": "./#directorios",
+            "url": "/#directorios",
             "description": "Busca bares, restaurantes y heladerias en La Habana"
         },
         {
             "name": "Colecciones",
             "short_name": "Colecciones",
-            "url": "./#colecciones",
+            "url": "/#colecciones",
             "description": "Explora colecciones curadas de gastronomia habanera"
         }
     ]
