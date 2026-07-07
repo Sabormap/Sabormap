@@ -4370,9 +4370,9 @@
         <button class="scroll-btn" id="scrollBottomBtn" onclick="scrollToBottom()" aria-label="Ir al final"><i class="fas fa-arrow-down"></i></button>
     </div>
 
-    <a href="https://wa.me/5356578961" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat por WhatsApp">
+    <a href="#" onclick="event.preventDefault(); wspMenu()" class="whatsapp-float" aria-label="Chat por WhatsApp" title="Añade tu local a Sabormap">
         <i class="fab fa-whatsapp"></i>
-        <span class="wa-tooltip">Chatea con nosotros</span>
+        <span class="wa-tooltip">¿Tu local en Sabormap? Escríbenos</span>
     </a>
 
     <!-- ═══════════════════════════════════════════════════
@@ -4421,6 +4421,35 @@
         if (map && typeof mapTileLayer !== 'undefined') {
             updateMapTiles(next);
         }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       WHATSAPP — abre wa.me con menu de planes prellenado
+       Mismo menu que plan.html para consistencia.
+       ═══════════════════════════════════════════════════ */
+    const WHATSAPP_NUMBER = '5356578961';
+
+    function wspMenu() {
+        const msg =
+            '¡Hola Sabormap! 👋\n\n' +
+            'Quisiera contratar un plan para mi local. ¿Me ayudan a elegir?\n\n' +
+            '*Mi negocio es:* (bar / restaurante / heladería / cafetería / otro)\n' +
+            '*Nombre del local:* \n' +
+            '*Zona de La Habana:* \n' +
+            '*Presupuesto aproximado:* (hasta $10/mes · $50-$150 · $150+ USD)\n\n' +
+            '*Plan Sabormap (mapa):*\n' +
+            '1️⃣ Básico — 1,000 CUP/mes (~$4 USD)\n' +
+            '2️⃣ Pro — 2,500 CUP/mes (~$10 USD) ⭐\n' +
+            '3️⃣ Destacado — 4,000 CUP/mes (~$15 USD)\n\n' +
+            '*Plan Imperium (web propia):*\n' +
+            '4️⃣ Básico — $80 USD (pago único)\n' +
+            '5️⃣ Intermedio — $150 USD (pago único) ⭐\n' +
+            '6️⃣ Premium — $250 USD (pago único)\n\n' +
+            '*Combo:*\n' +
+            '7️⃣ Presencia Total — $175 USD 🚀\n\n' +
+            'Completa tus datos arriba y escribe el número del plan que te interesa 👇';
+        const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
     }
 
     // Variables para el mapa con soporte de tema
