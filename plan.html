@@ -189,6 +189,66 @@
       transition: opacity 0.3s;
     }
     .mob-menu.open { opacity: 1; pointer-events: all; }
+
+    /* Boton flotante de WhatsApp (igual que en sabormap.html) */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 50;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #25d366;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(37,211,102,0.55);
+    }
+    .wa-tooltip {
+      position: absolute;
+      left: 66px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+      border: 1px solid #D4C8B8;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      color: #2D2926;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .whatsapp-float:hover .wa-tooltip { opacity: 1; }
+    /* Pulso animado para llamar la atencion */
+    .whatsapp-float::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid #25d366;
+      animation: wa-pulse 2.2s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes wa-pulse {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      70%  { transform: scale(1.6); opacity: 0;   }
+      100% { transform: scale(1.6); opacity: 0;   }
+    }
+    @media (max-width: 640px) {
+      .whatsapp-float { width: 50px; height: 50px; bottom: 18px; left: 18px; font-size: 1.4rem; }
+    }
   </style>
 </head>
 <body>
@@ -211,7 +271,7 @@
         <a href="#ayuda" class="text-sm text-bark hover:text-charcoal transition-colors">¿Cuál elegir?</a>
       </div>
       <div class="flex items-center gap-3">
-        <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="toast('Te contactamos por WhatsApp')">Contratar</button>
+        <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="wspMenu()">Contratar</button>
         <button onclick="document.getElementById('mobMenu').classList.add('open')" class="md:hidden w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
           <span class="iconify text-bark text-lg" data-icon="mdi:menu"></span>
         </button>
@@ -228,7 +288,7 @@
     <a href="#imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Imperium</a>
     <a href="#combo" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Combo</a>
     <a href="#ayuda" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">¿Cuál elegir?</a>
-    <button class="btn-fill mt-4" onclick="toast('Te contactamos'); this.closest('.mob-menu').classList.remove('open')">Contratar</button>
+    <button class="btn-fill mt-4" onclick="wspMenu()">Contratar</button>
   </div>
 
   <!-- HERO -->
@@ -295,7 +355,7 @@
             </div>
           </div>
 
-          <button class="btn-outline w-full" onclick="toast('Plan Básico Sabormap seleccionado')">Elegir Básico</button>
+          <button class="btn-outline w-full" onclick="wsp('Sabormap Básico', '1,000 CUP/mes (~$4 USD)')">Elegir Básico</button>
         </div>
 
         <!-- Pro — Featured -->
@@ -343,7 +403,7 @@
             </div>
           </div>
 
-          <button class="btn-light w-full" onclick="toast('¡Plan Pro seleccionado! Te contactamos')">Elegir Pro</button>
+          <button class="btn-light w-full" onclick="wsp('Sabormap Pro', '2,500 CUP/mes (~$10 USD)')">Elegir Pro</button>
         </div>
 
         <!-- Destacado -->
@@ -384,7 +444,7 @@
             </div>
           </div>
 
-          <button class="btn-outline w-full" onclick="toast('Plan Destacado Sabormap seleccionado')">Elegir Destacado</button>
+          <button class="btn-outline w-full" onclick="wsp('Sabormap Destacado', '4,000 CUP/mes (~$15 USD)')">Elegir Destacado</button>
         </div>
       </div>
 
@@ -447,7 +507,7 @@
             </div>
           </div>
 
-          <button class="btn-outline w-full" onclick="toast('Imperium Básico $80 seleccionado')">Solicitar $80</button>
+          <button class="btn-outline w-full" onclick="wsp('Imperium Básico', '$80 USD (pago único)')">Solicitar $80</button>
         </div>
 
         <!-- Intermedio — Featured -->
@@ -503,7 +563,7 @@
             </div>
           </div>
 
-          <button class="btn-light w-full" onclick="toast('¡Imperium Intermedio seleccionado!')">Solicitar $150</button>
+          <button class="btn-light w-full" onclick="wsp('Imperium Intermedio', '$150 USD (pago único)')">Solicitar $150</button>
         </div>
 
         <!-- Premium -->
@@ -552,7 +612,7 @@
             </div>
           </div>
 
-          <button class="btn-outline w-full" onclick="toast('Imperium Premium $250 seleccionado')">Solicitar $250</button>
+          <button class="btn-outline w-full" onclick="wsp('Imperium Premium', '$250 USD (pago único)')">Solicitar $250</button>
         </div>
       </div>
 
@@ -637,7 +697,7 @@
             </div>
           </div>
 
-          <button class="btn-fill w-full !text-base !py-4" onclick="toast('¡Combo Presencia Total por $175 seleccionado!')">
+          <button class="btn-fill w-full !text-base !py-4" onclick="wsp('Combo Presencia Total', '$175 USD')">
             <span class="iconify text-lg" data-icon="mdi:lightning-bolt"></span>
             Quiero el Combo por $175
           </button>
@@ -704,7 +764,7 @@
             <p class="text-[10px] tracking-[0.15em] uppercase text-sand/50 mb-2">Tu plan ideal</p>
             <h3 class="font-serif text-2xl text-cream mb-3" id="rT">—</h3>
             <p class="text-sm text-sand leading-relaxed mb-6 max-w-sm mx-auto" id="rD">—</p>
-            <button class="btn-fill" id="rB" onclick="toast('¡Perfecto! Te contactamos')">Contratar</button>
+            <button class="btn-fill" id="rB" onclick="wspQuiz()">Contratar</button>
             <button class="block mx-auto mt-4 text-xs text-sand/40 hover:text-sand/70 transition-colors cursor-pointer bg-transparent border-none font-['DM_Sans']" onclick="qRst()">← Volver</button>
           </div>
         </div>
@@ -718,7 +778,7 @@
       <h2 class="font-serif text-2xl md:text-3xl text-charcoal mb-3">¿Listo para <span class="italic text-brand">empezar</span>?</h2>
       <p class="text-sm text-bark mb-8 leading-relaxed">Escríbenos por WhatsApp y te asesoramos gratis.</p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <button class="btn-fill !py-4 !px-8 !text-base" onclick="toast('Abriendo WhatsApp...')">
+        <button class="btn-fill !py-4 !px-8 !text-base" onclick="wsp()">
           <span class="iconify text-lg" data-icon="mdi:whatsapp"></span>
           WhatsApp
         </button>
@@ -751,6 +811,12 @@
     </div>
   </div>
 
+  <!-- Boton flotante de WhatsApp (siempre visible al hacer scroll) -->
+  <a href="#" onclick="event.preventDefault(); wspMenu()" class="whatsapp-float" aria-label="Chat por WhatsApp" title="Escríbenos por WhatsApp">
+    <span class="iconify" data-icon="mdi:whatsapp"></span>
+    <span class="wa-tooltip">¿Tu local en Sabormap? Escríbenos</span>
+  </a>
+
   <script>
     // Mobile
     document.querySelectorAll('.mob-menu a, .mob-menu button:not(:first-child)').forEach(el => {
@@ -764,6 +830,63 @@
       document.getElementById('tEl').classList.add('show');
       clearTimeout(tt);
       tt = setTimeout(() => document.getElementById('tEl').classList.remove('show'), 3000);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  WHATSAPP — abre wa.me con mensaje prellenado
+    //  Reemplaza WHATSAPP_NUMBER por el número real de Sabormap
+    //  (formato internacional, solo dígitos, sin + ni espacios)
+    //  Ej Cuba: 53530000000  →  +53 5300 0000
+    // ─────────────────────────────────────────────────────────
+    const WHATSAPP_NUMBER = '5356578961';
+
+    function wsp(plan, precio) {
+      let msg = '¡Hola Sabormap! 👋\n\n';
+      if (plan) {
+        msg += 'Quisiera contratar el plan: *' + plan + '*\n';
+        if (precio) msg += 'Precio: ' + precio + '\n';
+        msg += '\n¿Me ayudan con los siguientes pasos para dar de alta mi local?\n\nGracias. 🙌';
+      } else {
+        msg += 'Quisiera más información sobre los planes para publicar mi local en Sabormap.\n\n¿Me pueden ayudar?\n\nGracias. 🙌';
+      }
+      const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
+      toast('Abriendo WhatsApp…');
+      window.open(url, '_blank');
+    }
+
+    // Para el botón del resultado del quiz (lee el plan recomendado del DOM)
+    function wspQuiz() {
+      const t = (document.getElementById('rT').textContent || '').trim();
+      const parts = t.split('—').map(s => s.trim());
+      wsp(parts[0] || 'Plan recomendado', parts[1] || '');
+    }
+
+    // Menu rapido de seleccion de plan (boton del header)
+    // Pre-llena WhatsApp con todos los planes numerados para que el
+    // cliente solo escriba el numero del que le interesa.
+    // Tambien pregunta por el tipo de negocio para tener contexto.
+    function wspMenu() {
+      const msg =
+        '¡Hola Sabormap! 👋\n\n' +
+        'Quisiera contratar un plan para mi local. ¿Me ayudan a elegir?\n\n' +
+        '*Mi negocio es:* (bar / restaurante / heladería / cafetería / otro)\n' +
+        '*Nombre del local:* \n' +
+        '*Zona de La Habana:* \n' +
+        '*Presupuesto aproximado:* (hasta $10/mes · $50–$150 · $150+ USD)\n\n' +
+        '*Plan Sabormap (mapa):*\n' +
+        '1️⃣ Básico — 1,000 CUP/mes (~$4 USD)\n' +
+        '2️⃣ Pro — 2,500 CUP/mes (~$10 USD) ⭐\n' +
+        '3️⃣ Destacado — 4,000 CUP/mes (~$15 USD)\n\n' +
+        '*Plan Imperium (web propia):*\n' +
+        '4️⃣ Básico — $80 USD (pago único)\n' +
+        '5️⃣ Intermedio — $150 USD (pago único) ⭐\n' +
+        '6️⃣ Premium — $250 USD (pago único)\n\n' +
+        '*Combo:*\n' +
+        '7️⃣ Presencia Total — $175 USD 🚀\n\n' +
+        'Completa tus datos arriba y escribe el número del plan que te interesa 👇';
+      const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
+      toast('Abriendo WhatsApp…');
+      window.open(url, '_blank');
     }
 
     // Scroll reveal
