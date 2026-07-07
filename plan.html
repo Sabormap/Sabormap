@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planes — Sabormap & Imperium</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            dm: ['DM Sans', 'sans-serif'],
+            serif: ['DM Serif Display', 'serif'],
+          },
+          colors: {
+            brand: '#D4542B',
+            'brand-dark': '#B8431F',
+            'brand-light': '#E8714A',
+            cream: '#FDF8F3',
+            'cream-warm': '#F7F0E8',
+            'cream-dim': '#EDE4D8',
+            sand: '#D4C8B8',
+            bark: '#8B7D6B',
+            'bark-dark': '#5C5347',
+            charcoal: '#2D2926',
+            'charcoal-light': '#3D3733',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #FDF8F3; color: #2D2926; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #FDF8F3; }
+    ::-webkit-scrollbar-thumb { background: #D4C8B8; border-radius: 3px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .anim { opacity: 0; animation: fadeUp 0.7s ease-out forwards; }
+    .d1 { animation-delay: .1s; }
+    .d2 { animation-delay: .2s; }
+    .d3 { animation-delay: .3s; }
+
+    .sr { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.22,1,0.36,1); }
+    .sr.vis { opacity: 1; transform: translateY(0); }
+
+    .plan-card {
+      background: #fff;
+      border: 1.5px solid #EDE4D8;
+      border-radius: 20px;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+    .plan-card:hover {
+      border-color: #D4C8B8;
+      box-shadow: 0 12px 40px -10px rgba(45,41,38,0.1);
+      transform: translateY(-4px);
+    }
+
+    .featured {
+      background: #2D2926;
+      border-color: #D4542B;
+      color: #FDF8F3;
+    }
+    .featured:hover {
+      border-color: #E8714A;
+      box-shadow: 0 16px 50px -10px rgba(212,84,43,0.2);
+    }
+
+    .btn-fill {
+      background: #D4542B;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 13px 28px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-fill:hover { background: #B8431F; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,84,43,0.25); }
+
+    .btn-outline {
+      background: transparent;
+      color: #2D2926;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 1.5px solid #D4C8B8;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-outline:hover { border-color: #8B7D6B; background: #F7F0E8; }
+
+    .btn-light {
+      background: #FDF8F3;
+      color: #2D2926;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 13px 28px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(253,248,243,0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-light:hover { background: #F7F0E8; border-color: rgba(253,248,243,0.4); }
+
+    .combo-card {
+      background: #2D2926;
+      border: 1.5px solid #D4542B;
+      border-radius: 24px;
+      color: #FDF8F3;
+      position: relative;
+      overflow: hidden;
+    }
+    .combo-card::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(212,84,43,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .quiz-btn {
+      background: #fff;
+      border: 1.5px solid #EDE4D8;
+      border-radius: 14px;
+      padding: 16px 20px;
+      color: #5C5347;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+    }
+    .quiz-btn:hover {
+      border-color: #D4542B;
+      color: #D4542B;
+      background: #FDF8F3;
+    }
+
+    .warm-line { height: 1px; background: linear-gradient(90deg, transparent, #EDE4D8, transparent); }
+
+    .toast-el {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #2D2926; color: #FDF8F3;
+      border: 1px solid #3D3733;
+      border-radius: 14px; padding: 14px 24px;
+      z-index: 999; opacity: 0;
+      transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+      white-space: nowrap;
+    }
+    .toast-el.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    .mob-menu {
+      position: fixed; inset: 0;
+      background: rgba(253,248,243,0.97);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .mob-menu.open { opacity: 1; pointer-events: all; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-lg border-b border-cream-dim/50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+          <span class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
+        </div>
+        <span class="font-serif text-lg text-charcoal">Sabormap</span>
+        <span class="text-sand text-xs">×</span>
+        <span class="text-sm text-bark font-medium">Imperium</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#sabormap" class="text-sm text-bark hover:text-charcoal transition-colors">Sabormap</a>
+        <a href="#imperium" class="text-sm text-bark hover:text-charcoal transition-colors">Imperium</a>
+        <a href="#combo" class="text-sm text-bark hover:text-charcoal transition-colors">Combo</a>
+        <a href="#ayuda" class="text-sm text-bark hover:text-charcoal transition-colors">¿Cuál elegir?</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="toast('Te contactamos por WhatsApp')">Contratar</button>
+        <button onclick="document.getElementById('mobMenu').classList.add('open')" class="md:hidden w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
+          <span class="iconify text-bark text-lg" data-icon="mdi:menu"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobMenu" class="mob-menu">
+    <button onclick="this.parentElement.classList.remove('open')" class="absolute top-5 right-6 w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
+      <span class="iconify text-bark text-lg" data-icon="mdi:close"></span>
+    </button>
+    <a href="#sabormap" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Sabormap</a>
+    <a href="#imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Imperium</a>
+    <a href="#combo" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Combo</a>
+    <a href="#ayuda" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">¿Cuál elegir?</a>
+    <button class="btn-fill mt-4" onclick="toast('Te contactamos'); this.closest('.mob-menu').classList.remove('open')">Contratar</button>
+  </div>
+
+  <!-- HERO -->
+  <header class="pt-32 pb-16 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="max-w-2xl">
+        <p class="anim text-xs font-semibold tracking-[0.2em] uppercase text-brand mb-5">Planes y Precios</p>
+        <h1 class="anim d1 font-serif text-5xl sm:text-6xl md:text-7xl leading-[0.95] mb-6 text-charcoal">
+          Tu negocio,<br>
+          <span class="italic text-brand">visible</span> para<br>
+          todos
+        </h1>
+        <p class="anim d2 text-base sm:text-lg text-bark leading-relaxed max-w-md">
+          Desde aparecer en el mapa hasta tener tu tienda online. Encuentra el plan que necesita tu negocio hoy.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ SABORMAP ============ -->
+  <section id="sabormap" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">Suscripción mensual</p>
+          <h2 class="font-serif text-3xl md:text-4xl text-charcoal">Sabormap <span class="italic text-brand">Planes</span></h2>
+        </div>
+        <p class="text-sm text-bark max-w-xs">Tu ficha en el mapa de negocios. Pago mensual en CUP o USD.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <!-- Básico -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 01</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Básico</h3>
+          <p class="text-xs text-bark mb-6">Listado en el mapa</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">1,000</span>
+            <p class="text-xs text-bark mt-1">CUP/mes · ~$4 USD</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Solo quieres existir en el mapa. Nombre, dirección, una foto y enlace a redes. Presencia mínima pero real.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Ficha con nombre y dirección
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              1 foto principal
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Enlace a redes sociales
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Visible en búsquedas
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="toast('Plan Básico Sabormap seleccionado')">Elegir Básico</button>
+        </div>
+
+        <!-- Pro — Featured -->
+        <div class="plan-card featured p-7 flex flex-col md:-mt-4 md:mb-[-16px]">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-brand text-white text-[10px] font-bold tracking-[0.12em] uppercase px-3 py-1 rounded-full">Recomendado</span>
+          </div>
+          <h3 class="font-serif text-xl text-cream mb-1">Pro</h3>
+          <p class="text-xs text-sand mb-6">Autogestión completa</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-white">2,500</span>
+            <p class="text-xs text-sand mt-1">CUP/mes · ~$10 USD</p>
+          </div>
+
+          <div class="bg-white/[0.06] border border-white/[0.08] rounded-xl p-4 mb-6">
+            <div class="flex items-start gap-2.5">
+              <span class="iconify text-brand-light text-base mt-0.5 shrink-0" data-icon="mdi:star-four-points"></span>
+              <p class="text-sm text-sand leading-relaxed">
+                <span class="text-white font-semibold">¿Por qué este?</span> Control total sobre tu ficha. Cambia la carta cuando quieras, sube fotos, actualiza precios. Los dueños que prueban este plan son los que terminan pidiendo una web propia.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Todo lo del Básico
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Dashboard de autogestión
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Actualizar carta, horarios, fotos
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Hasta 10 fotos en galería
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Estadísticas de vistas
+            </div>
+          </div>
+
+          <button class="btn-light w-full" onclick="toast('¡Plan Pro seleccionado! Te contactamos')">Elegir Pro</button>
+        </div>
+
+        <!-- Destacado -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 03</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Destacado</h3>
+          <p class="text-xs text-bark mb-6">Marketing activo</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">4,000</span>
+            <p class="text-xs text-bark mt-1">CUP/mes · ~$15 USD</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Sobresalir entre la competencia. Apareces primero en búsquedas, badge distintivo y te promocionamos en nuestras redes.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Todo lo del Pro
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Prioridad en búsquedas
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              1 post/mes en redes Sabormap
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Badge "Destacado"
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Soporte prioritario WhatsApp
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="toast('Plan Destacado Sabormap seleccionado')">Elegir Destacado</button>
+        </div>
+      </div>
+
+      <div class="mt-7 flex flex-wrap items-center gap-4 text-[11px] text-bark/60">
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:cellphone"></span> Transfermóvil</span>
+        <span class="text-cream-dim">·</span>
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:bank"></span> EnZona</span>
+        <span class="text-cream-dim">·</span>
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:currency-usd"></span> También en USD</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
+
+  <!-- ============ IMPERIUM ============ -->
+  <section id="imperium" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">Pago único · USD</p>
+          <h2 class="font-serif text-3xl md:text-4xl text-charcoal">Imperium <span class="italic text-brand">Web Design</span></h2>
+        </div>
+        <p class="text-sm text-bark max-w-xs">Tu propia página web profesional. Un pago y es tuya para siempre.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <!-- Básico -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 01</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Básico</h3>
+          <p class="text-xs text-bark mb-6">Tarjeta digital elegante</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">$80</span>
+            <p class="text-xs text-bark mt-1">USD · Pago único</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Para paladares y cafeterías que necesitan presencia mínima pero profesional. Tu carta siempre disponible sin gastar datos en Instagram.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Landing (Inicio, Carta, Contacto)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              100% responsive
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Redes + WhatsApp
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Formulario de reservas
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="toast('Imperium Básico $80 seleccionado')">Solicitar $80</button>
+        </div>
+
+        <!-- Intermedio — Featured -->
+        <div class="plan-card featured p-7 flex flex-col md:-mt-4 md:mb-[-16px]">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-brand text-white text-[10px] font-bold tracking-[0.12em] uppercase px-3 py-1 rounded-full">Más Vendido</span>
+          </div>
+          <h3 class="font-serif text-xl text-cream mb-1">Intermedio</h3>
+          <p class="text-xs text-sand mb-6">Independencia digital total</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-white">$150</span>
+            <p class="text-xs text-sand mt-1">USD · Pago único</p>
+          </div>
+
+          <div class="bg-white/[0.06] border border-white/[0.08] rounded-xl p-4 mb-6">
+            <div class="flex items-start gap-2.5">
+              <span class="iconify text-brand-light text-base mt-0.5 shrink-0" data-icon="mdi:star-four-points"></span>
+              <p class="text-sm text-sand leading-relaxed">
+                <span class="text-white font-semibold">¿Por qué este?</span> Tu negocio se independiza de Instagram. Si alguien te busca en Google, te encuentra directo. Recibes reservas al correo. Es el plan que más valor percibe el cliente por su dinero.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Hasta 5 páginas completas
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Diseño personalizado a tu marca
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Galería de platos/productos
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Email de nuevas reservas
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              SEO básico (Google)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Google Maps integrado
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-sand/50">
+              <span class="iconify text-sand/30 text-base" data-icon="mdi:plus"></span>
+              Logo: +$50 si no lo tienes
+            </div>
+          </div>
+
+          <button class="btn-light w-full" onclick="toast('¡Imperium Intermedio seleccionado!')">Solicitar $150</button>
+        </div>
+
+        <!-- Premium -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 03</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Premium</h3>
+          <p class="text-xs text-bark mb-6">Ecosistema completo</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">$250</span>
+            <p class="text-xs text-bark mt-1">USD · Pago único</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Para negocios de alto nivel. Tienda online para cobrar adelantos por reservas grupales o vender productos directamente.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Hasta 10 páginas
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-charcoal font-medium">
+              <span class="iconify text-brand text-base" data-icon="mdi:check-circle"></span>
+              Tienda online
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Panel de administración
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              SEO avanzado
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Chat integrado (WhatsApp/Tidio)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Certificado SSL
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Todo lo del Intermedio
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="toast('Imperium Premium $250 seleccionado')">Solicitar $250</button>
+        </div>
+      </div>
+
+      <div class="mt-7 flex flex-wrap items-center gap-4 text-[11px] text-bark/60">
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:credit-card-outline"></span> Zelle / CashApp</span>
+        <span class="text-cream-dim">·</span>
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:bitcoin"></span> USDT (QvaPay)</span>
+        <span class="text-cream-dim">·</span>
+        <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:cash"></span> MLC efectivo</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
+
+  <!-- ============ COMBO ============ -->
+  <section id="combo" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-10">
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">El mejor negocio</p>
+        <h2 class="font-serif text-3xl md:text-4xl text-charcoal">Presencia <span class="italic text-brand">Total</span></h2>
+        <p class="text-sm text-bark mt-2">Sabormap + Imperium juntos con descuento</p>
+      </div>
+
+      <div class="combo-card p-7 lg:p-10">
+        <div class="relative z-10">
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-8">
+            <div class="flex-1">
+              <div class="flex items-center gap-2.5 mb-5">
+                <div class="w-9 h-9 rounded-xl bg-brand/20 flex items-center justify-center">
+                  <span class="iconify text-brand-light text-lg" data-icon="mdi:lightning-bolt"></span>
+                </div>
+                <div>
+                  <span class="text-[10px] tracking-[0.15em] uppercase text-sand/60">Recomendado si quieres todo</span>
+                  <h3 class="font-serif text-lg text-cream">Combo Presencia Total</h3>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-start justify-between gap-3 pb-3 border-b border-white/[0.06]">
+                  <div>
+                    <p class="text-sm text-cream">Plan Destacado Sabormap</p>
+                    <p class="text-xs text-sand/50">3 meses incluidos</p>
+                  </div>
+                  <span class="text-sm text-sand/40 shrink-0">$45</span>
+                </div>
+                <div class="flex items-start justify-between gap-3 pb-3 border-b border-white/[0.06]">
+                  <div>
+                    <p class="text-sm text-cream">Plan Intermedio Imperium</p>
+                    <p class="text-xs text-sand/50">Tu web, para siempre</p>
+                  </div>
+                  <span class="text-sm text-sand/40 shrink-0">$150</span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <span class="iconify text-brand-light/50 text-sm" data-icon="mdi:check"></span>
+                  <p class="text-sm text-sand/60">Botón "Visita su Web" en tu ficha de Sabormap</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:w-48 shrink-0">
+              <div class="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-5 text-center">
+                <p class="text-[10px] tracking-[0.12em] uppercase text-sand/40 mb-1">Normal</p>
+                <p class="text-base text-sand/30 line-through mb-4">$195</p>
+                <p class="text-[10px] tracking-[0.12em] uppercase text-brand-light/70 mb-1">Combo</p>
+                <p class="font-serif text-4xl text-white mb-0.5">$175</p>
+                <p class="text-[11px] text-sand/40 mb-3">pago único</p>
+                <span class="inline-flex items-center gap-1.5 bg-brand/15 text-brand-light text-[10px] px-2.5 py-1 rounded-full font-medium">
+                  <span class="iconify text-xs" data-icon="mdi:tag-outline"></span>
+                  -$20
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 mb-7">
+            <div class="flex items-start gap-2.5">
+              <span class="iconify text-brand-light text-base mt-0.5 shrink-0" data-icon="mdi:lightbulb-outline"></span>
+              <p class="text-sm text-sand leading-relaxed">
+                <span class="text-white font-semibold">¿Por qué el combo?</span> Los clientes que llegan por Sabormap ven tu web; los que te buscan en Google llegan a tu web y descubren Sabormap. Presencia circular completa. Es la forma más inteligente de empezar.
+              </p>
+            </div>
+          </div>
+
+          <button class="btn-fill w-full !text-base !py-4" onclick="toast('¡Combo Presencia Total por $175 seleccionado!')">
+            <span class="iconify text-lg" data-icon="mdi:lightning-bolt"></span>
+            Quiero el Combo por $175
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="ayuda" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-lg mx-auto">
+      <div class="text-center mb-10">
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">Asesoría rápida</p>
+        <h2 class="font-serif text-2xl md:text-3xl text-charcoal mb-1">¿No sabes cuál <span class="italic text-brand">elegir</span>?</h2>
+        <p class="text-sm text-bark">3 preguntas y te decimos</p>
+      </div>
+
+      <div id="qBox">
+        <div class="qs" data-s="0">
+          <p class="text-sm text-charcoal font-medium mb-5">¿Qué tipo de negocio tienes?</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="quiz-btn" onclick="qNext(1,this)" data-v="small">
+              <span class="iconify text-brand/40 text-lg mb-1 block" data-icon="mdi:coffee-outline"></span>
+              Cafetería / Paladar
+            </button>
+            <button class="quiz-btn" onclick="qNext(1,this)" data-v="medium">
+              <span class="iconify text-brand/40 text-lg mb-1 block" data-icon="mdi:silverware-fork-knife"></span>
+              Restaurante
+            </button>
+            <button class="quiz-btn" onclick="qNext(1,this)" data-v="rental">
+              <span class="iconify text-brand/40 text-lg mb-1 block" data-icon="mdi:home-outline"></span>
+              Casa de alquiler
+            </button>
+            <button class="quiz-btn" onclick="qNext(1,this)" data-v="premium">
+              <span class="iconify text-brand/40 text-lg mb-1 block" data-icon="mdi:diamond-stone"></span>
+              Premium / Boutique
+            </button>
+          </div>
+        </div>
+
+        <div class="qs hidden" data-s="1">
+          <p class="text-sm text-charcoal font-medium mb-5">¿Recibes clientes extranjeros?</p>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="quiz-btn text-center" onclick="qNext(2,this)" data-v="yes">Sí, mucho</button>
+            <button class="quiz-btn text-center" onclick="qNext(2,this)" data-v="some">A veces</button>
+            <button class="quiz-btn text-center" onclick="qNext(2,this)" data-v="no">No</button>
+          </div>
+        </div>
+
+        <div class="qs hidden" data-s="2">
+          <p class="text-sm text-charcoal font-medium mb-5">¿Presupuesto disponible?</p>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="quiz-btn text-center" onclick="qRes(this)" data-v="low">Hasta $10/mes</button>
+            <button class="quiz-btn text-center" onclick="qRes(this)" data-v="mid">$50–$150</button>
+            <button class="quiz-btn text-center" onclick="qRes(this)" data-v="high">$150+</button>
+          </div>
+        </div>
+
+        <div class="qs hidden" data-s="r">
+          <div class="combo-card p-8 text-center">
+            <span class="iconify text-brand-light text-3xl mb-3 block mx-auto" data-icon="mdi:check-decagram"></span>
+            <p class="text-[10px] tracking-[0.15em] uppercase text-sand/50 mb-2">Tu plan ideal</p>
+            <h3 class="font-serif text-2xl text-cream mb-3" id="rT">—</h3>
+            <p class="text-sm text-sand leading-relaxed mb-6 max-w-sm mx-auto" id="rD">—</p>
+            <button class="btn-fill" id="rB" onclick="toast('¡Perfecto! Te contactamos')">Contratar</button>
+            <button class="block mx-auto mt-4 text-xs text-sand/40 hover:text-sand/70 transition-colors cursor-pointer bg-transparent border-none font-['DM_Sans']" onclick="qRst()">← Volver</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-16 px-6 sr">
+    <div class="max-w-xl mx-auto text-center">
+      <h2 class="font-serif text-2xl md:text-3xl text-charcoal mb-3">¿Listo para <span class="italic text-brand">empezar</span>?</h2>
+      <p class="text-sm text-bark mb-8 leading-relaxed">Escríbenos por WhatsApp y te asesoramos gratis.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button class="btn-fill !py-4 !px-8 !text-base" onclick="toast('Abriendo WhatsApp...')">
+          <span class="iconify text-lg" data-icon="mdi:whatsapp"></span>
+          WhatsApp
+        </button>
+        <button class="btn-outline" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+          <span class="iconify" data-icon="mdi:arrow-up"></span>
+          Arriba
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-cream-dim py-7 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-5 h-5 rounded-md bg-brand flex items-center justify-center">
+          <span class="iconify text-white text-[9px]" data-icon="mdi:silverware-fork-knife"></span>
+        </div>
+        <span class="text-xs text-bark/60">Sabormap × Imperium</span>
+      </div>
+      <span class="text-[11px] text-bark/30">2025 · Digital para negocios en Cuba</span>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="tEl" class="toast-el">
+    <div class="flex items-center gap-2.5">
+      <span class="iconify text-brand-light text-sm" data-icon="mdi:check-circle"></span>
+      <span class="text-sm" id="tTx">Mensaje</span>
+    </div>
+  </div>
+
+  <script>
+    // Mobile
+    document.querySelectorAll('.mob-menu a, .mob-menu button:not(:first-child)').forEach(el => {
+      el.addEventListener('click', () => document.getElementById('mobMenu').classList.remove('open'));
+    });
+
+    // Toast
+    let tt;
+    function toast(m) {
+      document.getElementById('tTx').textContent = m;
+      document.getElementById('tEl').classList.add('show');
+      clearTimeout(tt);
+      tt = setTimeout(() => document.getElementById('tEl').classList.remove('show'), 3000);
+    }
+
+    // Scroll reveal
+    const sr = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); sr.unobserve(e.target); } });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.sr').forEach(el => sr.observe(el));
+
+    // Smooth
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const t = document.querySelector(this.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Quiz
+    const qa = {};
+    function qNext(s, b) {
+      qa[parseInt(b.closest('.qs').dataset.s)] = b.dataset.v;
+      document.querySelectorAll('.qs').forEach(x => x.classList.add('hidden'));
+      document.querySelector(`.qs[data-s="${s}"]`).classList.remove('hidden');
+    }
+    function qRes(b) {
+      qa[2] = b.dataset.v;
+      let t,d,bt;
+      if (qa[2]==='low') {
+        t='Sabormap Pro — 2,500 CUP/mes';
+        d='Empieza con el panel de autogestión. Cambia tu carta y fotos cuando quieras. Cuando tengas más presupuesto, das el salto a Imperium.';
+        bt='Contratar Sabormap Pro';
+      } else if (qa[2]==='mid'||(qa[2]==='high'&&qa[0]==='small')) {
+        if (qa[1]==='yes'||qa[1]==='some') {
+          t='Combo Presencia Total — $175 USD';
+          d='Recibes turistas y tienes presupuesto medio: el combo es perfecto. Mapa con visibilidad máxima + tu web propia. Lo mejor de los dos mundos.';
+          bt='Contratar Combo $175';
+        } else {
+          t='Imperium Intermedio — $150 USD';
+          d='Una web propia te posiciona para cuando lleguen turistas. Apareces en Google, recibes reservas al correo y te independizas de Instagram.';
+          bt='Solicitar Imperium $150';
+        }
+      } else {
+        if (qa[0]==='premium') {
+          t='Imperium Premium — $250 USD';
+          d='Negocio premium + presupuesto alto = Plan Premium. Tienda online, panel de administración, chat en vivo y SEO avanzado.';
+          bt='Solicitar Premium $250';
+        } else {
+          t='Combo Presencia Total — $175 USD';
+          d='Con ese presupuesto el combo es la inversión más inteligente. Máxima visibilidad en Sabormap + web propia con 5 páginas.';
+          bt='Contratar Combo $175';
+        }
+      }
+      document.getElementById('rT').textContent=t;
+      document.getElementById('rD').textContent=d;
+      document.getElementById('rB').textContent=bt;
+      document.querySelectorAll('.qs').forEach(x=>x.classList.add('hidden'));
+      document.querySelector('.qs[data-s="r"]').classList.remove('hidden');
+    }
+    function qRst() {
+      Object.keys(qa).forEach(k=>delete qa[k]);
+      document.querySelectorAll('.qs').forEach(x=>x.classList.add('hidden'));
+      document.querySelector('.qs[data-s="0"]').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
