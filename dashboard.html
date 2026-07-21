@@ -243,6 +243,26 @@
         .img-overlay .img-delete:hover{background:var(--red);transform:scale(1.1)}
         .image-upload-slot.has-image{border-style:solid;border-color:var(--border)}
 
+        /* Carta / Menu editor */
+        .menu-category{background:var(--card-2);border:1px solid var(--border);border-radius:14px;padding:18px}
+        .menu-category-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .menu-category-head input{flex:1}
+        .menu-category-head .btn-icon{flex-shrink:0;width:34px;height:34px}
+        .menu-items{display:flex;flex-direction:column;gap:8px}
+        .menu-item-row{display:grid;grid-template-columns:1fr 2fr 100px 34px;gap:8px;align-items:center}
+        .menu-item-row input{padding:9px 12px;font-size:0.84rem}
+        .menu-item-row .btn-icon{width:34px;height:34px;font-size:0.75rem}
+        @media(max-width:640px){.menu-item-row{grid-template-columns:1fr 1fr;gap:8px}.menu-item-row input:nth-child(3){grid-column:1}.menu-item-row .btn-icon{grid-column:2}}
+        .menu-add-item-btn{margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px 12px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.25s;width:100%;text-align:center}
+        .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
+
+        /* Delivery / Links editor */
+        .link-row{display:grid;grid-template-columns:160px 1fr 34px;gap:8px;align-items:center}
+        .link-row input{padding:9px 12px;font-size:0.84rem}
+        .link-row .btn-icon{width:34px;height:34px;font-size:0.75rem}
+        .link-row select{padding:9px 12px;font-size:0.84rem}
+        @media(max-width:640px){.link-row{grid-template-columns:1fr 34px;gap:8px}.link-row select{grid-column:1/3}}
+
         .my-place-card{background:linear-gradient(160deg,var(--card) 0%,var(--card-2) 100%);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);box-shadow:var(--shadow-card)}
         .my-place-card:hover{border-color:rgba(139,92,246,0.35);box-shadow:var(--shadow-hover);transform:translateY(-4px)}
         .my-place-card-img{width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform 0.5s ease}
@@ -701,6 +721,26 @@
                                 </div>
                                 <div class="form-hint">Maximo 10 etiquetas</div>
                             </div>
+                        </div>
+
+                        <!-- ===== CARTA / MENU ===== -->
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i class="fas fa-book-open" style="color:var(--secondary)"></i> Carta / Menu</h3>
+                                <button type="button" class="btn-secondary btn-sm" onclick="addMenuCategory()"><i class="fas fa-plus"></i> Agregar categoria</button>
+                            </div>
+                            <div id="menuContainer" style="display:flex;flex-direction:column;gap:16px"></div>
+                            <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio.</div>
+                        </div>
+
+                        <!-- ===== DELIVERY / LINKS ===== -->
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i class="fas fa-motorcycle" style="color:var(--amber)"></i> Delivery y Reservas</h3>
+                                <button type="button" class="btn-secondary btn-sm" onclick="addLink()"><i class="fas fa-plus"></i> Agregar link</button>
+                            </div>
+                            <div id="linksContainer" style="display:flex;flex-direction:column;gap:12px"></div>
+                            <div class="form-hint" style="margin-top:10px">Ej: PedidosYa, Rappi, Reservar Mesa. Deja el URL vacio si todavia no esta disponible.</div>
                         </div>
 
 
@@ -1522,6 +1562,126 @@
         window.removeImage = removeImage;
 
         /* ========================================
+           PLACE FORM: Carta / Menu  (jsonb: [{category, items:[{name,desc,price}]}])
+        ======================================== */
+        let placeMenu = [];   // estado en memoria mientras se edita
+
+        function renderMenuEditor() {
+            const container = $('menuContainer');
+            if (!container) return;
+            if (!placeMenu.length) {
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i class="fas fa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aun no agregaste categorias a la carta.</div>';
+                return;
+            }
+            container.innerHTML = placeMenu.map((cat, ci) => {
+                const items = (cat.items || []).map((it, ii) => `
+                    <div class="menu-item-row">
+                        <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)">
+                        <input type="text" class="form-input" placeholder="Descripcion" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
+                        <input type="text" class="form-input" placeholder="$350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
+                        <button type="button" class="btn-icon" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i class="fas fa-trash"></i></button>
+                    </div>
+                `).join('');
+                return `
+                    <div class="menu-category">
+                        <div class="menu-category-head">
+                            <input type="text" class="form-input" placeholder="Nombre de la categoria (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
+                            <button type="button" class="btn-icon" onclick="removeMenuCategory(${ci})" title="Eliminar categoria"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="menu-items">${items}</div>
+                        <button type="button" class="menu-add-item-btn" onclick="addMenuItem(${ci})"><i class="fas fa-plus" style="margin-right:4px"></i> Agregar plato</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        window.addMenuCategory = function() {
+            placeMenu.push({ category: '', items: [] });
+            renderMenuEditor();
+        };
+        window.removeMenuCategory = function(ci) {
+            placeMenu.splice(ci, 1);
+            renderMenuEditor();
+        };
+        window.updateMenuCategory = function(ci, val) {
+            if (!placeMenu[ci]) return;
+            placeMenu[ci].category = val;
+        };
+        window.addMenuItem = function(ci) {
+            if (!placeMenu[ci]) return;
+            if (!placeMenu[ci].items) placeMenu[ci].items = [];
+            placeMenu[ci].items.push({ name:'', desc:'', price:'' });
+            renderMenuEditor();
+        };
+        window.updateMenuItem = function(ci, ii, field, val) {
+            const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
+            cat.items[ii][field] = val;
+        };
+        window.removeMenuItem = function(ci, ii) {
+            const cat = placeMenu[ci]; if (!cat) return;
+            cat.items.splice(ii, 1);
+            renderMenuEditor();
+        };
+
+        /* ========================================
+           PLACE FORM: Delivery / Links  (jsonb: [{platform,url,icon,cssClass}])
+        ======================================== */
+        let placeLinks = [];
+
+        const LINK_PRESETS = {
+            'PedidosYa':      { icon:'fa-motorcycle',     cssClass:'delivery-pedidosya' },
+            'Rappi':          { icon:'fa-motorcycle',     cssClass:'delivery-rappi' },
+            'Reservar Mesa':  { icon:'fa-calendar-check', cssClass:'delivery-reserva' },
+            'WhatsApp':       { icon:'fa-whatsapp',       cssClass:'delivery-whatsapp' },
+            'Otro':           { icon:'fa-link',            cssClass:'delivery-other' }
+        };
+
+        function renderLinksEditor() {
+            const container = $('linksContainer');
+            if (!container) return;
+            if (!placeLinks.length) {
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i class="fas fa-motorcycle" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aun no agregaste links de delivery o reservas.</div>';
+                return;
+            }
+            container.innerHTML = placeLinks.map((l, i) => {
+                const platform = l.platform || '';
+                const url = l.url || '';
+                const preset = LINK_PRESETS[platform] || { icon:'fa-link', cssClass:'delivery-other' };
+                return `
+                    <div class="link-row">
+                        <select class="form-select" onchange="updateLink(${i},'platform',this.value)">
+                            ${['PedidosYa','Rappi','Reservar Mesa','WhatsApp','Otro'].map(p => `<option value="${p}" ${platform===p?'selected':''}>${p}</option>`).join('')}
+                        </select>
+                        <input type="url" class="form-input" placeholder="https://..." value="${escapeAttr(url)}" oninput="updateLink(${i},'url',this.value)">
+                        <button type="button" class="btn-icon" onclick="removeLink(${i})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.addLink = function() {
+            placeLinks.push({ platform:'PedidosYa', url:'', icon:'fa-motorcycle', cssClass:'delivery-pedidosya' });
+            renderLinksEditor();
+        };
+        window.removeLink = function(i) {
+            placeLinks.splice(i, 1);
+            renderLinksEditor();
+        };
+        window.updateLink = function(i, field, val) {
+            const l = placeLinks[i]; if (!l) return;
+            if (field === 'platform') {
+                const preset = LINK_PRESETS[val] || { icon:'fa-link', cssClass:'delivery-other' };
+                l.platform = val;
+                l.icon = preset.icon;
+                l.cssClass = preset.cssClass;
+            } else {
+                l[field] = val;
+            }
+        };
+
+        /* ========================================
            PLACE FORM: Reset / Edit / Submit
         ======================================== */
         function resetPlaceForm() {
@@ -1532,8 +1692,12 @@
             editingPlaceId = null;
             placeTags = [];
             placeImages = [];
+            placeMenu = [];
+            placeLinks = [];
             renderTags();
             initImageGrid();
+            renderMenuEditor();
+            renderLinksEditor();
         }
 
         window.editPlace = async function(id) {
@@ -1549,8 +1713,13 @@
 
             placeTags = place.tags ? [...place.tags] : [];
             placeImages = place.images ? [...place.images] : [];
+            // menu y links vienen como arrays desde jsonb
+            placeMenu  = Array.isArray(place.menu)  ? JSON.parse(JSON.stringify(place.menu))  : [];
+            placeLinks = Array.isArray(place.links) ? JSON.parse(JSON.stringify(place.links)) : [];
             renderTags();
             initImageGrid();
+            renderMenuEditor();
+            renderLinksEditor();
             switchPanel('add-place', document.querySelector('[data-panel=add-place]'));
         };
 
@@ -1588,6 +1757,31 @@
 
             // ── 2. Construir el payload (tipos compatibles con la tabla places) ──
             const priceRange = ($('f-price_range') || {}).value || '';
+
+            // Limpiar menu: quitar categorias sin nombre y items sin nombre
+            const cleanMenu = (Array.isArray(placeMenu) ? placeMenu : [])
+                .map(cat => ({
+                    category: (cat.category || '').trim(),
+                    items: (cat.items || [])
+                        .map(it => ({
+                            name:  (it.name || '').trim(),
+                            desc:  (it.desc || '').trim(),
+                            price: (it.price || '').trim()
+                        }))
+                        .filter(it => it.name)   // solo items con nombre
+                }))
+                .filter(cat => cat.category && cat.items.length > 0);  // solo categorias con nombre y al menos 1 item
+
+            // Limpiar links: solo conservar los que tienen URL
+            const cleanLinks = (Array.isArray(placeLinks) ? placeLinks : [])
+                .map(l => ({
+                    platform: (l.platform || 'Otro').trim(),
+                    url:      (l.url || '').trim(),
+                    icon:     l.icon || 'fa-link',
+                    cssClass: l.cssClass || 'delivery-other'
+                }))
+                .filter(l => l.url);
+
             const data = {
                 name:           name,
                 category:       category,
@@ -1599,6 +1793,8 @@
                 schedule:       (($('f-schedule') || {}).value || '').trim(),
                 tags:           Array.isArray(placeTags) ? placeTags.slice(0, 10) : [],
                 images:         [],   // se rellena abajo tras subir las imágenes
+                menu:           cleanMenu,
+                links:          cleanLinks,
                 owner_id:       currentUser.id,
                 status:         'draft'
             };
