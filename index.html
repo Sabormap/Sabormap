@@ -38,6 +38,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <!-- ★ Supabase JS para cargar locales publicados desde la base de datos ★ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ═══════════════════════════════════════════════════
            TEMA OSCURO (por defecto)
@@ -4473,7 +4475,8 @@
     }
     window.addEventListener('resize', handleMobileThemeToggle);
     document.addEventListener('DOMContentLoaded', handleMobileThemeToggle);
-    const staticPlaces = [
+    // ★ staticPlaces pasa a ser `let` para poder agregar los locales que vengan de Supabase.
+    let staticPlaces = [
         { id:1, name:"Yo Invito", category:"restaurante", neighborhood:"Vedado", address:"🗺️📍Calle 3era, esquina a D", rating:4.7, priceLevel:3, tags:["Variedad de comida cubana e internacional"], description:"Contamos con área infantil para el disfrute de los peques. Siéntete como en casa 😊😌.", mustOrder:"Daiquiri de lavanda con miel de cana", editorNote:"Si encontras la puerta, ya ganaste la noche.", hours:"⏰️ Lun-Dom: 12:00pm-23:00pm", phone:"", featured:true, isOpen:true, lat:23.142, lng:-82.362, images:["imagenes/Yo invito.webp","imagenes/Yo invito.webp","",""],
             menu: [{ category:"Cocteles de autor", items:[{name:"Daiquiri de lavanda", desc:"Ron blanco, limon, miel de cana, esencia de lavanda", price:"$350"},{name:"Mojito de hierbabuena", desc:"Ron, hierbabuena fresca, limon, azucar, soda", price:"$280"},{name:"Cuba Libre premium", desc:"Ron anejo, Coca-Cola, limon exprimido", price:"$250"},{name:"Piña colada ahumada", desc:"Ron, crema de coco, piña, humo de guayaba", price:"$380"}]},{ category:"Picadas", items:[{name:"Tabla de quesos cubanos", desc:"Queso de mano, gouda tropical, frutos secos, galletas", price:"$500"},{name:"Croquetas de jamon", desc:"6 unidades, mostaza de miel casera", price:"$350"}]}],
             links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
@@ -5500,6 +5503,90 @@
     };
 
     /* ═══════════════════════════════════════════
+       SUPABASE — Cargar locales publicados desde la base de datos
+       ═══════════════════════════════════════════ */
+    // ★ Mismas credenciales que usa el dashboard ★
+    const SUPABASE_URL = 'https://cfmqwnfimpfuivqmsxju.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_xnipCyojiLP0RsDJKc_KpA_WWi7mj3j';
+    let sb = null;
+    try {
+        if (window.supabase && window.supabase.createClient) {
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+    } catch (e) {
+        console.warn('Supabase no disponible, usando solo staticPlaces:', e);
+    }
+
+    // Mapea un local de la DB al formato que usa esta página (mismas propiedades que staticPlaces).
+    function mapDbPlaceToPublic(p) {
+        if (!p) return null;
+        // price_range ('$', '$$', '$$$', '$$$$') → priceLevel (1-4)
+        const priceLevel = ({ '$':1, '$$':2, '$$$':3, '$$$$':4 })[p.price_range] || 2;
+        return {
+            id:             p.id,                                   // uuid (string)
+            name:           p.name || 'Sin nombre',
+            category:       p.category || 'restaurante',
+            neighborhood:   p.neighborhood || 'Habana Vieja',
+            address:        p.address || '',
+            rating:         Number(p.rating) || 0,
+            priceLevel:     priceLevel,
+            tags:           Array.isArray(p.tags) ? p.tags : [],
+            description:    p.description || '',
+            mustOrder:      '',
+            editorNote:     '',
+            hours:          p.schedule || '',
+            phone:          p.phone || '',
+            featured:       !!p.featured,
+            isOpen:         true,
+            lat:            Number(p.lat) || null,
+            lng:            Number(p.lng) || null,
+            images:         Array.isArray(p.images) ? p.images : [],
+            menu:           [],
+            links:          [],
+            _fromDb:        true   // flag por si querés diferenciar en el futuro
+        };
+    }
+
+    // Trae de Supabase todos los locales con status='published' y los agrega a staticPlaces
+    // sin pisar los locales estáticos (mantenemos los originales + los de la DB).
+    async function loadPlacesFromSupabase() {
+        if (!sb) { console.warn('Supabase client no inicializado'); return; }
+        try {
+            const { data, error } = await sb
+                .from('places')
+                .select('*')
+                .eq('status', 'published')
+                .order('created_at', { ascending: false });
+
+            if (error) { console.warn('Supabase places fetch error:', error); return; }
+            if (!Array.isArray(data) || data.length === 0) {
+                console.info('No hay locales publicados en Supabase todavía');
+                return;
+            }
+
+            // IDs que ya existen (los estáticos tienen id numérico 1..N, los de DB son uuid strings)
+            const existingIds = new Set(staticPlaces.map(p => String(p.id)));
+            let added = 0;
+            data.forEach(p => {
+                const mapped = mapDbPlaceToPublic(p);
+                if (!mapped) return;
+                if (existingIds.has(String(mapped.id))) return;   // evita duplicados
+                staticPlaces.push(mapped);
+                existingIds.add(String(mapped.id));
+                added++;
+            });
+            console.info(`Supabase: ${added} locales publicados cargados (total: ${staticPlaces.length})`);
+
+            // Re-poblar el dropdown de barrios y volver a renderizar la grilla
+            if (typeof populateBarrios === 'function') populateBarrios();
+            if (typeof renderPlaces  === 'function') renderPlaces();
+            if (typeof animateStats === 'function') animateStats();
+        } catch (err) {
+            console.warn('Error cargando locales desde Supabase:', err);
+        }
+    }
+
+    /* ═══════════════════════════════════════════
        INICIALIZACIÓN
        ═══════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
@@ -5511,6 +5598,8 @@
         setupScrollBtns();
         animateStats();
         handleMobileThemeToggle();
+        // ★ Cargar locales publicados desde Supabase (async, no bloquea el render inicial) ★
+        loadPlacesFromSupabase();
         // Refresca los badges "Abierto/Cerrado" cada 60s sin intervención manual
         setInterval(() => {
             if (currentView === 'grid') renderPlaces();
