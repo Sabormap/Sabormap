@@ -5522,6 +5522,10 @@
         if (!p) return null;
         // price_range ('$', '$$', '$$$', '$$$$') → priceLevel (1-4)
         const priceLevel = ({ '$':1, '$$':2, '$$$':3, '$$$$':4 })[p.price_range] || 2;
+        // menu: jsonb ya viene como array de {category, items:[{name,desc,price}]}
+        const menu  = Array.isArray(p.menu)  ? p.menu  : [];
+        // links: jsonb ya viene como array de {platform, url, icon, cssClass}
+        const links = Array.isArray(p.links) ? p.links : [];
         return {
             id:             p.id,                                   // uuid (string)
             name:           p.name || 'Sin nombre',
@@ -5541,8 +5545,8 @@
             lat:            Number(p.lat) || null,
             lng:            Number(p.lng) || null,
             images:         Array.isArray(p.images) ? p.images : [],
-            menu:           [],
-            links:          [],
+            menu:           menu,
+            links:          links,
             _fromDb:        true   // flag por si querés diferenciar en el futuro
         };
     }
@@ -5697,8 +5701,8 @@
             ).join('');
 
             return `
-            <article class="place-card${p.featured ? ' featured' : ''}" onclick="openModal(${p.id})" tabindex="0"
-                     onkeydown="if(event.key==='Enter')openModal(${p.id})" role="button" aria-label="Ver ${p.name}">
+            <article class="place-card${p.featured ? ' featured' : ''}" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)" tabindex="0"
+                     onkeydown="if(event.key==='Enter')openModal(this.dataset.placeId)" role="button" aria-label="Ver ${p.name}">
                 <div class="card-img-wrapper">
                     <span class="cat-badge ${meta.cssClass}"><i class="fas ${meta.icon}" style="margin-right:4px;font-size:0.6rem;"></i>${meta.label}</span>
                     ${p.images[0] ? `<img class="card-img" src="${p.images[0]}" alt="${p.name}" loading="lazy">` :
@@ -5802,7 +5806,7 @@
                 <div class="map-popup-content">
                     <div class="map-popup-title">${p.name}</div>
                     <div class="map-popup-info"><i class="fas fa-star" style="color:var(--secondary);font-size:0.7rem;"></i> ${p.rating} &middot; ${p.neighborhood}</div>
-                    <button class="map-popup-btn" onclick="openModal(${p.id})">Ver detalle</button>
+                    <button class="map-popup-btn" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)">Ver detalle</button>
                 </div>
             `);
             markers.push(marker);
@@ -5813,7 +5817,9 @@
        MODAL — DRAWER LATERAL REDISEÑADO
        ═══════════════════════════════════════════ */
     function openModal(id) {
-        const p = staticPlaces.find(pl => pl.id === id);
+        // Comparación flexible: los IDs estáticos son numéricos, los de DB son uuid strings.
+        // dataset siempre devuelve strings, así que comparamos con String(pl.id).
+        const p = staticPlaces.find(pl => String(pl.id) === String(id));
         if (!p) return;
         currentModalPlace = p;
 
@@ -5967,7 +5973,7 @@
 
         html += `
         <div class="drawer-section" style="animation-delay:0.45s;margin-bottom:32px;">
-            <button class="drawer-share-btn" onclick="sharePlace(${p.id})">
+            <button class="drawer-share-btn" data-place-id="${p.id}" onclick="sharePlace(this.dataset.placeId)">
                 <i class="fas fa-share-nodes"></i> Compartir este lugar
             </button>
         </div>`;
@@ -6074,7 +6080,7 @@
     }
 
     function sharePlace(id) {
-        const p = staticPlaces.find(pl => pl.id === id);
+        const p = staticPlaces.find(pl => String(pl.id) === String(id));
         if (!p) return;
         const text = `${p.name} — ${p.neighborhood}, La Habana | Sabormap`;
         if (navigator.share) {
