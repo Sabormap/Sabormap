@@ -279,6 +279,7 @@
         <a href="#imperium" class="text-sm text-bark hover:text-charcoal transition-colors">Imperium</a>
         <a href="#combo" class="text-sm text-bark hover:text-charcoal transition-colors">Combo</a>
         <a href="#diseno" class="text-sm text-bark hover:text-charcoal transition-colors">Diseño</a>
+        <a href="#apps" class="text-sm text-bark hover:text-charcoal transition-colors">Apps</a>
         <a href="#ayuda" class="text-sm text-bark hover:text-charcoal transition-colors">¿Cuál elegir?</a>
       </div>
       <div class="flex items-center gap-3">
@@ -299,6 +300,7 @@
     <a href="#imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Imperium</a>
     <a href="#combo" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Combo</a>
     <a href="#diseno" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Diseño</a>
+    <a href="#apps" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Apps</a>
     <a href="#ayuda" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">¿Cuál elegir?</a>
     <button class="btn-fill mt-4" onclick="wspMenu()">Contratar</button>
   </div>
@@ -996,6 +998,194 @@
 
   <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
 
+  <!-- ============ DESARROLLO DE APPS ============ -->
+  <section id="apps" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">Apps Móviles · Pago único · USD</p>
+          <h2 class="font-serif text-3xl md:text-4xl text-charcoal">Desarrollo de <span class="italic text-brand">Apps</span></h2>
+        </div>
+        <p class="text-sm text-bark max-w-xs">Tu propio aplicativo para iOS y Android. Digitaliza tu negocio con tecnología Flutter.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <!-- Plan Starter -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 01 · 1-2 semanas</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Starter</h3>
+          <p class="text-xs text-bark mb-6">El Menú Digital Interactivo</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">$250</span>
+            <p class="text-xs text-bark mt-1">USD · Pago único</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Ideal para validar una idea o digitalizar un proceso sencillo. Reemplaza menús físicos o tarjetas de papel.
+          </p>
+
+          <div class="space-y-2.5 mb-6 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              App Flutter (Android e iOS)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Hasta 6 pantallas funcionales
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Diseño UI basado en tu marca
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Almacenamiento local de datos
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Soporte técnico 15 días
+            </div>
+          </div>
+
+          <details class="group mb-6">
+            <summary class="text-sm text-bark font-medium flex items-center justify-between bg-cream-warm border border-cream-dim rounded-lg px-3 py-2.5">
+              <span>Ver ejemplos de uso</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-bark-dark space-y-3">
+              <p><strong class="text-charcoal">Heladería:</strong> 6 pantallas (Inicio, catálogo de sabores, carrito local para armar el cucurucho, localizador, promociones, contacto).</p>
+              <p><strong class="text-charcoal">Bar:</strong> Menú digital de cócteles. El cliente arma su pedido en su teléfono (sin internet) y se lo enseña al mesero.</p>
+              <p class="text-brand/80 italic">*No sirve para reservas en tiempo real al no tener internet.</p>
+            </div>
+          </details>
+
+          <button class="btn-outline w-full" onclick="wsp('App: Plan Starter', '$250 USD')">Solicitar Starter</button>
+        </div>
+
+        <!-- Plan Business (Featured) -->
+        <div class="plan-card featured p-7 flex flex-col md:-mt-4 md:mb-[-16px]">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-brand text-white text-[10px] font-bold tracking-[0.12em] uppercase px-3 py-1 rounded-full">Recomendado</span>
+          </div>
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 02 · 3-5 semanas</p>
+          <h3 class="font-serif text-xl text-cream mb-1">Business</h3>
+          <p class="text-xs text-sand mb-6">Reservas y Gestión de Pedidos</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-white">$500</span>
+            <p class="text-xs text-sand mt-1">USD · Pago único</p>
+          </div>
+
+          <p class="text-sm text-sand leading-relaxed mb-6">
+            Para restaurantes y bares con alta rotación que necesitan conectar con usuarios en la nube y ordenar el caos.
+          </p>
+
+          <div class="space-y-2.5 mb-6 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Todo lo del Plan Starter
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Base de datos en la nube
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Sistema de autenticación
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Panel administrativo (CRUD)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Notificaciones Push
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-cream">
+              <span class="iconify text-brand-light text-base" data-icon="mdi:check-circle"></span>
+              Despliegue Play Store y App Store
+            </div>
+          </div>
+
+          <details class="group mb-6">
+            <summary class="text-sm text-cream font-medium flex items-center justify-between bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2.5">
+              <span>Ver ejemplos de uso</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-sand space-y-3">
+              <p><strong class="text-cream">Restaurante (Reservas):</strong> El cliente ve calendario de mesas disponibles, reserva y recibe Push de confirmación.</p>
+              <p><strong class="text-cream">Bar (Pedidos):</strong> El cliente pide desde la app, el pedido llega en tiempo real al panel de la barra y se actualiza el estado.</p>
+              <p><strong class="text-cream">Heladería (Fidelización):</strong> Registro de usuarios, puntos de compra en la nube y envío de Push masivas promocionales.</p>
+            </div>
+          </details>
+
+          <button class="btn-light w-full" onclick="wsp('App: Plan Business', '$500 USD')">Solicitar Business</button>
+        </div>
+
+        <!-- Plan Enterprise -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Plan 03 · 5-8 semanas</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Enterprise</h3>
+          <p class="text-xs text-bark mb-6">Plataforma Delivery y Pagos</p>
+
+          <div class="mb-6">
+            <span class="font-serif text-5xl text-charcoal">$1000</span>
+            <p class="text-xs text-bark mt-1">USD · Pago único</p>
+          </div>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Pensado para cadenas comerciales y plataformas listas para crecer, con backend propio y pasarelas de pago.
+          </p>
+
+          <div class="space-y-2.5 mb-6 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Todo lo del Plan Business
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Backend personalizado (Node.js, Spring)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Integraciones (Stripe, PayPal, etc)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Panel administrativo avanzado
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Seguridad avanzada (JWT, OAuth)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Documentación técnica y CI/CD
+            </div>
+          </div>
+
+          <details class="group mb-6">
+            <summary class="text-sm text-bark font-medium flex items-center justify-between bg-cream-warm border border-cream-dim rounded-lg px-3 py-2.5">
+              <span>Ver ejemplos de uso</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-bark-dark space-y-3">
+              <p><strong class="text-charcoal">Delivery Premium:</strong> El cliente paga con Stripe/PayPal en la app y el pedido se imprime automáticamente en la cocina.</p>
+              <p><strong class="text-charcoal">Multi-sucursal:</strong> Selección de sucursal, stock en tiempo real de cada local y reservas de tartas con antelación.</p>
+              <p><strong class="text-charcoal">Analítica:</strong> Gráficos de productos más vendidos y horas pico para optimizar el personal.</p>
+            </div>
+          </details>
+
+          <button class="btn-outline w-full" onclick="wsp('App: Plan Enterprise', '$1000 USD')">Solicitar Enterprise</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
+
   <!-- ============ QUIZ ============ -->
   <section id="ayuda" class="py-16 lg:py-24 px-6 sr">
     <div class="max-w-lg mx-auto">
@@ -1098,7 +1288,7 @@
               </div>
             </div>
             <p class="text-sm text-sand leading-relaxed mb-5">
-              Visibilidad digital, diseño web y arquitectura para potenciar tu negocio en Cuba.
+              Visibilidad digital, diseño web, branding y desarrollo de apps para potenciar tu negocio en Cuba.
             </p>
             <div class="flex items-center gap-3">
               <a href="#" onclick="event.preventDefault(); wsp()" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-sand hover:bg-brand hover:border-brand hover:text-white transition-colors">
@@ -1131,7 +1321,7 @@
               <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Redes Sociales</a></li>
               <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Identidad de Marca</a></li>
               <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Arquitectura & 3D</a></li>
-              <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Manual de Marca</a></li>
+              <li><a href="#apps" class="text-cream/80 hover:text-brand-light transition-colors">Desarrollo de Apps</a></li>
             </ul>
           </div>
 
@@ -1236,6 +1426,10 @@
         '8️⃣ Carruseles / Reels / Historias — Desde $2 USD\n' +
         '9️⃣ Logos & Branding — Desde $110 USD 🎨\n' +
         '🔟 Arquitectura & 3D — Cotización personalizada 🏗️\n\n' +
+        '*Desarrollo de Apps Móviles:*\n' +
+        '1️⃣1️⃣ Starter (Menú Digital) — $250 USD 📱\n' +
+        '1️⃣2️⃣ Business (Reservas/Pedidos) — $500 USD ⭐\n' +
+        '1️⃣3️⃣ Enterprise (Delivery/Pagos) — $1000 USD 🏢\n\n' +
         'Completa tus datos arriba y escribe el número del plan que te interesa 👇';
       const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
       toast('Abriendo WhatsApp…');
