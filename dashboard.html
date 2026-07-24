@@ -1103,9 +1103,8 @@
             clearTimeout(t._t);
             t._t = setTimeout(() => t.classList.remove('show'), 3500);
         }
-
-        function openModal(id) { $(id).classList.add('open'); }
-        function closeModal(id) { $(id).classList.remove('open'); }
+        window.openModal = function(id) { $(id).classList.add('open'); };
+        window.closeModal = function(id) { $(id).classList.remove('open'); };
 
         function formatDate(d) {
             if (!d) return '—';
