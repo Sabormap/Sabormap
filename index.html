@@ -543,7 +543,7 @@
         /* Footer */
         .site-footer { position: relative; z-index: 2; background: var(--surface); border-top: 1px solid var(--border); }
         .footer-glow { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 300px; height: 1px; background: var(--accent); opacity: 0.5; box-shadow: 0 0 40px 10px var(--footer-glow-color); }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
         .footer-heading { font-weight: 700; font-size: 0.9rem; margin-bottom: 16px; color: var(--cream); }
         .footer-link { display: block; color: var(--muted); text-decoration: none; font-size: 0.88rem; padding: 6px 0; transition: color 0.2s ease; }
         .footer-link:hover { color: var(--accent); }
@@ -727,7 +727,7 @@
         @media (max-width: 768px) {
             .nav-desktop { display: none !important; }
             .hamburger { display: block; }
-            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
             .place-card.featured { grid-column: span 1; }
             .bento-grid { grid-template-columns: 1fr; }
             .hero-title { font-size: clamp(2.5rem, 12vw, 5rem); }
@@ -4246,9 +4246,10 @@
                 <span style="font-weight:700;font-size:1.15rem;">Sabormap</span>
             </div>
             <div class="nav-desktop" style="display:flex;align-items:center;gap:28px;">
-                <a href="plan.html" class="nav-link">Planes</a>
+                <a href="dashboard.html" class="nav-link" style="opacity:0.7;font-size:0.82rem;"><i class="fas fa-sign-in-alt" style="margin-right:4px;font-size:0.75rem;"></i>Dueños</a>
                 <a href="#colecciones" class="nav-link">Colecciones</a>
                 <a href="#directorios" class="nav-link">Directorio</a>
+                <a href="#nosotros" class="nav-link">Nosotros</a>
                 <!-- BOTON CTA: Añade tu Local -->
                 <a href="plan.html" class="cta-add-local" title="Publica tu negocio en Sabormap">
                     <i class="fas fa-store"></i> Añade tu Local
@@ -4279,9 +4280,10 @@
         <a href="plan.html" class="cta-add-local-mobile" onclick="closeMobileMenu()">
             <i class="fas fa-store"></i> Añade tu Local
         </a>
-        <a href="plan.html" onclick="closeMobileMenu()">Planes</a>
+        <a href="dashboard.html" onclick="closeMobileMenu()" style="opacity:0.7;font-size:1rem;"><i class="fas fa-sign-in-alt" style="margin-right:6px;font-size:0.85rem;"></i>Acceso Dueños</a>
         <a href="#colecciones" onclick="closeMobileMenu()">Colecciones</a>
         <a href="#directorios" onclick="closeMobileMenu()">Directorio</a>
+        <a href="#nosotros" onclick="closeMobileMenu()">Nosotros</a>
         <a href="#" onclick="event.preventDefault();closeMobileMenu();document.getElementById('searchInput').focus()">Buscar</a>
     </div>
 
@@ -4360,6 +4362,7 @@
             <div class="footer-grid">
                 <div><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;"><div style="width:40px;height:40px;background:linear-gradient(135deg, var(--accent), #6d28d9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;color:#fff;">S</div><span style="font-weight:700;font-size:1.3rem;">Sabormap</span></div><p style="color:var(--muted);font-size:0.88rem;line-height:1.7;margin-bottom:24px;max-width:320px;">Descubri los mejores bares, restaurantes y heladerias de La Habana.</p><div class="footer-social"><a href="https://instagram.com/sabormap.hab" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a><a href="https://facebook.com/sabormap.hab" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a><a href="https://wa.me/5356578961" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></div></div>
                 <div><h4 class="footer-heading">Navegacion</h4><a href="#colecciones" class="footer-link">Colecciones</a><a href="#directorios" class="footer-link">Directorio</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('bar')">Bares / Cafeterias</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('restaurante')">Restaurantes</a><a href="#directorios" class="footer-link" onclick="event.preventDefault();navigateToFilter('heladeria')">Heladerias</a></div>
+                <div><h4 class="footer-heading">Negocios</h4><a href="plan.html" class="footer-link">Planes y Precios</a><a href="dashboard.html" class="footer-link"><i class="fas fa-sign-in-alt" style="margin-right:4px;font-size:0.72rem;opacity:0.7;"></i>Acceso Dueños</a><a href="#" class="footer-link" onclick="event.preventDefault();wspMenu()">Añade tu Local</a></div>
                 <div><h4 class="footer-heading">Legal</h4><a href="#" class="footer-link" onclick="event.preventDefault();openLegalModal('terminos')">Terminos</a><a href="#" class="footer-link" onclick="event.preventDefault();openLegalModal('privacidad')">Privacidad</a><a href="mailto:hola@sabormap.hab" class="footer-link">Contacto</a></div>
             </div>
             <div class="animated-line" style="margin:40px 0 24px;"></div>
