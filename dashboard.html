@@ -1096,13 +1096,13 @@
         ======================================== */
         function $(id) { return document.getElementById(id); }
 
-        function showToast(msg, isError) {
+        window.showToast = function(msg, isError) {
             const t = $('appToast');
             t.className = 'toast show' + (isError ? ' toast-error' : '');
             t.innerHTML = '<i class="fas fa-' + (isError ? 'exclamation-circle' : 'check-circle') + '" style="color:' + (isError ? 'var(--red)' : 'var(--accent)') + '"></i> ' + msg;
             clearTimeout(t._t);
             t._t = setTimeout(() => t.classList.remove('show'), 3500);
-        }
+        };
         window.openModal = function(id) { $(id).classList.add('open'); };
         window.closeModal = function(id) { $(id).classList.remove('open'); };
 
