@@ -1078,18 +1078,89 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="border-t border-cream-dim py-7 px-6">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <div class="w-5 h-5 rounded-md bg-brand flex items-center justify-center">
-          <span class="iconify text-white text-[9px]" data-icon="mdi:silverware-fork-knife"></span>
+  <!-- ============ FOOTER MEJORADO ============ -->
+  <footer class="bg-charcoal text-cream pt-16 pb-8 px-6 relative overflow-hidden">
+      <!-- Efecto de brillo sutil en el fondo -->
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div class="max-w-6xl mx-auto relative z-10">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+          
+          <!-- Columna 1: Marca -->
+          <div class="col-span-2 md:col-span-1">
+            <div class="flex items-center gap-2.5 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-brand flex items-center justify-center">
+                <span class="iconify text-white text-lg" data-icon="mdi:silverware-fork-knife"></span>
+              </div>
+              <div>
+                <p class="font-serif text-lg leading-tight">Sabormap <span class="text-sand text-xs">×</span> Imperium</p>
+                <p class="text-[10px] text-sand/60 tracking-widest uppercase">Smile 3D Studio</p>
+              </div>
+            </div>
+            <p class="text-sm text-sand leading-relaxed mb-5">
+              Visibilidad digital, diseño web y arquitectura para potenciar tu negocio en Cuba.
+            </p>
+            <div class="flex items-center gap-3">
+              <a href="#" onclick="event.preventDefault(); wsp()" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-sand hover:bg-brand hover:border-brand hover:text-white transition-colors">
+                <span class="iconify" data-icon="mdi:whatsapp"></span>
+              </a>
+              <a href="#" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-sand hover:bg-brand hover:border-brand hover:text-white transition-colors">
+                <span class="iconify" data-icon="mdi:instagram"></span>
+              </a>
+              <a href="#" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-sand hover:bg-brand hover:border-brand hover:text-white transition-colors">
+                <span class="iconify" data-icon="mdi:facebook"></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Columna 2: Visibilidad -->
+          <div>
+            <h4 class="text-xs font-semibold tracking-[0.15em] uppercase text-sand/50 mb-4">Visibilidad</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="#sabormap" class="text-cream/80 hover:text-brand-light transition-colors">Sabormap (Mapa)</a></li>
+              <li><a href="#imperium" class="text-cream/80 hover:text-brand-light transition-colors">Imperium (Web)</a></li>
+              <li><a href="#combo" class="text-cream/80 hover:text-brand-light transition-colors">Combo Presencia</a></li>
+              <li><a href="#ayuda" class="text-cream/80 hover:text-brand-light transition-colors">Asesoría Gratis</a></li>
+            </ul>
+          </div>
+
+          <!-- Columna 3: Diseño y 3D -->
+          <div>
+            <h4 class="text-xs font-semibold tracking-[0.15em] uppercase text-sand/50 mb-4">Diseño & 3D</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Redes Sociales</a></li>
+              <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Identidad de Marca</a></li>
+              <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Arquitectura & 3D</a></li>
+              <li><a href="#diseno" class="text-cream/80 hover:text-brand-light transition-colors">Manual de Marca</a></li>
+            </ul>
+          </div>
+
+          <!-- Columna 4: Contacto -->
+          <div>
+            <h4 class="text-xs font-semibold tracking-[0.15em] uppercase text-sand/50 mb-4">Hablemos</h4>
+            <p class="text-sm text-cream/80 mb-4">La Habana, Cuba 🇨🇺</p>
+            <button class="btn-fill !text-xs !py-2.5 !px-5 w-full mb-4" onclick="wsp()">
+              <span class="iconify text-base" data-icon="mdi:whatsapp"></span>
+              Escríbenos
+            </button>
+          </div>
         </div>
-        <span class="text-xs text-bark/60">Sabormap × Imperium × Smile 3D</span>
+
+        <!-- Barra inferior -->
+        <div class="h-px bg-white/10 mb-6"></div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <p class="text-[11px] text-sand/40 text-center md:text-left">© 2025 Sabormap × Imperium × Smile 3D. Todos los derechos reservados.</p>
+          <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-sand/40">
+            <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:credit-card-outline"></span> Zelle / CashApp</span>
+            <span class="hidden sm:inline">·</span>
+            <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:bitcoin"></span> USDT (QvaPay)</span>
+            <span class="hidden sm:inline">·</span>
+            <span class="flex items-center gap-1.5"><span class="iconify" data-icon="mdi:cash"></span> MLC / Transfermóvil</span>
+          </div>
+        </div>
       </div>
-      <span class="text-[11px] text-bark/30">2025 · Digital para negocios en Cuba</span>
-    </div>
-  </footer>
+    </footer>
 
   <!-- Toast -->
   <div id="tEl" class="toast-el">
