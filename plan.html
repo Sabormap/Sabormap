@@ -85,7 +85,7 @@
       cursor: pointer;
       transition: all 0.3s;
       font-family: 'DM Sans', sans-serif;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
@@ -103,7 +103,7 @@
       cursor: pointer;
       transition: all 0.3s;
       font-family: 'DM Sans', sans-serif;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
@@ -117,16 +117,21 @@
       font-size: 14px;
       padding: 13px 28px;
       border-radius: 12px;
-      border: 1.5px solid rgba(253,248,243,0.2);
+      border: 1.5px solid rgba(253, 248, 243, 0.2);
       cursor: pointer;
       transition: all 0.3s;
       font-family: 'DM Sans', sans-serif;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
-    .btn-light:hover { background: #F7F0E8; border-color: rgba(253,248,243,0.4); }
+    .btn-light:hover { 
+      background: #F7F0E8; 
+      border-color: rgba(253, 248, 243, 0.4); 
+      transform: translateY(-1px);
+    }
 
     .combo-card {
       background: #2D2926;
@@ -190,7 +195,13 @@
     }
     .mob-menu.open { opacity: 1; pointer-events: all; }
 
-    /* Boton flotante de WhatsApp (igual que en sabormap.html) */
+    /* Acordeón */
+    details summary { list-style: none; cursor: pointer; }
+    details summary::-webkit-details-marker { display: none; }
+    .chev { transition: transform 0.3s ease; }
+    details[open] .chev { transform: rotate(180deg); }
+
+    /* Boton flotante de WhatsApp */
     .whatsapp-float {
       position: fixed;
       bottom: 24px;
@@ -231,7 +242,6 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
     .whatsapp-float:hover .wa-tooltip { opacity: 1; }
-    /* Pulso animado para llamar la atencion */
     .whatsapp-float::after {
       content: '';
       position: absolute;
@@ -268,6 +278,7 @@
         <a href="#sabormap" class="text-sm text-bark hover:text-charcoal transition-colors">Sabormap</a>
         <a href="#imperium" class="text-sm text-bark hover:text-charcoal transition-colors">Imperium</a>
         <a href="#combo" class="text-sm text-bark hover:text-charcoal transition-colors">Combo</a>
+        <a href="#diseno" class="text-sm text-bark hover:text-charcoal transition-colors">Diseño</a>
         <a href="#ayuda" class="text-sm text-bark hover:text-charcoal transition-colors">¿Cuál elegir?</a>
       </div>
       <div class="flex items-center gap-3">
@@ -287,6 +298,7 @@
     <a href="#sabormap" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Sabormap</a>
     <a href="#imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Imperium</a>
     <a href="#combo" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Combo</a>
+    <a href="#diseno" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Diseño</a>
     <a href="#ayuda" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">¿Cuál elegir?</a>
     <button class="btn-fill mt-4" onclick="wspMenu()">Contratar</button>
   </div>
@@ -328,8 +340,8 @@
           <p class="text-xs text-bark mb-6">Listado en el mapa</p>
 
           <div class="mb-6">
-            <span class="font-serif text-5xl text-charcoal">1,000</span>
-            <p class="text-xs text-bark mt-1">CUP/mes · ~$4 USD</p>
+            <span class="font-serif text-5xl text-charcoal">3500</span>
+            <p class="text-xs text-bark mt-1">CUP/mes · ~$5 USD</p>
           </div>
 
           <p class="text-sm text-bark leading-relaxed mb-6">
@@ -355,7 +367,7 @@
             </div>
           </div>
 
-          <button class="btn-outline w-full" onclick="wsp('Sabormap Básico', '1,000 CUP/mes (~$4 USD)')">Elegir Básico</button>
+          <button class="btn-outline w-full" onclick="wsp('Sabormap Básico', '3,500 CUP/mes (~$5 USD)')">Elegir Básico</button>
         </div>
 
         <!-- Pro — Featured -->
@@ -367,7 +379,7 @@
           <p class="text-xs text-sand mb-6">Autogestión completa</p>
 
           <div class="mb-6">
-            <span class="font-serif text-5xl text-white">2,500</span>
+            <span class="font-serif text-5xl text-white">6,700</span>
             <p class="text-xs text-sand mt-1">CUP/mes · ~$10 USD</p>
           </div>
 
@@ -375,7 +387,8 @@
             <div class="flex items-start gap-2.5">
               <span class="iconify text-brand-light text-base mt-0.5 shrink-0" data-icon="mdi:star-four-points"></span>
               <p class="text-sm text-sand leading-relaxed">
-                <span class="text-white font-semibold">¿Por qué este?</span> Control total sobre tu ficha. Cambia la carta cuando quieras, sube fotos, actualiza precios.
+                <span class="text-white font-semibold">¿Por qué este?</span> Control total sobre tu ficha. Cambia la carta cuando quieras, sube fotos, actualiza precios. Los dueños que prueban este plan son los que terminan pidiendo una web propia.
+              </p>
             </div>
           </div>
 
@@ -402,7 +415,7 @@
             </div>
           </div>
 
-          <button class="btn-light w-full" onclick="wsp('Sabormap Pro', '2,500 CUP/mes (~$10 USD)')">Elegir Pro</button>
+          <button class="btn-light w-full" onclick="wsp('Sabormap Pro', '6,700 CUP/mes (~$10 USD)')">Elegir Pro</button>
         </div>
 
         <!-- Destacado -->
@@ -412,7 +425,7 @@
           <p class="text-xs text-bark mb-6">Marketing activo</p>
 
           <div class="mb-6">
-            <span class="font-serif text-5xl text-charcoal">4,000</span>
+            <span class="font-serif text-5xl text-charcoal">10,000</span>
             <p class="text-xs text-bark mt-1">CUP/mes · ~$15 USD</p>
           </div>
 
@@ -707,6 +720,282 @@
 
   <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
 
+  <!-- ============ DISEÑO & REDES (Smile 3D) ============ -->
+  <section id="diseno" class="py-16 lg:py-24 px-6 sr">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-2">Smile 3D · Pago único · USD</p>
+          <h2 class="font-serif text-3xl md:text-4xl text-charcoal">Diseño & <span class="italic text-brand">Redes</span></h2>
+        </div>
+        <p class="text-sm text-bark max-w-xs">Contenido visual, branding y arquitectura profesional para destacar tu marca.</p>
+      </div>
+
+      <!-- Subsection: Redes Sociales -->
+      <h3 class="font-serif text-xl text-charcoal mb-5 flex items-center gap-2">
+        <span class="iconify text-brand text-2xl" data-icon="mdi:instagram"></span> Redes Sociales
+      </h3>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+
+        <!-- Carruseles Imagen -->
+        <div class="plan-card p-6 flex flex-col">
+          <h4 class="font-serif text-lg text-charcoal mb-2">Carruseles</h4>
+          <p class="text-xs text-bark mb-4">Imágenes estáticas</p>
+          <div class="space-y-2 text-sm text-bark-dark mb-6 flex-1">
+            <div class="flex justify-between"><span>1 imagen</span> <span class="font-medium text-charcoal">$4</span></div>
+            <div class="flex justify-between"><span>3 imágenes</span> <span class="font-medium text-charcoal">$8</span></div>
+            <div class="flex justify-between"><span>5 imágenes</span> <span class="font-medium text-charcoal">$12</span></div>
+            <div class="flex justify-between"><span>7 imágenes</span> <span class="font-medium text-charcoal">$17</span></div>
+            <div class="flex justify-between"><span>10 imágenes</span> <span class="font-medium text-charcoal">$23</span></div>
+          </div>
+          <button class="btn-outline w-full !text-xs" onclick="wsp('Diseño: Carrusel Imágenes', 'Desde $4 USD')">Solicitar</button>
+        </div>
+
+        <!-- Carruseles Animados -->
+        <div class="plan-card p-6 flex flex-col">
+          <h4 class="font-serif text-lg text-charcoal mb-2">Animados</h4>
+          <p class="text-xs text-bark mb-4">Carrusel en video</p>
+          <div class="space-y-2 text-sm text-bark-dark mb-6 flex-1">
+            <div class="flex justify-between"><span>1 video</span> <span class="font-medium text-charcoal">$6</span></div>
+            <div class="flex justify-between"><span>3 videos</span> <span class="font-medium text-charcoal">$12</span></div>
+            <div class="flex justify-between"><span>5 videos</span> <span class="font-medium text-charcoal">$15</span></div>
+            <div class="flex justify-between"><span>7 videos</span> <span class="font-medium text-charcoal">$20</span></div>
+            <div class="flex justify-between"><span>10 videos</span> <span class="font-medium text-charcoal">$25</span></div>
+          </div>
+          <button class="btn-outline w-full !text-xs" onclick="wsp('Diseño: Carrusel Animado', 'Desde $6 USD')">Solicitar</button>
+        </div>
+
+        <!-- Historias -->
+        <div class="plan-card p-6 flex flex-col items-center text-center">
+          <span class="iconify text-brand text-2xl mb-2" data-icon="mdi:history"></span>
+          <h4 class="font-serif text-lg text-charcoal mb-2">Historia</h4>
+          <p class="text-xs text-bark mb-4">Para Instagram/Facebook</p>
+          <div class="mb-6 flex-1 flex flex-col justify-center">
+            <span class="font-serif text-4xl text-charcoal">$2</span>
+            <p class="text-xs text-bark mt-1">USD c/u</p>
+          </div>
+          <button class="btn-outline w-full !text-xs" onclick="wsp('Diseño: Historias', '$2 USD c/u')">Solicitar</button>
+        </div>
+
+        <!-- Reel Edición Simple -->
+        <div class="plan-card p-6 flex flex-col items-center text-center">
+          <span class="iconify text-brand text-2xl mb-2" data-icon="mdi:movie-open-play-outline"></span>
+          <h4 class="font-serif text-lg text-charcoal mb-2">Reel</h4>
+          <p class="text-xs text-bark mb-4">Edición simple</p>
+          <div class="mb-6 flex-1 flex flex-col justify-center">
+            <span class="font-serif text-4xl text-charcoal">$25</span>
+            <p class="text-[11px] text-bark/70 mt-2">Subtítulos, cortes, transiciones y SFX</p>
+          </div>
+          <button class="btn-outline w-full !text-xs" onclick="wsp('Diseño: Reel Simple', '$25 USD')">Solicitar</button>
+        </div>
+      </div>
+
+      <!-- Subsection: Logos & Branding -->
+      <h3 class="font-serif text-xl text-charcoal mb-5 flex items-center gap-2">
+        <span class="iconify text-brand text-2xl" data-icon="mdi:palette-outline"></span> Identidad de Marca
+      </h3>
+      <div class="grid md:grid-cols-3 gap-5 mb-14">
+
+        <!-- Solo Logo -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Paquete 01</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Solo Logo</h3>
+          <p class="text-xs text-bark mb-6">Diseño inicial de marca</p>
+
+          <div class="space-y-2 mb-6">
+            <div class="flex justify-between items-center pb-2 border-b border-cream-dim">
+              <span class="text-sm text-bark-dark">Logo</span>
+              <span class="font-serif text-2xl text-charcoal">$110</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-bark-dark">Logo + Animación</span>
+              <span class="font-serif text-2xl text-charcoal">$210</span>
+            </div>
+          </div>
+
+          <details class="group mb-6 flex-1">
+            <summary class="text-sm text-bark font-medium flex items-center justify-between bg-cream-warm border border-cream-dim rounded-lg px-3 py-2.5">
+              <span>¿Qué incluye?</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-bark-dark space-y-2">
+              <p class="flex gap-1.5"><span class="iconify text-brand/70 mt-0.5" data-icon="mdi:check"></span>3 propuestas iniciales de diseño</p>
+              <p class="flex gap-1.5"><span class="iconify text-brand/70 mt-0.5" data-icon="mdi:check"></span>2 rondas de revisión y ajustes</p>
+              <p class="flex gap-1.5"><span class="iconify text-brand/70 mt-0.5" data-icon="mdi:check"></span>Entrega final en formato PNG, JPG y PDF</p>
+            </div>
+          </details>
+
+          <button class="btn-outline w-full" onclick="wsp('Diseño: Solo Logo', 'Desde $110 USD')">Solicitar Logo</button>
+        </div>
+
+        <!-- Manual Simple (Featured) -->
+        <div class="plan-card featured p-7 flex flex-col md:-mt-4 md:mb-[-16px]">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-brand text-white text-[10px] font-bold tracking-[0.12em] uppercase px-3 py-1 rounded-full">Equilibrado</span>
+          </div>
+          <h3 class="font-serif text-xl text-cream mb-1">Manual Simple</h3>
+          <p class="text-xs text-sand mb-6">Logo + Guía básica de uso</p>
+
+          <div class="space-y-2 mb-6">
+            <div class="flex justify-between items-center pb-2 border-b border-white/[0.08]">
+              <span class="text-sm text-cream">Logo + Manual Simple</span>
+              <span class="font-serif text-2xl text-white">$170</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-cream">Logo + Anim + Manual S.</span>
+              <span class="font-serif text-2xl text-white">$260</span>
+            </div>
+          </div>
+
+          <details class="group mb-6 flex-1">
+            <summary class="text-sm text-cream font-medium flex items-center justify-between bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2.5">
+              <span>¿Qué incluye?</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-sand space-y-2">
+              <p><strong class="text-cream">1. Presentación:</strong> Principal (color), ByN, negativa y área de respeto.</p>
+              <p><strong class="text-cream">2. Colores:</strong> CMYK, RGB, HEX y uso correcto.</p>
+              <p><strong class="text-cream">3. Tipografía:</strong> Fuente principal y uso sugerido.</p>
+              <p><strong class="text-cream">4. Prohibiciones:</strong> Qué NO hacer (deformar, colores, etc).</p>
+              <p><strong class="text-cream">5. Ejemplos:</strong> 1-2 usos reales (tarjeta, perfil redes).</p>
+              <p><strong class="text-cream">6. Archivos:</strong> Entregables en PNG, JPG, PDF.</p>
+            </div>
+          </details>
+
+          <button class="btn-light w-full" onclick="wsp('Diseño: Manual Simple', 'Desde $170 USD')">Solicitar Manual</button>
+        </div>
+
+        <!-- Manual Completo -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Paquete 03</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Manual Completo</h3>
+          <p class="text-xs text-bark mb-6">Branding total y profesional</p>
+
+          <div class="space-y-2 mb-6">
+            <div class="flex justify-between items-center pb-2 border-b border-cream-dim">
+              <span class="text-sm text-bark-dark">Logo + Manual C.</span>
+              <span class="font-serif text-2xl text-charcoal">$260</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-bark-dark">Logo + Anim + Manual C.</span>
+              <span class="font-serif text-2xl text-charcoal">$360</span>
+            </div>
+          </div>
+
+          <details class="group mb-6 flex-1">
+            <summary class="text-sm text-bark font-medium flex items-center justify-between bg-cream-warm border border-cream-dim rounded-lg px-3 py-2.5">
+              <span>¿Qué incluye?</span>
+              <span class="iconify text-sand text-base chev" data-icon="mdi:chevron-down"></span>
+            </summary>
+            <div class="mt-3 text-xs text-bark-dark space-y-2">
+              <p><strong class="text-charcoal">1. Filosofía:</strong> Misión, visión, valores y personalidad.</p>
+              <p><strong class="text-charcoal">2. Variantes:</strong> H, V, isotipo, imagotipo, usos por formato.</p>
+              <p><strong class="text-charcoal">3. Paleta:</strong> Primarios, secundarios, combinaciones permitidas/prohibidas.</p>
+              <p><strong class="text-charcoal">4. Tipografía:</strong> Primaria/secundaria, jerarquías y tamaños.</p>
+              <p><strong class="text-charcoal">5. Tramas:</strong> Texturas, patrones y elementos gráficos.</p>
+              <p><strong class="text-charcoal">6. Aplicaciones:</strong> 6-8 ejemplos (papelería, uniformes, redes, packaging, señalética, publicidad).</p>
+            </div>
+          </details>
+
+          <button class="btn-outline w-full" onclick="wsp('Diseño: Manual Completo', 'Desde $260 USD')">Solicitar Branding</button>
+        </div>
+      </div>
+
+      <!-- Subsection: Arquitectura & 3D -->
+      <h3 class="font-serif text-xl text-charcoal mb-5 flex items-center gap-2">
+        <span class="iconify text-brand text-2xl" data-icon="mdi:cube-outline"></span> Arquitectura & 3D
+      </h3>
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <!-- Representación y Visualización -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Servicio 01</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Representación</h3>
+          <p class="text-xs text-bark mb-6">Visualización 3D fotorrealista</p>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Renders 3D y recorridos virtuales que te permiten visualizar tu proyecto antes de construirlo. Ideal para presentar ideas a inversionistas o clientes.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Renders fotorrealistas (interior/exterior)
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Recorridos virtuales 360°
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Modelado de espacios y mobiliario
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="wsp('Arquitectura: Representación 3D', 'Cotización personalizada')">Solicitar Cotización</button>
+        </div>
+
+        <!-- Diseño Arquitectónico -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Servicio 02</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Arquitectónico</h3>
+          <p class="text-xs text-bark mb-6">Planos y conceptos</p>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Diseño de planos técnicos y conceptos espaciales. Distribución lógica y estética para locales comerciales, paladares y viviendas.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Planos técnicos y plantas
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Distribución espacial y mobiliario
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Anteproyectos y conceptos de diseño
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="wsp('Arquitectura: Diseño Arquitectónico', 'Cotización personalizada')">Solicitar Cotización</button>
+        </div>
+
+        <!-- Diseño Interior -->
+        <div class="plan-card p-7 flex flex-col">
+          <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-sand mb-4">Servicio 03</p>
+          <h3 class="font-serif text-xl text-charcoal mb-1">Interiorismo</h3>
+          <p class="text-xs text-bark mb-6">Ambientes y materiales</p>
+
+          <p class="text-sm text-bark leading-relaxed mb-6">
+            Transformación de espacios interiores. Selección de materiales, mobiliario, iluminación y paletas de color para crear atmósferas únicas.
+          </p>
+
+          <div class="space-y-2.5 mb-8 flex-1">
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Propuestas de mobiliario y layout
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Diseño de iluminación
+            </div>
+            <div class="flex items-center gap-2.5 text-sm text-bark-dark">
+              <span class="iconify text-sand text-base" data-icon="mdi:check"></span>
+              Paletas de materiales y colores
+            </div>
+          </div>
+
+          <button class="btn-outline w-full" onclick="wsp('Arquitectura: Diseño Interior', 'Cotización personalizada')">Solicitar Cotización</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6"><div class="warm-line"></div></div>
+
   <!-- ============ QUIZ ============ -->
   <section id="ayuda" class="py-16 lg:py-24 px-6 sr">
     <div class="max-w-lg mx-auto">
@@ -796,7 +1085,7 @@
         <div class="w-5 h-5 rounded-md bg-brand flex items-center justify-center">
           <span class="iconify text-white text-[9px]" data-icon="mdi:silverware-fork-knife"></span>
         </div>
-        <span class="text-xs text-bark/60">Sabormap × Imperium</span>
+        <span class="text-xs text-bark/60">Sabormap × Imperium × Smile 3D</span>
       </div>
       <span class="text-[11px] text-bark/30">2025 · Digital para negocios en Cuba</span>
     </div>
@@ -810,7 +1099,7 @@
     </div>
   </div>
 
-  <!-- Boton flotante de WhatsApp (siempre visible al hacer scroll) -->
+  <!-- Boton flotante de WhatsApp -->
   <a href="#" onclick="event.preventDefault(); wspMenu()" class="whatsapp-float" aria-label="Chat por WhatsApp" title="Escríbenos por WhatsApp">
     <span class="iconify" data-icon="mdi:whatsapp"></span>
     <span class="wa-tooltip">¿Tu local en Sabormap? Escríbenos</span>
@@ -831,57 +1120,51 @@
       tt = setTimeout(() => document.getElementById('tEl').classList.remove('show'), 3000);
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  WHATSAPP — abre wa.me con mensaje prellenado
-    //  Reemplaza WHATSAPP_NUMBER por el número real de Sabormap
-    //  (formato internacional, solo dígitos, sin + ni espacios)
-    //  Ej Cuba: 53530000000  →  +53 5300 0000
-    // ─────────────────────────────────────────────────────────
+    // WHATSAPP
     const WHATSAPP_NUMBER = '5356578961';
 
     function wsp(plan, precio) {
       let msg = '¡Hola Sabormap! 👋\n\n';
       if (plan) {
-        msg += 'Quisiera contratar el plan: *' + plan + '*\n';
+        msg += 'Quisiera contratar el plan/servicio: *' + plan + '*\n';
         if (precio) msg += 'Precio: ' + precio + '\n';
-        msg += '\n¿Me ayudan con los siguientes pasos para dar de alta mi local?\n\nGracias. 🙌';
+        msg += '\n¿Me ayudan con los siguientes pasos?\n\nGracias. 🙌';
       } else {
-        msg += 'Quisiera más información sobre los planes para publicar mi local en Sabormap.\n\n¿Me pueden ayudar?\n\nGracias. 🙌';
+        msg += 'Quisiera más información sobre los planes y servicios para publicar mi local.\n\n¿Me pueden ayudar?\n\nGracias. 🙌';
       }
       const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
       toast('Abriendo WhatsApp…');
       window.open(url, '_blank');
     }
 
-    // Para el botón del resultado del quiz (lee el plan recomendado del DOM)
     function wspQuiz() {
       const t = (document.getElementById('rT').textContent || '').trim();
       const parts = t.split('—').map(s => s.trim());
       wsp(parts[0] || 'Plan recomendado', parts[1] || '');
     }
 
-    // Menu rapido de seleccion de plan (boton del header)
-    // Pre-llena WhatsApp con todos los planes numerados para que el
-    // cliente solo escriba el numero del que le interesa.
-    // Tambien pregunta por el tipo de negocio para tener contexto.
     function wspMenu() {
       const msg =
         '¡Hola Sabormap! 👋\n\n' +
-        'Quisiera contratar un plan para mi local. ¿Me ayudan a elegir?\n\n' +
+        'Quisiera contratar un plan/servicio para mi local. ¿Me ayudan a elegir?\n\n' +
         '*Mi negocio es:* (bar / restaurante / heladería / cafetería / otro)\n' +
         '*Nombre del local:* \n' +
         '*Zona de La Habana:* \n' +
         '*Presupuesto aproximado:* (hasta $10/mes · $50–$150 · $150+ USD)\n\n' +
         '*Plan Sabormap (mapa):*\n' +
-        '1️⃣ Básico — 1,000 CUP/mes (~$4 USD)\n' +
-        '2️⃣ Pro — 2,500 CUP/mes (~$10 USD) ⭐\n' +
-        '3️⃣ Destacado — 4,000 CUP/mes (~$15 USD)\n\n' +
+        '1️⃣ Básico — 3,500 CUP/mes (~$5 USD)\n' +
+        '2️⃣ Pro — 6,700 CUP/mes (~$10 USD) ⭐\n' +
+        '3️⃣ Destacado — 10,000 CUP/mes (~$15 USD)\n\n' +
         '*Plan Imperium (web propia):*\n' +
         '4️⃣ Básico — $80 USD (pago único)\n' +
         '5️⃣ Intermedio — $150 USD (pago único) ⭐\n' +
         '6️⃣ Premium — $250 USD (pago único)\n\n' +
         '*Combo:*\n' +
         '7️⃣ Presencia Total — $175 USD 🚀\n\n' +
+        '*Diseño & Redes (Smile 3D):*\n' +
+        '8️⃣ Carruseles / Reels / Historias — Desde $2 USD\n' +
+        '9️⃣ Logos & Branding — Desde $110 USD 🎨\n' +
+        '🔟 Arquitectura & 3D — Cotización personalizada 🏗️\n\n' +
         'Completa tus datos arriba y escribe el número del plan que te interesa 👇';
       const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
       toast('Abriendo WhatsApp…');
