@@ -927,7 +927,7 @@
             "position": 7,
             "item": {
                 "@type": "Restaurant",
-                "name": "Café de la Esquina",
+                "name": "",
                 "address": {
                     "@type": "PostalAddress",
                     "streetAddress": "5ta y Paseo",
@@ -4246,10 +4246,10 @@
                 <span style="font-weight:700;font-size:1.15rem;">Sabormap</span>
             </div>
             <div class="nav-desktop" style="display:flex;align-items:center;gap:28px;">
+                <a href="plan.html" class="nav-link">Planes</a>
                 <a href="dashboard.html" class="nav-link" style="opacity:0.7;font-size:0.82rem;"><i class="fas fa-sign-in-alt" style="margin-right:4px;font-size:0.75rem;"></i>Dueños</a>
                 <a href="#colecciones" class="nav-link">Colecciones</a>
                 <a href="#directorios" class="nav-link">Directorio</a>
-                <a href="#nosotros" class="nav-link">Nosotros</a>
                 <!-- BOTON CTA: Añade tu Local -->
                 <a href="plan.html" class="cta-add-local" title="Publica tu negocio en Sabormap">
                     <i class="fas fa-store"></i> Añade tu Local
@@ -4280,10 +4280,10 @@
         <a href="plan.html" class="cta-add-local-mobile" onclick="closeMobileMenu()">
             <i class="fas fa-store"></i> Añade tu Local
         </a>
+        <a href="plan.html" onclick="closeMobileMenu()">Planes</a>
         <a href="dashboard.html" onclick="closeMobileMenu()" style="opacity:0.7;font-size:1rem;"><i class="fas fa-sign-in-alt" style="margin-right:6px;font-size:0.85rem;"></i>Acceso Dueños</a>
         <a href="#colecciones" onclick="closeMobileMenu()">Colecciones</a>
         <a href="#directorios" onclick="closeMobileMenu()">Directorio</a>
-        <a href="#nosotros" onclick="closeMobileMenu()">Nosotros</a>
         <a href="#" onclick="event.preventDefault();closeMobileMenu();document.getElementById('searchInput').focus()">Buscar</a>
     </div>
 
@@ -4408,5 +4408,68 @@
     <script src="places.js"></script>
 
     <script src="app.js"></script>
+
+    <!-- ★ OVERRIDE: Delivery y Reservas → No disponible ★ -->
+    <style>
+        .delivery-link.unavailable {
+            pointer-events: none;
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            filter: grayscale(0.5);
+        }
+        .delivery-link.unavailable::after {
+            content: 'No disponible';
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .delivery-link.unavailable .unavail-label { display: inline; }
+        .delivery-unavail-banner {
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.15);
+            color: var(--muted);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .delivery-unavail-banner i { color: #ef4444; }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const markUnavailable = () => {
+            // Botones de delivery/reserva → "No disponible"
+            document.querySelectorAll('.delivery-link:not(.unavailable)').forEach(el => {
+                el.classList.add('unavailable');
+                el.removeAttribute('href');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+            });
+            // Banner placeholder "próximamente" → "No disponible"
+            document.querySelectorAll('.drawer-delivery').forEach(container => {
+                if (container.querySelector('.delivery-unavail-banner')) return;
+            });
+            // Mensaje placeholder en drawer
+            document.querySelectorAll('.drawer-section-label').forEach(label => {
+                if (label.textContent.includes('Delivery y reservas')) {
+                    const sibling = label.nextElementSibling;
+                    if (sibling && !sibling.classList.contains('drawer-delivery') && !sibling.classList.contains('delivery-unavail-banner') && sibling.style.cssText.includes('dashed')) {
+                        sibling.innerHTML = '<i class="fas fa-ban"></i> No disponible por el momento';
+                        sibling.classList.add('delivery-unavail-banner');
+                        sibling.style.background = 'rgba(239,68,68,0.06)';
+                        sibling.style.borderColor = 'rgba(239,68,68,0.15)';
+                    }
+                }
+            });
+        };
+        markUnavailable();
+        const observer = new MutationObserver(() => markUnavailable());
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
 </body>
 </html>
