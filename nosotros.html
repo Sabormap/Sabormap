@@ -160,14 +160,16 @@
         </div>
         <span class="font-serif text-lg text-charcoal">Sabormap</span>
         <span class="text-sand text-xs">×</span>
-        <span class="text-sm text-bark font-medium">Imperium</span>
+        
       </a>
       <div class="hidden md:flex items-center gap-8">
+        <a href="https://sabormap.com/" class="text-sm text-bark hover:text-charcoal transition-colors">Inicio</a>
         <a href="#quienes" class="text-sm text-bark hover:text-charcoal transition-colors">Quiénes somos</a>
         <a href="#hacemos" class="text-sm text-bark hover:text-charcoal transition-colors">Qué hacemos</a>
         <a href="#pasos" class="text-sm text-bark hover:text-charcoal transition-colors">Pasos</a>
         <a href="#pago" class="text-sm text-bark hover:text-charcoal transition-colors">Métodos de pago</a>
         <a href="#contacto" class="text-sm text-bark hover:text-charcoal transition-colors">Contacto</a>
+        <a href="https://sabormap.com/plan" class="text-sm text-bark hover:text-charcoal transition-colors">Planes</a>
       </div>
       <div class="flex items-center gap-3">
         <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="wspContacto()">
@@ -185,11 +187,13 @@
     <button onclick="this.parentElement.classList.remove('open')" class="absolute top-5 right-6 w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
       <span class="iconify text-bark text-lg" data-icon="mdi:close"></span>
     </button>
+    <a href="https://sabormap.com/" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Inicio</a>
     <a href="#quienes" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Quiénes somos</a>
     <a href="#hacemos" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Qué hacemos</a>
     <a href="#pasos" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Pasos</a>
     <a href="#pago" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Métodos de pago</a>
     <a href="#contacto" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Contacto</a>
+    <a href="https://sabormap.com/plan" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Planes</a>
     <button class="btn-fill mt-4" onclick="wspContacto()">
       <span class="iconify" data-icon="mdi:whatsapp"></span> Escribinos
     </button>
@@ -711,9 +715,9 @@
         <!-- Mapa / Visual -->
         <div class="relative">
           <div class="bg-charcoal rounded-3xl overflow-hidden relative" style="min-height: 420px;">
-            <!-- Mapa embed de OpenStreetMap centrado en Playa, Habana -->
+            <!-- Mapa embed de OpenStreetMap centrado en Calle 19 e/ 60 y 62, Ampliación de Almendares, Playa -->
             <iframe
-              src="https://www.openstreetmap.org/export/embed.html?bbox=-82.42%2C23.11%2C-82.39%2C23.13&layer=mapnik&marker=23.12%2C-82.405"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=-82.431%2C23.102%2C-82.420%2C23.112&layer=mapnik&marker=23.1066%2C-82.4255"
               style="width:100%;height:100%;min-height:420px;border:none;opacity:0.7;filter:grayscale(0.3) contrast(1.1);"
               loading="lazy"
               title="Ubicación de Sabormap & Imperium"
@@ -758,23 +762,137 @@
   </section>
 
   <!-- ═══════ FOOTER ═══════ -->
-  <footer class="py-10 px-6 border-t border-cream-dim/50">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
-          <span class="iconify text-white text-xs" data-icon="mdi:silverware-fork-knife"></span>
+  <footer class="bg-charcoal text-cream">
+    <!-- Cuerpo principal del footer -->
+    <div class="max-w-6xl mx-auto px-6 py-14 lg:py-16">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+
+        <!-- Columna 1: Marca -->
+        <div class="sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+              <span class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
+            </div>
+            <span class="font-serif text-lg">Sabormap</span>
+            <span class="text-sand text-xs">× Imperium</span>
+          </div>
+          <p class="text-sm text-sand/70 leading-relaxed mb-5 max-w-xs">
+            El directorio gastronómico de La Habana y diseño web profesional para negocios cubanos. Hacemos visible lo que merece ser visto.
+          </p>
+          <div class="flex items-center gap-3">
+            <a href="#" onclick="wspContacto(); return false;" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-green-600 transition-colors" aria-label="WhatsApp">
+              <span class="iconify text-base text-sand hover:text-white" data-icon="mdi:whatsapp"></span>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-orange-400 transition-colors" aria-label="Instagram">
+              <span class="iconify text-base text-sand" data-icon="mdi:instagram"></span>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
+              <span class="iconify text-base text-sand" data-icon="mdi:facebook"></span>
+            </a>
+          </div>
         </div>
-        <span class="font-serif text-sm text-charcoal">Sabormap</span>
-        <span class="text-sand text-xs">×</span>
-        <span class="text-xs text-bark">Imperium</span>
+
+        <!-- Columna 2: Servicios -->
+        <div>
+          <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Servicios</h4>
+          <ul class="space-y-2.5">
+            <li>
+              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Directorio Sabormap
+              </a>
+            </li>
+            <li>
+              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Carta Digital
+              </a>
+            </li>
+            <li>
+              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Páginas Web (Imperium)
+              </a>
+            </li>
+            <li>
+              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Delivery & Links
+              </a>
+            </li>
+            <li>
+              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Marketing Activo
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Columna 3: Compañía -->
+        <div>
+          <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Compañía</h4>
+          <ul class="space-y-2.5">
+            <li>
+              <a href="#nosotros" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Nosotros
+              </a>
+            </li>
+            <li>
+              <a href="#planes" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Planes & Precios
+              </a>
+            </li>
+            <li>
+              <a href="#contacto" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Contacto
+              </a>
+            </li>
+            <li>
+              <a href="#faq" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                Preguntas Frecuentes
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Columna 4: Contacto -->
+        <div>
+          <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Contacto</h4>
+          <ul class="space-y-3.5">
+            <li class="flex items-start gap-2.5">
+              <span class="iconify text-brand text-sm mt-0.5 shrink-0" data-icon="mdi:map-marker"></span>
+              <span class="text-sm text-sand/70 leading-relaxed">Calle 19 e/ 60 y 62 #6012<br>Playa, La Habana, Cuba</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <span class="iconify text-green-500 text-sm shrink-0" data-icon="mdi:whatsapp"></span>
+              <a href="#" onclick="wspContacto(); return false;" class="text-sm text-sand/70 hover:text-green-400 transition-colors">+53 56578961</a>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <span class="iconify text-brand text-sm shrink-0" data-icon="mdi:clock-outline"></span>
+              <span class="text-sm text-sand/70 leading-relaxed">Lun – Sáb: 9:00 AM – 6:00 PM</span>
+            </li>
+          </ul>
+        </div>
+
       </div>
-      <p class="text-xs text-bark/60">
-        &copy; 2025 Sabormap & Imperium. Todos los derechos reservados.
-      </p>
-      <div class="flex items-center gap-4">
-        <a href="#" class="text-bark hover:text-charcoal transition-colors"><span class="iconify text-lg" data-icon="mdi:instagram"></span></a>
-        <a href="#" class="text-bark hover:text-charcoal transition-colors"><span class="iconify text-lg" data-icon="mdi:facebook"></span></a>
-        <a href="#" class="text-bark hover:text-charcoal transition-colors"><span class="iconify text-lg" data-icon="mdi:whatsapp"></span></a>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="border-t border-sand/10">
+      <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-xs text-sand/50">
+          &copy; 2025 Sabormap &amp; Imperium. Todos los derechos reservados.
+        </p>
+        <div class="flex items-center gap-5">
+          <a href="#" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Términos y condiciones</a>
+          <span class="text-sand/20">·</span>
+          <a href="#" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Privacidad</a>
+        </div>
       </div>
     </div>
   </footer>
