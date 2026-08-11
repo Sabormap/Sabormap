@@ -4250,9 +4250,10 @@
                 <a href="#colecciones" class="nav-link">Colecciones</a>
                 <a href="#directorios" class="nav-link">Directorio</a>
                 <!-- BOTON CTA: Añade tu Local -->
-                <a href="plan.html" class="cta-add-local" title="Publica tu negocio en Sabormap">
+                <a href="https://sabormap.com/publicar" class="cta-add-local" title="Publica tu negocio en Sabormap">
                     <i class="fas fa-store"></i> Añade tu Local
                 </a>
+                <a href="https://sabormap.com/imperium" class="nav-link">Servicios Pro</a>
                 <a href="nosotros.html" class="nav-link">Nosotros</a>
                 <button onclick="document.getElementById('searchInput').focus()" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:0.85rem;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" aria-label="Buscar">
                     <i class="fas fa-search" style="font-size:0.8rem;"></i> Buscar
@@ -4277,13 +4278,14 @@
     <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Cerrar menu"><i class="fas fa-times"></i></button>
         <!-- CTA destacado en menu movil -->
-        <a href="plan.html" class="cta-add-local-mobile" onclick="closeMobileMenu()">
+        <a href="https://sabormap.com/publicar" class="cta-add-local-mobile" onclick="closeMobileMenu()">
             <i class="fas fa-store"></i> Añade tu Local
         </a>
         
         <a href="dashboard.html" onclick="closeMobileMenu()" style="opacity:0.7;font-size:1rem;"><i class="fas fa-sign-in-alt" style="margin-right:6px;font-size:0.85rem;"></i>Acceso Dueños</a>
         <a href="#colecciones" onclick="closeMobileMenu()">Colecciones</a>
         <a href="#directorios" onclick="closeMobileMenu()">Directorio</a>
+        <a href="https://sabormap.com/imperium" onclick="closeMobileMenu()">Servicios Pro</a>
         <a href="nosotros.html" onclick="closeMobileMenu()">Nosotros</a>
         <a href="#" onclick="event.preventDefault();closeMobileMenu();document.getElementById('searchInput').focus()">Buscar</a>
     </div>
@@ -4378,7 +4380,7 @@
 
     <a href="#" onclick="event.preventDefault(); wspMenu()" class="whatsapp-float" aria-label="Chat por WhatsApp" title="Añade tu local a Sabormap">
         <i class="fab fa-whatsapp"></i>
-        <span class="wa-tooltip">¿Tu local en Sabormap? Escríbenos</span>
+        <span class="wa-tooltip">¡Hola Sabormap! 👋 Acabo de ver su directorio y me interesa publicar mi local. ¿Me ayudan con los planes?</span>
     </a>
 
     <!-- ═══════════════════════════════════════════════════
@@ -4472,5 +4474,101 @@
         observer.observe(document.body, { childList: true, subtree: true });
     });
     </script>
+
+          <!-- ═══════════════════════════════════════════════════
+         PWA INSTALL BANNER — Versión Pro (Inteligente)
+         - Detecta si ya está instalada (standalone)
+         - Recuerda si el usuario lo cerró (localStorage)
+         - Instalación nativa 1-clic en Android/Desktop
+         - Instrucciones manuales en iOS
+         ═══════════════════════════════════════════════════ -->
+    <div id="pwaInstallBanner" style="position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(150px); width: calc(100% - 48px); max-width: 380px; background: var(--surface); border: 1px solid var(--accent); border-radius: 16px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 60; opacity: 0; transition: all 0.5s cubic-bezier(0.22,1,0.36,1); display: flex; align-items: center; gap: 14px;">
+        <div style="width: 40px; height: 40px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; flex-shrink: 0;">
+            <i class="fas fa-mobile-screen"></i>
+        </div>
+        <div id="pwaBannerContent" style="flex: 1; cursor: pointer;">
+            <p style="font-size: 0.85rem; font-weight: 700; color: var(--cream); margin-bottom: 2px;">Instala Sabormap</p>
+            <p id="pwaBannerText" style="font-size: 0.72rem; color: var(--muted); line-height: 1.4;">Toca aquí para instalar la app en tu dispositivo.</p>
+        </div>
+        <button id="pwaBannerCloseBtn" style="background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; padding: 4px;" aria-label="Cerrar banner">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        (function() {
+            let deferredPrompt = null;
+
+            // 1. Detectar si el navegador permite instalación nativa (Android/Desktop)
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault(); // Evitar que Chrome muestre su propio mini-banner
+                deferredPrompt = e;
+            });
+
+            // 2. Detectar si YA está instalada (funciona en iOS y Android)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            // 3. Verificar si el usuario ya lo cerró anteriormente
+            const isDismissed = localStorage.getItem('pwaBannerDismissed') === 'true';
+
+            // 4. Lógica de visualización
+            if (!isStandalone && !isDismissed) {
+                // Si es iOS, cambiamos el texto porque no soporta instalación en 1 clic
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    document.getElementById('pwaBannerText').innerText = 'Toca los 3 puntitos de tu navegador y selecciona "Agregar a pantalla de inicio".';
+                }
+
+                // Mostrar a los 5 segundos
+                setTimeout(() => {
+                    const banner = document.getElementById('pwaInstallBanner');
+                    if (banner) {
+                        banner.style.opacity = '1';
+                        banner.style.transform = 'translateX(-50%) translateY(0)';
+                    }
+                }, 5000);
+            }
+
+            // 5. Acción al hacer clic en el contenido del banner
+            document.getElementById('pwaBannerContent').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    // Mostrar el prompt nativo de Google/Samsung/Microsoft
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar la PWA');
+                    }
+                    deferredPrompt = null;
+                    closeBanner(true); // Ocultar y guardar como dismissado
+                } else {
+                    // En iOS no hay prompt nativo, el usuario debe hacerlo manual
+                    console.log('Instalación manual requerida (iOS)');
+                }
+            });
+
+            // 6. Acción al hacer clic en la X
+            document.getElementById('pwaBannerCloseBtn').addEventListener('click', () => closeBanner(true));
+
+            function closeBanner(saveDismissed) {
+                const banner = document.getElementById('pwaInstallBanner');
+                if (banner) {
+                    banner.style.opacity = '0';
+                    banner.style.transform = 'translateX(-50%) translateY(150px)';
+                }
+                if (saveDismissed) {
+                    localStorage.setItem('pwaBannerDismissed', 'true');
+                }
+            }
+
+            // 7. Escuchar si se instala exitosamente para ocultar todo
+            window.addEventListener('appinstalled', () => {
+                closeBanner(false);
+                console.log('PWA instalada con éxito');
+            });
+        })();
+    </script>
+</body>
+</html>
+
 </body>
 </html>
