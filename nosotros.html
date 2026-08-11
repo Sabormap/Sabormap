@@ -169,7 +169,8 @@
         <a href="#pasos" class="text-sm text-bark hover:text-charcoal transition-colors">Pasos</a>
         <a href="#pago" class="text-sm text-bark hover:text-charcoal transition-colors">Métodos de pago</a>
         <a href="#contacto" class="text-sm text-bark hover:text-charcoal transition-colors">Contacto</a>
-        <a href="https://sabormap.com/plan" class="text-sm text-bark hover:text-charcoal transition-colors">Planes</a>
+        <a href="https://sabormap.com/publicar" class="text-sm text-bark hover:text-charcoal transition-colors">Publicar</a>
+        <a href="https://sabormap.com/imperium" class="text-sm text-bark hover:text-charcoal transition-colors">Servicios Pro</a>
       </div>
       <div class="flex items-center gap-3">
         <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="wspContacto()">
@@ -193,7 +194,8 @@
     <a href="#pasos" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Pasos</a>
     <a href="#pago" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Métodos de pago</a>
     <a href="#contacto" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Contacto</a>
-    <a href="https://sabormap.com/plan" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Planes</a>
+    <a href="https://sabormap.com/publicar" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Publicar</a>
+    <a href="https://sabormap.com/imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Servicios Pro</a>
     <button class="btn-fill mt-4" onclick="wspContacto()">
       <span class="iconify" data-icon="mdi:whatsapp"></span> Escribinos
     </button>
@@ -581,7 +583,7 @@
             <h4 class="font-semibold text-charcoal mb-2">¿Cómo funcionan los precios?</h4>
             <div class="space-y-2 text-sm text-bark leading-relaxed">
               <p>
-                <strong class="text-charcoal">Sabormap</strong> funciona con suscripción mensual en CUP (también aceptamos el equivalente en USD). Los planes van desde 3,500 CUP/mes hasta 10,000 CUP/mes según el nivel de visibilidad y herramientas que necesites. Podés cancelar cuando quieras, sin contratos de permanencia.
+                <strong class="text-charcoal">Sabormap</strong> funciona con suscripción mensual en CUP (también aceptamos el equivalente en USD). Los planes van desde 6,700 CUP/mes hasta 10,000 CUP/mes según el nivel de visibilidad y herramientas que necesites. Podés cancelar cuando quieras, sin contratos de permanencia.
               </p>
               <p>
                 <strong class="text-charcoal">Imperium Web Design</strong> es un pago único en USD. Pagás una vez y la página web es tuya para siempre. Los precios empiezan desde $80 USD para una landing básica y pueden llegar a $250+ USD para sitios más complejos con tienda online.
@@ -761,7 +763,58 @@
     </div>
   </section>
 
-  <!-- ═══════ FOOTER ═══════ -->
+    <!-- ═══════ TIP PWA ═══════ -->
+  <section class="py-12 px-6 sr">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white border border-brand/20 rounded-3xl p-8 sm:p-10 shadow-sm relative overflow-hidden">
+        <!-- Detalle decorativo de fondo -->
+        <div class="absolute top-0 right-0 w-40 h-40 bg-brand/5 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="relative z-10">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+              <span class="iconify text-brand text-3xl" data-icon="mdi:rocket-launch-outline"></span>
+            </div>
+            <div>
+              <h3 class="font-serif text-2xl text-charcoal mb-2">Tecnología sin fricción</h3>
+              <p class="text-sm text-bark leading-relaxed">
+                Sabormap no es una app tradicional que debas descargar de la tienda y te ocupe espacio en el celular. Es una <strong class="text-charcoal">PWA (Web App Progresiva)</strong>. Esto significa que funciona igual de rápido que una app nativa, pero vive en la nube.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-cream-warm rounded-2xl p-6 border border-cream-dim">
+            <p class="font-semibold text-charcoal text-sm mb-4 uppercase tracking-wider">Cómo instalarla en 2 pasos:</p>
+            <div class="space-y-4">
+              <!-- Paso 1 -->
+              <div class="flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center font-serif text-base shrink-0 mt-0.5">1</div>
+                <p class="text-sm text-charcoal leading-relaxed pt-1">
+                  Abre <strong>sabormap.hab</strong> en el navegador de tu celular (Chrome o Safari).
+                </p>
+              </div>
+              <!-- Paso 2 -->
+              <div class="flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center font-serif text-base shrink-0 mt-0.5">2</div>
+                <p class="text-sm text-charcoal leading-relaxed pt-1">
+                  Toca el ícono de los 3 puntitos (arriba a la derecha) y selecciona <strong>"Agregar a pantalla de inicio"</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-6">
+            <span class="iconify text-brand text-2xl shrink-0" data-icon="mdi:check-circle-outline"></span>
+            <p class="text-sm font-medium text-charcoal leading-relaxed">
+              ¡Listo! Tendrás el ícono de Sabormap en tu escritorio y podrás usarlo incluso sin conexión a internet.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- ═══════ FOOTER ═══════ -->
   <footer class="bg-charcoal text-cream">
     <!-- Cuerpo principal del footer -->
     <div class="max-w-6xl mx-auto px-6 py-14 lg:py-16">
@@ -783,10 +836,12 @@
             <a href="#" onclick="wspContacto(); return false;" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-green-600 transition-colors" aria-label="WhatsApp">
               <span class="iconify text-base text-sand hover:text-white" data-icon="mdi:whatsapp"></span>
             </a>
-            <a href="#" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-orange-400 transition-colors" aria-label="Instagram">
+            <!-- Corregido: Añadir enlace real de Instagram -->
+            <a href="https://instagram.com/sabormap" target="_blank" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-orange-400 transition-colors" aria-label="Instagram">
               <span class="iconify text-base text-sand" data-icon="mdi:instagram"></span>
             </a>
-            <a href="#" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
+            <!-- Corregido: Añadir enlace real de Facebook -->
+            <a href="https://facebook.com/sabormap" target="_blank" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
               <span class="iconify text-base text-sand" data-icon="mdi:facebook"></span>
             </a>
           </div>
@@ -797,31 +852,32 @@
           <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Servicios</h4>
           <ul class="space-y-2.5">
             <li>
-              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <!-- Corregido: #servicios a #hacemos -->
+              <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Directorio Sabormap
               </a>
             </li>
             <li>
-              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Carta Digital
               </a>
             </li>
             <li>
-              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Páginas Web (Imperium)
               </a>
             </li>
             <li>
-              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Delivery & Links
               </a>
             </li>
             <li>
-              <a href="#servicios" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Marketing Activo
               </a>
@@ -834,13 +890,15 @@
           <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Compañía</h4>
           <ul class="space-y-2.5">
             <li>
-              <a href="#nosotros" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <!-- Corregido: #nosotros a #quienes -->
+              <a href="#quienes" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Nosotros
               </a>
             </li>
             <li>
-              <a href="#planes" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <!-- Corregido: #planes a #pago (ahí están los precios) -->
+              <a href="#pago" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Planes & Precios
               </a>
@@ -852,9 +910,10 @@
               </a>
             </li>
             <li>
-              <a href="#faq" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
+              <!-- Corregido: #faq a #pasos -->
+              <a href="#pasos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
                 <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
-                Preguntas Frecuentes
+                Cómo funcionamos
               </a>
             </li>
           </ul>
@@ -889,9 +948,10 @@
           &copy; 2025 Sabormap &amp; Imperium. Todos los derechos reservados.
         </p>
         <div class="flex items-center gap-5">
-          <a href="#" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Términos y condiciones</a>
+          <!-- Corregido: Evitar que suban al top con javascript:void(0) hasta que tengas las páginas legales -->
+          <a href="javascript:void(0)" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Términos y condiciones</a>
           <span class="text-sand/20">·</span>
-          <a href="#" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Privacidad</a>
+          <a href="javascript:void(0)" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Privacidad</a>
         </div>
       </div>
     </div>
