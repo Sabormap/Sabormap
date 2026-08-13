@@ -792,33 +792,124 @@ let staticPlaces = [
         menu: [{ category:"Entradas", items:[{name:"Bruschetta de malanga", desc:"Con ajo confitado y tomate cubano", price:"$200"},{name:"Ensalada mediterranea", desc:"Queso de cabra, aceitunas, tomate, albahaca", price:"$250"},{name:"Gazpacho tropical", desc:"Con mango y ají dulce", price:"$180"}]},{ category:"Principales", items:[{name:"Risotto de camarones y coco", desc:"Arroz arborio, camarones, leche de coco, limon", price:"$550"},{name:"Lechon confitado", desc:"Con puré de boniato y reduccion de ron", price:"$500"},{name:"Pargo en costra de coco", desc:"Con salsa de maracuya y arroz jazmin", price:"$600"},{name:"Ravioli de guayaba", desc:"Con salsa de queso azul y nueces", price:"$480"}]},{ category:"Postres", items:[{name:"Tiramisu de cafe cubano", desc:"Con cafe espresso cubano y ron", price:"$220"},{name:"Coulant de chocolate", desc:"Con helado de vainilla y ron anejo", price:"$250"}]}],
         links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:197, name:"Bueníssimo heladería", category:"heladeria", neighborhood:"Habana Vieja", address:"📍Calle Aguiar /Empedrado y Tejadillom La Habana.", rating:4.8, priceLevel:1, tags:["Descubrelo."], description:"Helado artesanal con un toque cubano.", mustOrder:"Copa fiesta de 3 bochas", editorNote:"Nada sofisticado, y eso es exactamente lo que lo hace perfecto.", hours:"⏰️ Lun-Dom: 11:00am-20:00pm", phone:"+53 50131498", featured:false, isOpen:true, lat:23.126964, lng:-82.351258, images:["imagenes/Helad'oro.jpg","","",""],
-        menu: [{ category:"Helados clasicos", items:[{name:"Dulce de leche", desc:"El de toda la vida, receta familiar", price:"$60"},{name:"Chocolate con almendras", desc:"Con trozos de almendra tostada", price:"$60"},{name:"Fresa", desc:"Fresas frescas de temporada", price:"$60"},{name:"Vainilla", desc:"Vainilla Madagascar, suave y cremoso", price:"$60"},{name:"Pina", desc:"Pina fresca de la isla", price:"$60"}]},{ category:"Copas", items:[{name:"Copa fiesta", desc:"3 bochas, salsa, crema, granas", price:"$120"},{name:"Banana split", desc:"3 bochas, banana, crema, chocolate", price:"$150"}]}],
-        links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"}]
-    },
-    { id:198, name:"K-Delicia", category:"bar", neighborhood:"Vedado", address:"Calle 17 e/22 y 24.", rating:4.6, priceLevel:3, tags:["Hamburguesas🍔 Pizzas🍕Jugos🥤"], description:"Café y comida coreana auténtica.", hours:"⏰️ Lun-Dom: 10:00am-22:00pm ", phone:"+53 53024033 - +53 51543644", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/K-Delicia.webp", "","","",""],
+    { id:197, name:"K-Delicia", category:"bar", neighborhood:"Vedado", address:"Calle 17 e/22 y 24.", rating:4.6, priceLevel:3, tags:["Hamburguesas🍔 Pizzas🍕Jugos🥤"], description:"Café y comida coreana auténtica.", hours:"⏰️ Lun-Dom: 10:00am-22:00pm ", phone:"+53 53024033 - +53 51543644", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/K-Delicia.webp", "","","",""],
         menu: [{ category:"Helados de autor", items:[{name:"Chocolate con ron anejo", desc:"Chocolate cubano, reduccion de ron anejo 7 años", price:"$180"},{name:"Guayaba al champagne", desc:"Guayaba fresca, reduccion de champagne", price:"$180"},{name:"Cafe cubano", desc:"Cafe torrefacto, base de leche condensada", price:"$160"}]},{ category:"Maridajes", items:[{name:"Chocolate con ron anejo", desc:"Bocha de chocolate + copa de ron anejo 7 años", price:"$350"},{name:"Guayaba con espumante", desc:"Bocha de guayaba + copa de espumante", price:"$300"},{name:"Cafe con ron oscuro", desc:"Bocha de cafe + copa de ron oscuro 15 años", price:"$400"}]}],
         links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:199, name:"Restaurante DBatule", category:"restaurante", neighborhood:"Vedado", address:"📍Calle 3ra e/ B y C.", rating:4.8, priceLevel:3, tags:["Descubrelo."], description:"Restaurante D’Batule los espera a todos.", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Lun-Dom: 16:00pm-04:00am", phone:"+53 59360467", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/DBatule.webp","","",""],
+    { id:198, name:"Restaurante DBatule", category:"restaurante", neighborhood:"Vedado", address:"📍Calle 3ra e/ B y C.", rating:4.8, priceLevel:3, tags:["Descubrelo."], description:"Restaurante D’Batule los espera a todos.", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Lun-Dom: 16:00pm-04:00am", phone:"+53 59360467", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/DBatule.webp","","",""],
         menu: [{ category:"Entradas", items:[{name:"Bruschetta de malanga", desc:"Con ajo confitado y tomate cubano", price:"$200"},{name:"Ensalada mediterranea", desc:"Queso de cabra, aceitunas, tomate, albahaca", price:"$250"},{name:"Gazpacho tropical", desc:"Con mango y ají dulce", price:"$180"}]},{ category:"Principales", items:[{name:"Risotto de camarones y coco", desc:"Arroz arborio, camarones, leche de coco, limon", price:"$550"},{name:"Lechon confitado", desc:"Con puré de boniato y reduccion de ron", price:"$500"},{name:"Pargo en costra de coco", desc:"Con salsa de maracuya y arroz jazmin", price:"$600"},{name:"Ravioli de guayaba", desc:"Con salsa de queso azul y nueces", price:"$480"}]},{ category:"Postres", items:[{name:"Tiramisu de cafe cubano", desc:"Con cafe espresso cubano y ron", price:"$220"},{name:"Coulant de chocolate", desc:"Con helado de vainilla y ron anejo", price:"$250"}]}],
         links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:200, name:"DalePizza", category:"restaurante", neighborhood:"Playa", address:"📍Calle 41A / 72 y 72A.", rating:4.8, priceLevel:3, tags:["Pizzas"], description:"El sabor se queda en tu memoria 🍕.", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Lun-Dom: 11:30am-12:00am", phone:"+53 50529162", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/DalePizza.jpg","","",""],
+    { id:199, name:"DalePizza", category:"restaurante", neighborhood:"Playa", address:"📍Calle 41A / 72 y 72A.", rating:4.8, priceLevel:3, tags:["Pizzas"], description:"El sabor se queda en tu memoria 🍕.", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Lun-Dom: 11:30am-12:00am", phone:"+53 50529162", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/DalePizza.jpg","","",""],
         menu: [{ category:"Entradas", items:[{name:"Bruschetta de malanga", desc:"Con ajo confitado y tomate cubano", price:"$200"},{name:"Ensalada mediterranea", desc:"Queso de cabra, aceitunas, tomate, albahaca", price:"$250"},{name:"Gazpacho tropical", desc:"Con mango y ají dulce", price:"$180"}]},{ category:"Principales", items:[{name:"Risotto de camarones y coco", desc:"Arroz arborio, camarones, leche de coco, limon", price:"$550"},{name:"Lechon confitado", desc:"Con puré de boniato y reduccion de ron", price:"$500"},{name:"Pargo en costra de coco", desc:"Con salsa de maracuya y arroz jazmin", price:"$600"},{name:"Ravioli de guayaba", desc:"Con salsa de queso azul y nueces", price:"$480"}]},{ category:"Postres", items:[{name:"Tiramisu de cafe cubano", desc:"Con cafe espresso cubano y ron", price:"$220"},{name:"Coulant de chocolate", desc:"Con helado de vainilla y ron anejo", price:"$250"}]}],
         links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:201, name:"Café Tilín Galiano", category:"restaurante", neighborhood:"Centro Habana", address:"📍Galiano 119, entre Ánimas y Trocadero.", rating:4.8, priceLevel:3, tags:["Descubrelo."], description:"Si quieres pasar un momento inolvidable este es el lugar correcto 🥰👌🏻 .", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Jue-Dom: 14:00pm-02:00am", phone:"+53 52876581", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/Café Tilín Galiano.jpg","","",""],
+    { id:200, name:"Café Tilín Galiano", category:"restaurante", neighborhood:"Centro Habana", address:"📍Galiano 119, entre Ánimas y Trocadero.", rating:4.8, priceLevel:3, tags:["Descubrelo."], description:"Si quieres pasar un momento inolvidable este es el lugar correcto 🥰👌🏻 .", mustOrder:"Risotto de camarones y coco", editorNote:"Chico, intimo, y la mejor vista de la plaza.", hours:"⏰️ Jue-Dom: 14:00pm-02:00am", phone:"+53 52876581", featured:false, isOpen:true, lat:23.139902, lng:-82.402052, images:["imagenes/Café Tilín Galiano.jpg","","",""],
         menu: [{ category:"Entradas", items:[{name:"Bruschetta de malanga", desc:"Con ajo confitado y tomate cubano", price:"$200"},{name:"Ensalada mediterranea", desc:"Queso de cabra, aceitunas, tomate, albahaca", price:"$250"},{name:"Gazpacho tropical", desc:"Con mango y ají dulce", price:"$180"}]},{ category:"Principales", items:[{name:"Risotto de camarones y coco", desc:"Arroz arborio, camarones, leche de coco, limon", price:"$550"},{name:"Lechon confitado", desc:"Con puré de boniato y reduccion de ron", price:"$500"},{name:"Pargo en costra de coco", desc:"Con salsa de maracuya y arroz jazmin", price:"$600"},{name:"Ravioli de guayaba", desc:"Con salsa de queso azul y nueces", price:"$480"}]},{ category:"Postres", items:[{name:"Tiramisu de cafe cubano", desc:"Con cafe espresso cubano y ron", price:"$220"},{name:"Coulant de chocolate", desc:"Con helado de vainilla y ron anejo", price:"$250"}]}],
         links: [{platform:"PedidosYa", url:"https://pedidosya.com", icon:"fa-motorcycle", cssClass:"delivery-pedidosya"},{platform:"Rappi", url:"https://rappi.com", icon:"fa-motorcycle", cssClass:"delivery-rappi"},{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:202, name:"Fusion Frappé", category:"bar", neighborhood:"Vedado", address:"Ave. 17 entre F y G.", rating:4.6, priceLevel:3, tags:["Descubrelo."], description:"“Lo bueno siempre regresa…☕️🤎”.", hours:"⏰️ Lun-Dom: 09:00am-21:00pm ", phone:"", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/Fusion Frappé.jpg", "","","",""],
+    { id:201, name:"Fusion Frappé", category:"bar", neighborhood:"Vedado", address:"Ave. 17 entre F y G.", rating:4.6, priceLevel:3, tags:["Descubrelo."], description:"“Lo bueno siempre regresa…☕️🤎”.", hours:"⏰️ Lun-Dom: 09:00am-21:00pm ", phone:"", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/Fusion Frappé.jpg", "","","",""],
         menu: [{ category:"Helados de autor", items:[{name:"Chocolate con ron anejo", desc:"Chocolate cubano, reduccion de ron anejo 7 años", price:"$180"},{name:"Guayaba al champagne", desc:"Guayaba fresca, reduccion de champagne", price:"$180"},{name:"Cafe cubano", desc:"Cafe torrefacto, base de leche condensada", price:"$160"}]},{ category:"Maridajes", items:[{name:"Chocolate con ron anejo", desc:"Bocha de chocolate + copa de ron anejo 7 años", price:"$350"},{name:"Guayaba con espumante", desc:"Bocha de guayaba + copa de espumante", price:"$300"},{name:"Cafe con ron oscuro", desc:"Bocha de cafe + copa de ron oscuro 15 años", price:"$400"}]}],
         links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
-    { id:203, name:"D'Pi***", category:"bar", neighborhood:"Vedado", address:"Calle 21 entre M y N.", rating:4.6, priceLevel:3, tags:["Descubrelo."], description:"“Nuestra Meta hacerlos Feliz con nuestras locuras con un amor D'pi***❤️.", hours:"⏰️ Lun-Dom: 12:00pm-23:00pm ", phone:"+53 63241915", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/DPi.jpg", "","","",""],
+    { id:202, name:"D'Pi***", category:"bar", neighborhood:"Vedado", address:"Calle 21 entre M y N.", rating:4.6, priceLevel:3, tags:["Descubrelo."], description:"“Nuestra Meta hacerlos Feliz con nuestras locuras con un amor D'pi***❤️.", hours:"⏰️ Lun-Dom: 12:00pm-23:00pm ", phone:"+53 63241915", featured:false, isOpen:true, lat: 23.1246, lng: -82.417994, images:["imagenes/DPi.jpg", "","","",""],
         menu: [{ category:"Helados de autor", items:[{name:"Chocolate con ron anejo", desc:"Chocolate cubano, reduccion de ron anejo 7 años", price:"$180"},{name:"Guayaba al champagne", desc:"Guayaba fresca, reduccion de champagne", price:"$180"},{name:"Cafe cubano", desc:"Cafe torrefacto, base de leche condensada", price:"$160"}]},{ category:"Maridajes", items:[{name:"Chocolate con ron anejo", desc:"Bocha de chocolate + copa de ron anejo 7 años", price:"$350"},{name:"Guayaba con espumante", desc:"Bocha de guayaba + copa de espumante", price:"$300"},{name:"Cafe con ron oscuro", desc:"Bocha de cafe + copa de ron oscuro 15 años", price:"$400"}]}],
         links: [{platform:"Reservar Mesa", url:"https://opentable.com", icon:"fa-calendar-check", cssClass:"delivery-reserva"}]
     },
 
+    
+
 ];
+
+// ──────────────────────────────────────────────────────────────
+// FIX: Coordenadas reales para locales con placeholders duplicados
+// Pegar justo antes de la última llave de cierre en places.js
+// ──────────────────────────────────────────────────────────────
+const fixedCoords = {
+    124: { lat: 23.1191, lng: -82.4088 }, // Mammamía (36 e/ 1ra y 3ra, Miramar)
+    126: { lat: 23.1239, lng: -82.4176 }, // Luly Bar Cafe (3ra /28 y 30)
+    127: { lat: 23.1415, lng: -82.3423 }, // NaO Habana (Obispo 1)
+    128: { lat: 23.1172, lng: -82.4066 }, // Chucha's (8 #105, Miramar)
+    129: { lat: 23.1369, lng: -82.3743 }, // Tempo (B 153 e/ Línea y Calzada)
+    130: { lat: 23.1285, lng: -82.3681 }, // Código 310 (G / 15 y 13)
+    131: { lat: 23.0932, lng: -82.3762 }, // El Cocinero (26 No 57, Nuevo Vedado)
+    132: { lat: 23.1389, lng: -82.3523 }, // El Bleco (Marina e/ Vapor y Hornos)
+    133: { lat: 23.1156, lng: -82.4123 }, // SangriLa (42 esq 21)
+    134: { lat: 23.0803, lng: -82.4751 }, // MAREA (5ta ave /258 y 260, Santa Fe)
+    135: { lat: 23.1163, lng: -82.4058 }, // MarAdentro (C e/ 1ra y 3ra)
+    136: { lat: 23.0791, lng: -82.4746 }, // El Caney (5ta e/ 252 y 254, Santa Fé)
+    137: { lat: 23.1359, lng: -82.3505 }, // Bigote Gato (Teniente Rey esq. Aguacate)
+    138: { lat: 23.1399, lng: -82.3582 }, // La Concordia (Concordia 453)
+    139: { lat: 23.1418, lng: -82.3529 }, // Milla Cero (Empedrado 412)
+    140: { lat: 23.1365, lng: -82.3509 }, // El Louvre (O'Reilly 353)
+    141: { lat: 23.1416, lng: -82.3712 }, // Havana’s 21 (21 e/ N y O)
+    142: { lat: 23.1179, lng: -82.4135 }, // 28 & Mar (1ra y 28, Miramar)
+    143: { lat: 23.0782, lng: -82.4732 }, // La Familia Habana (1ra No. 18406)
+    144: { lat: 23.1165, lng: -82.4061 }, // Esquina D Fraile (D e/ 1era y 3era)
+    145: { lat: 23.1374, lng: -82.3678 }, // Tribe Café (Aramburu 253)
+    146: { lat: 23.1278, lng: -82.3831 }, // El Ya! (Zapata y 24)
+    147: { lat: 23.1341, lng: -82.3721 }, // 12x17 (12 y 17)
+    148: { lat: 23.1215, lng: -82.4152 }, // Mango Habana (27 #2608)
+    149: { lat: 23.1121, lng: -82.4078 }, // Sol d’ suini (35 / 20 y 22)
+    150: { lat: 23.1381, lng: -82.3626 }, // V&S Bar (Galiano 209)
+    151: { lat: 23.1362, lng: -82.3701 }, // ILUXION (17 esq.E)
+    152: { lat: 23.0935, lng: -82.3765 }, // Fuumiyaki (Ave 26/23 y 25)
+    153: { lat: 23.0811, lng: -82.4754 }, // El Laurel (5ta ave #26002, Santa Fe)
+    154: { lat: 23.1504, lng: -82.3242 }, // Vista Habana (Ciudamar esq 7ma)
+    155: { lat: 23.1112, lng: -82.4021 }, // Salsa Río (49 C e/ 26 y 28 A)
+    156: { lat: 23.1349, lng: -82.3462 }, // Antojos (Callejón Espada)
+    157: { lat: 23.1244, lng: -82.3922 }, // La Rosa Negra (24 #808, Nuevo Vedado)
+    158: { lat: 23.1065, lng: -82.4182 }, // La Catrina (84 # 503, Miramar)
+    159: { lat: 23.1409, lng: -82.3688 }, // La Urraca (23 e/ 8 y Crecherie)
+    160: { lat: 23.1395, lng: -82.3581 }, // Doña Alicia (Reina esq Belascoaín)
+    161: { lat: 23.1335, lng: -82.3791 }, // Totò e Peppino (8 /5ta y Calzada)
+    162: { lat: 23.1181, lng: -82.4071 }, // TOROS & TAPAS (6 #124, Miramar)
+    163: { lat: 23.1196, lng: -82.3902 }, // cafeZillo (4 esq 3ra)
+    164: { lat: 23.1269, lng: -82.3932 }, // El Balcón de Diego (28 # 590)
+    165: { lat: 23.1398, lng: -82.3572 }, // La Familia Manrique (Manrique 519)
+    166: { lat: 23.1394, lng: -82.3668 }, // Cuatro Lunas (21 #104 / L y M)
+    167: { lat: 23.1261, lng: -82.3914 }, // Bar Encuentro (25 #1705)
+    168: { lat: 23.1021, lng: -82.3772 }, // Monakeño (Mayia Rodriguez y Acosta)
+    169: { lat: 23.1138, lng: -82.3618 }, // Bom Apetite (1 y 70)
+    170: { lat: 23.1854, lng: -82.3482 }, // Bar K5 (ave 5ta /472, Guanabo)
+    171: { lat: 23.1608, lng: -82.3415 }, // La Comidilla (Georgia esq San Gregorio)
+    172: { lat: 23.1412, lng: -82.3531 }, // San Lázaro 113
+    173: { lat: 22.9844, lng: -82.2332 }, // PAL KAR.AJO (Ave 101 %16 y 18, Cotorro)
+    174: { lat: 23.1372, lng: -82.3511 }, // Pal'Karajo (Cuba 60)
+    175: { lat: 23.1355, lng: -82.3512 }, // El Lucero Gastro (Cuba No.2)
+    176: { lat: 23.1362, lng: -82.3521 }, // Máximo bar (Cuba 6)
+    177: { lat: 23.1432, lng: -82.3819 }, // DONG TÉ (L e/ 25 y 27)
+    178: { lat: 23.1295, lng: -82.3722 }, // Dí Nuestro (Zapata e/ C & D)
+    179: { lat: 23.1405, lng: -82.3551 }, // La Juliana (Zanja y San Nicolas)
+    180: { lat: 23.1355, lng: -82.3662 }, // Candela (F & 23)
+    181: { lat: 23.1392, lng: -82.3731 }, // Euforia (L #310)
+    182: { lat: 23.1413, lng: -82.3711 }, // Club 23 (23 e/ N y O)
+    183: { lat: 23.1136, lng: -82.3619 }, // Karai (1ra y 70)
+    184: { lat: 23.1411, lng: -82.3486 }, // Café Bombón (San Ignacio)
+    185: { lat: 23.1167, lng: -82.4055 }, // Tablazo (1ra e/ C y D)
+    186: { lat: 23.1358, lng: -82.3491 }, // Habana 5 (Habana No.5)
+    187: { lat: 23.1237, lng: -82.4181 }, // La Marina (1ra y 70)
+    188: { lat: 23.1164, lng: -82.4049 }, // El Gabán (1ra Esq. 46)
+    189: { lat: 23.1235, lng: -82.3628 }, // VOYA Café (Juan Delgado 255)
+    190: { lat: 23.1402, lng: -82.3592 }, // Marechiaro (Malecón / Águila)
+    191: { lat: 23.0881, lng: -82.4084 }, // Juanky’s Pan (23A/ 202 y 212)
+    192: { lat: 23.1238, lng: -82.4182 }, // ROVI (3ra / 24 y 26)
+    193: { lat: 23.1401, lng: -82.3701 }, // Café Infinito (15 e/ F y G)
+    194: { lat: 23.1381, lng: -82.3641 }, // Wapa (4 e/ 15 y 17)
+    195: { lat: 23.1319, lng: -82.3512 }, // Sabores (Plaza Catedral)
+    196: { lat: 23.1392, lng: -82.3529 }, // Kilómetro Zero (Monserrate 437)
+    197: { lat: 23.1335, lng: -82.3841 }, // K-Delicia (17 e/22 y 24)
+    198: { lat: 23.1173, lng: -82.4068 }, // DBatule (3ra e/ B y C)
+    199: { lat: 23.1093, lng: -82.4118 }, // DalePizza (41A / 72 y 72A)
+    200: { lat: 23.1385, lng: -82.3615 }, // Tilín Galiano (Galiano 119)
+    201: { lat: 23.1395, lng: -82.3705 }, // Fusion Frappé (17 e/ F y G)
+    202: { lat: 23.1388, lng: -82.3621 }  // D'Pi*** (21 e/ M y N)
+};
+
+staticPlaces.forEach(p => {
+    if (fixedCoords[p.id]) {
+        p.lat = fixedCoords[p.id].lat;
+        p.lng = fixedCoords[p.id].lng;
+    }
+});
+
