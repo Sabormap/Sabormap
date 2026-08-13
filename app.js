@@ -35,9 +35,9 @@ function wspMenu() {
         '*Zona de La Habana:* \n' +
         '*Presupuesto aproximado:* (hasta $10/mes · $50-$150 · $150+ USD)\n\n' +
         '*Plan Sabormap (mapa):*\n' +
-        '1️⃣ Básico — 1,000 CUP/mes (~$4 USD)\n' +
-        '2️⃣ Pro — 2,500 CUP/mes (~$10 USD) ⭐\n' +
-        '3️⃣ Destacado — 4,000 CUP/mes (~$15 USD)\n\n' +
+        '1️⃣ Básico — Gratis CUP\n' +
+        '2️⃣ Pro — 6700 CUP/mes (~$10 USD) ⭐\n' +
+        '3️⃣ Destacado — 10000 CUP/mes (~$15 USD)\n\n' +
         '*Plan Imperium (web propia):*\n' +
         '4️⃣ Básico — $80 USD (pago único)\n' +
         '5️⃣ Intermedio — $150 USD (pago único) ⭐\n' +
@@ -272,14 +272,69 @@ let currentModalPlace = null;
 /* ═══════════════════════════════════════════
    COLECCIONES
    ═══════════════════════════════════════════ */
-const collections = [
-    { id:'cena-romantica', title:'Cena Romantica', desc:'Candlelight, vino y esa mesa esquinada', icon:'fa-heart', color:'#ec4899', bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.2)', ids:[1,2,7] },
-    { id:'mejores-cocteles', title:'Mejores Cocteles', desc:'Donde el ron se vuelve arte', icon:'fa-martini-glass', color:'#8b5cf6', bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.2)', ids:[7,8,10] },
-    { id:'familiar', title:'En Familia', desc:'Menus para todos y espacio para los peques', icon:'fa-people-group', color:'#06b6d4', bg:'rgba(6,182,212,0.12)', border:'rgba(6,182,212,0.2)', ids:[1,4,6] },
-    { id:'mariscos-frescos', title:'Mariscos Frescos', desc:'Directo del mar al plato', icon:'fa-fish', color:'#10b981', bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.2)', ids:[4,8] },
-    { id:'helados-artesanales', title:'Helados Artesanales', desc:'Bochas que valen la espera', icon:'fa-ice-cream', color:'#f472b6', bg:'rgba(244,114,182,0.12)', border:'rgba(244,114,182,0.2)', ids:[3,6,9] },
-    { id:'delivery-noche', title:'Delivery Nocturno', desc:'Antojos a las 2am? Resueltos', icon:'fa-moon', color:'#f59e0b', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.2)', ids:[1,5,9] },
+// Colecciones dinamicas desde Supabase (fallback estatico si no hay conexion)
+let collections = [
+    { id:'cena-romantica',      title:'Cena Romantica',     desc:'Candlelight, vino y esa mesa esquinada',     icon:'fa-heart',          color:'#ec4899', bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.2)', staticIds:[1,2,7], dbIds:[] },
+    { id:'mejores-cocteles',    title:'Mejores Cocteles',   desc:'Donde el ron se vuelve arte',                 icon:'fa-martini-glass',  color:'#8b5cf6', bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.2)', staticIds:[7,8,10], dbIds:[] },
+    { id:'familiar',            title:'En Familia',          desc:'Menus para todos y espacio para los peques',  icon:'fa-people-group',   color:'#06b6d4', bg:'rgba(6,182,212,0.12)',  border:'rgba(6,182,212,0.2)', staticIds:[1,4,6], dbIds:[] },
+    { id:'mariscos-frescos',    title:'Mariscos Frescos',    desc:'Directo del mar al plato',                    icon:'fa-fish',           color:'#10b981', bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.2)', staticIds:[4,8], dbIds:[] },
+    { id:'helados-artesanales', title:'Helados Artesanales', desc:'Bochas que valen la espera',                  icon:'fa-ice-cream',      color:'#f472b6', bg:'rgba(244,114,182,0.12)',border:'rgba(244,114,182,0.2)', staticIds:[3,6,9], dbIds:[] },
+    { id:'delivery-noche',      title:'Delivery Nocturno',   desc:'Antojos a las 2am? Resueltos',                icon:'fa-moon',           color:'#f59e0b', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.2)', staticIds:[1,5,9], dbIds:[] },
 ];
+
+// Cargar colecciones desde Supabase (reemplaza las de fallback si hay datos)
+async function loadCollectionsFromSupabase() {
+    if (!sb) { console.warn('Supabase no disponible, usando colecciones estaticas'); return; }
+    try {
+        const { data: cols, error: colErr } = await sb
+            .from('collections')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+        if (colErr) { console.warn('Error cargando colecciones:', colErr); return; }
+        if (!cols || cols.length === 0) { console.info('No hay colecciones en Supabase, usando fallback'); return; }
+
+        const { data: rels, error: relErr } = await sb
+            .from('collection_places')
+            .select('collection_id, place_id, static_place_id');
+        if (relErr) { console.warn('Error cargando relaciones:', relErr); return; }
+
+        const relsByCol = {};
+        (rels || []).forEach(r => {
+            if (!relsByCol[r.collection_id]) relsByCol[r.collection_id] = { staticIds: [], dbIds: [] };
+            if (r.static_place_id != null) relsByCol[r.collection_id].staticIds.push(r.static_place_id);
+            if (r.place_id) relsByCol[r.collection_id].dbIds.push(r.place_id);
+        });
+
+        collections = cols.map(c => ({
+            id:        c.id,
+            title:     c.title,
+            desc:      c.description,
+            icon:      c.icon,
+            color:     c.color,
+            bg:        c.bg,
+            border:    c.border,
+            staticIds: (relsByCol[c.id] || {}).staticIds || [],
+            dbIds:     (relsByCol[c.id] || {}).dbIds || [],
+        }));
+
+        console.info('Colecciones cargadas desde Supabase: ' + collections.length);
+        renderCollections();
+    } catch (err) {
+        console.warn('Error inesperado cargando colecciones:', err);
+    }
+}
+
+function placeBelongsToCollection(place, col) {
+    if (col.staticIds && col.staticIds.includes(Number(place.id))) return true;
+    if (col.dbIds && col.dbIds.includes(place.id)) return true;
+    if (col.dbIds && col.dbIds.some(id => String(id) === String(place.id))) return true;
+    return false;
+}
+
+function getCollectionCount(col) {
+    return (col.staticIds ? col.staticIds.length : 0) + (col.dbIds ? col.dbIds.length : 0);
+}
 
 /* ═══════════════════════════════════════════
    MAPEO DE CATEGORÍAS
@@ -306,6 +361,7 @@ try {
 }
 
 // Mapea un local de la DB al formato que usa esta página (mismas propiedades que staticPlaces).
+// Map a DB locale to the format this page uses (same properties as staticPlaces).
 function mapDbPlaceToPublic(p) {
     if (!p) return null;
     // price_range ('$', '$$', '$$$', '$$$$') → priceLevel (1-4)
@@ -335,6 +391,7 @@ function mapDbPlaceToPublic(p) {
         images:         Array.isArray(p.images) ? p.images : [],
         menu:           menu,
         links:          links,
+        is_pro:         !!p.is_pro, // ★ NUEVO: Para ocultar el banner en locales PRO ★
         _fromDb:        true   // flag por si querés diferenciar en el futuro
     };
 }
@@ -392,6 +449,8 @@ document.addEventListener('DOMContentLoaded', () => {
     handleMobileThemeToggle();
     // ★ Cargar locales publicados desde Supabase (async, no bloquea el render inicial) ★
     loadPlacesFromSupabase();
+    // ★ Cargar colecciones dinamicas desde Supabase ★
+    loadCollectionsFromSupabase();
     // Refresca los badges "Abierto/Cerrado" cada 60s sin intervención manual
     setInterval(() => {
         if (currentView === 'grid') renderPlaces();
@@ -416,13 +475,14 @@ document.addEventListener('DOMContentLoaded', () => {
    ═══════════════════════════════════════════ */
 function renderCollections() {
     const container = document.getElementById('collectionsScroll');
+    if (!container) return;
     container.innerHTML = collections.map(c => `
         <div class="collection-card" style="--collection-color:${c.color};--collection-bg:${c.bg};--collection-border:${c.border};"
              onclick="toggleCollection('${c.id}')" id="col-${c.id}">
             <div class="collection-icon"><i class="fas ${c.icon}"></i></div>
             <div class="collection-title">${c.title}</div>
             <div class="collection-desc">${c.desc}</div>
-            <div class="collection-count"><i class="fas fa-store"></i> ${c.ids.length} lugares</div>
+            <div class="collection-count"><i class="fas fa-store"></i> ${getCollectionCount(c)} lugares</div>
         </div>
     `).join('');
 }
@@ -452,7 +512,9 @@ function getFilteredPlaces() {
     let places = [...staticPlaces];
     if (activeCollection) {
         const col = collections.find(c => c.id === activeCollection);
-        places = places.filter(p => col.ids.includes(p.id));
+        if (col) {
+            places = places.filter(p => placeBelongsToCollection(p, col));
+        }
     }
     if (currentFilter !== 'todos') places = places.filter(p => p.category === currentFilter);
     if (currentBarrio !== 'todos') places = places.filter(p => p.neighborhood === currentBarrio);
@@ -750,12 +812,27 @@ function openModal(id) {
         </div>`;
     }
 
-    if (p.menu && p.menu.length) {
+     if (p.menu && p.menu.length) {
         html += `
         <div class="drawer-section" style="animation-delay:0.4s;">
             <button class="drawer-menu-btn" onclick="openMenuSubModal()">
                 <i class="fas fa-book-open"></i> Ver la carta completa
             </button>
+        </div>`;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // EL ANZUELO: Banner "Reclamar este Local" 
+    // ═══════════════════════════════════════════════════
+    if (!p.is_pro) {
+        html += `
+        <div class="drawer-section" style="padding: 0; margin-bottom: 24px; animation-delay:0.42s;">
+            <div class="drawer-banner-claim" style="background: rgba(139,92,246,0.1); border: 1px dashed var(--accent); padding: 14px; border-radius: 12px; margin: 0 28px; text-align: center;">
+                <p style="font-size: 0.85rem; color: var(--cream); margin-bottom: 8px;">¿Eres el dueño de este local?</p>
+                <a href="publicar.html" class="btn-fill" style="font-size: 0.8rem; padding: 8px 16px; display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; text-decoration:none; border-radius:10px; font-weight:700;">
+                    <i class="fas fa-check-circle"></i> Reclamar este Local
+                </a>
+            </div>
         </div>`;
     }
 
