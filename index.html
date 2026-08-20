@@ -17,8 +17,8 @@
     <meta property="og:image" content="https://sabormap.hab/og-sabormap.png">
     <meta property="og:image:width" content="1344">
     <meta property="og:image:height" content="768">
-    <meta property="og:url" content="https://sabormap.hab">
-    <link rel="canonical" href="https://sabormap.hab">
+    <meta property="og:url" content="https://sabormap.com">
+    <link rel="canonical" href="https://sabormap.com">
     <meta name="twitter:image" content="https://sabormap.hab/og-sabormap.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sabormap — Directorio Gastronomico de La Habana">
@@ -193,6 +193,10 @@
         .map-popup-info { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
         .map-popup-btn { display: block; width: 100%; padding: 8px; border-radius: 8px; background: var(--accent); color: #fff; text-align: center; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: background 0.2s; border: none; cursor: pointer; font-family: inherit; }
         .map-popup-btn:hover { background: #6d28d9; }
+        .drawer-ubicacion-btn { display:flex; align-items:center; gap:10px; width:100%; padding:14px 20px; border-radius:12px; background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06)); border:1px solid rgba(139,92,246,0.25); color:var(--cream); font-family:'Space Grotesk',sans-serif; font-size:0.92rem; font-weight:600; text-decoration:none; transition:all 0.25s ease; cursor:pointer; box-sizing:border-box; }
+        .drawer-ubicacion-btn:hover { background:linear-gradient(135deg, var(--accent), #6d28d9); color:#fff; border-color:var(--accent); transform:translateY(-1px); box-shadow:0 4px 20px rgba(139,92,246,0.3); }
+        .drawer-ubicacion-btn i:first-child { font-size:1.05rem; color:var(--accent); }
+        .drawer-ubicacion-btn:hover i:first-child { color:#fff; }
         .custom-marker { background: none; border: none; }
         .marker-pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
         .marker-pin i { transform: rotate(45deg); color: #fff; font-size: 12px; }
@@ -755,7 +759,7 @@
     "@type": "ItemList",
     "name": "Sabormap — Directorio Gastronomico de La Habana",
     "description": "Descubre los mejores bares, restaurantes y heladerias de La Habana.",
-    "url": "https://sabormap.hab",
+    "url": "https://sabormap.com",
     "numberOfItems": 126,
     "itemListElement": [
         {
@@ -4340,7 +4344,7 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:16px;margin-left:auto;">
                     <span id="resultCount" style="color:var(--muted);font-size:0.85rem;">15 resultados</span>
-                    <div class="view-toggle">
+                    <div class="view-toggle" style="display:none;">
                         <button class="view-toggle-btn active" id="gridViewBtn" onclick="setView('grid')"><i class="fas fa-th-large"></i> Grilla</button>
                         <button class="view-toggle-btn" id="mapViewBtn" onclick="setView('map')"><i class="fas fa-map-marked-alt"></i> Mapa</button>
                     </div>
