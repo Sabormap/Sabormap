@@ -1,36 +1,4 @@
 /* ═══════════════════════════════════════════════════
-   PLUS CODE — Convierte lat/lng a Plus Code (Open Location Code)
-   ═══════════════════════════════════════════════════ */
-function encodePlusCode(latitude, longitude, codeLength) {
-    codeLength = codeLength || 10;
-    var A = '23456789CFGHJMPQRVWX', B = 20;
-    var FLP = 25000000, FLOP = 8192000;
-    if (latitude === 90) latitude = 89.9999999;
-    if (longitude === 180) longitude = -180;
-    var latVal = Math.round((latitude + 90) * FLP);
-    var lngVal = Math.round((longitude + 180) * FLOP);
-    var code = '';
-    latVal = Math.floor(latVal / 3125);
-    lngVal = Math.floor(lngVal / 1024);
-    for (var i = 0; i < 5; i++) {
-        var ld = latVal % B, lg = lngVal % B;
-        code = A[lg] + code;
-        code = A[ld] + code;
-        latVal = Math.floor(latVal / B);
-        lngVal = Math.floor(lngVal / B);
-    }
-    code = code.substring(0, 8) + '+' + code.substring(8);
-    if (codeLength >= 8) code = code.substring(0, codeLength + 1);
-    return code;
-}
-function getPlusCode(p) {
-    if (p.plusCode) return p.plusCode;
-    if (p.plus_code) return p.plus_code;
-    if (p.lat && p.lng) return encodePlusCode(Number(p.lat), Number(p.lng), 10);
-    return '';
-}
-
-/* ═══════════════════════════════════════════════════
    TOGGLE DE TEMA — Oscuro / Claro
    ═══════════════════════════════════════════════════ */
 function toggleTheme() {
@@ -393,7 +361,6 @@ try {
 }
 
 // Mapea un local de la DB al formato que usa esta página (mismas propiedades que staticPlaces).
-// Map a DB locale to the format this page uses (same properties as staticPlaces).
 function mapDbPlaceToPublic(p) {
     if (!p) return null;
     // price_range ('$', '$$', '$$$', '$$$$') → priceLevel (1-4)
@@ -688,7 +655,6 @@ function renderMapMarkers(places) {
             <div class="map-popup-content">
                 <div class="map-popup-title">${p.name}</div>
                 <div class="map-popup-info"><i class="fas fa-star" style="color:var(--secondary);font-size:0.7rem;"></i> ${p.rating} &middot; ${p.neighborhood}</div>
-                ${getPlusCode(p) ? `<div class="map-popup-info" style="font-family:monospace;font-size:0.78rem;color:var(--secondary);margin-top:2px;"><i class="fas fa-location-crosshairs" style="font-size:0.65rem;margin-right:3px;"></i>${getPlusCode(p)}</div>` : ''}
                 <button class="map-popup-btn" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)">Ver detalle</button>
             </div>
         `);
@@ -805,14 +771,6 @@ function openModal(id) {
                 <div>
                     <div class="drawer-info-label">Direccion</div>
                     <div class="drawer-info-value copy-address" onclick="copyText('${p.address.replace(/'/g, "\\'")}');event.stopPropagation();">${p.address} <i class="fas fa-copy" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></div>
-                </div>
-            </div>` : ''}
-            ${getPlusCode(p) ? `
-            <div class="drawer-info-row">
-                <div class="drawer-info-icon"><i class="fas fa-location-crosshairs"></i></div>
-                <div>
-                    <div class="drawer-info-label">Plus Code</div>
-                    <div class="drawer-info-value copy-address" style="font-family:monospace;color:var(--secondary);" onclick="copyText('${p.plusCode || encodePlusCode(p.lat, p.lng, 10)}');event.stopPropagation();">${getPlusCode(p)} La Habana <i class="fas fa-copy" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></div>
                 </div>
             </div>` : ''}
             ${p.phone && p.phone !== '#' ? `
@@ -1002,8 +960,7 @@ function copyText(text) {
 function sharePlace(id) {
     const p = staticPlaces.find(pl => String(pl.id) === String(id));
     if (!p) return;
-    const pc = getPlusCode(p);
-    const text = `${p.name} — ${p.neighborhood}, La Habana${pc ? ' | ' + pc : ''} | Sabormap`;
+    const text = `${p.name} — ${p.neighborhood}, La Habana | Sabormap`;
     if (navigator.share) {
         navigator.share({ title: p.name, text, url: window.location.href }).catch(() => {});
     } else {
