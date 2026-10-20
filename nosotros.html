@@ -5,9 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nosotros — Sabormap & Imperium</title>
   <meta name="description" content="Conoce al equipo detrás de Sabormap, el directorio gastronómico de La Habana, e Imperium, diseño web profesional para negocios cubanos.">
+  <link rel="canonical" href="https://sabormap.com/nosotros.html"> <!-- TODO (T-06): confirma dominio -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nosotros — Sabormap & Imperium">
+  <meta property="og:description" content="Conoce al equipo detrás de Sabormap, el directorio gastronómico de La Habana, e Imperium, diseño web profesional para negocios cubanos.">
+  <meta property="og:url" content="https://sabormap.com/nosotros.html">
+  <link rel="icon" href="icon-192x192.png">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
@@ -105,6 +114,14 @@
     @media (max-width: 640px) {
       .whatsapp-float { width: 50px; height: 50px; bottom: 18px; left: 18px; font-size: 1.4rem; }
     }
+    /* Correcciones a11y / UX [A-21, P-12] (v1.3) */
+    .skip-link { position: absolute; left: -9999px; top: 0; background: #D4542B; color: #fff; padding: 10px 16px; border-radius: 0 0 10px 0; z-index: 300; font-weight: 600; }
+    .skip-link:focus { left: 0; }
+    :focus-visible { outline: 2px solid #D4542B; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      .sr { opacity: 1; transform: none; }
+    }
 
     .mob-menu {
       position: fixed; inset: 0; background: rgba(253,248,243,0.97);
@@ -148,36 +165,38 @@
       flex-shrink: 0;
     }
   </style>
+  <noscript><style>.sr{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
   <!-- ═══════ NAV ═══════ -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-lg border-b border-cream-dim/50">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-2.5">
+      <a href="sabormap.com" class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-          <span class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
+          <span aria-hidden="true" class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
         </div>
         <span class="font-serif text-lg text-charcoal">Sabormap</span>
-        <span class="text-sand text-xs">×</span>
+        
         
       </a>
       <div class="hidden md:flex items-center gap-8">
-        <a href="https://sabormap.com/" class="text-sm text-bark hover:text-charcoal transition-colors">Inicio</a>
+        <a href="sabormap.com" class="text-sm text-bark hover:text-charcoal transition-colors">Inicio</a>
         <a href="#quienes" class="text-sm text-bark hover:text-charcoal transition-colors">Quiénes somos</a>
         <a href="#hacemos" class="text-sm text-bark hover:text-charcoal transition-colors">Qué hacemos</a>
         <a href="#pasos" class="text-sm text-bark hover:text-charcoal transition-colors">Pasos</a>
         <a href="#pago" class="text-sm text-bark hover:text-charcoal transition-colors">Métodos de pago</a>
         <a href="#contacto" class="text-sm text-bark hover:text-charcoal transition-colors">Contacto</a>
-        <a href="https://sabormap.com/publicar" class="text-sm text-bark hover:text-charcoal transition-colors">Publicar</a>
-        <a href="https://sabormap.com/imperium" class="text-sm text-bark hover:text-charcoal transition-colors">Servicios Pro</a>
+        <a href="publicar.html" class="text-sm text-bark hover:text-charcoal transition-colors">Publicar</a>
+        <a href="imperium.html" class="text-sm text-bark hover:text-charcoal transition-colors">Servicios Pro</a>
       </div>
       <div class="flex items-center gap-3">
         <button class="btn-fill !text-xs !py-2.5 !px-5 hidden sm:inline-flex" onclick="wspContacto()">
-          <span class="iconify" data-icon="mdi:whatsapp"></span> Escribinos
+          <span aria-hidden="true" class="iconify" data-icon="mdi:whatsapp"></span> Escríbenos
         </button>
-        <button onclick="document.getElementById('mobMenu').classList.add('open')" class="md:hidden w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
-          <span class="iconify text-bark text-lg" data-icon="mdi:menu"></span>
+        <button onclick="document.getElementById('mobMenu').classList.add('open')" aria-label="Abrir menú" class="md:hidden w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
+          <span aria-hidden="true" class="iconify text-bark text-lg" data-icon="mdi:menu"></span>
         </button>
       </div>
     </div>
@@ -185,24 +204,24 @@
 
   <!-- Mobile Menu -->
   <div id="mobMenu" class="mob-menu">
-    <button onclick="this.parentElement.classList.remove('open')" class="absolute top-5 right-6 w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
-      <span class="iconify text-bark text-lg" data-icon="mdi:close"></span>
+    <button onclick="this.parentElement.classList.remove('open')" aria-label="Cerrar menú" class="absolute top-5 right-6 w-10 h-10 rounded-xl bg-cream-warm flex items-center justify-center border border-cream-dim">
+      <span aria-hidden="true" class="iconify text-bark text-lg" data-icon="mdi:close"></span>
     </button>
-    <a href="https://sabormap.com/" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Inicio</a>
+    <a href="sabormap.com" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Inicio</a>
     <a href="#quienes" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Quiénes somos</a>
     <a href="#hacemos" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Qué hacemos</a>
     <a href="#pasos" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Pasos</a>
     <a href="#pago" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Métodos de pago</a>
     <a href="#contacto" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Contacto</a>
-    <a href="https://sabormap.com/publicar" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Publicar</a>
-    <a href="https://sabormap.com/imperium" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Servicios Pro</a>
+    <a href="publicar.html" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Publicar</a>
+    <a href="imperium.html" onclick="this.closest('.mob-menu').classList.remove('open')" class="font-serif text-2xl text-charcoal">Servicios Pro</a>
     <button class="btn-fill mt-4" onclick="wspContacto()">
-      <span class="iconify" data-icon="mdi:whatsapp"></span> Escribinos
+      <span aria-hidden="true" class="iconify" data-icon="mdi:whatsapp"></span> Escríbenos
     </button>
   </div>
 
   <!-- ═══════ HERO ═══════ -->
-  <header class="pt-32 pb-20 px-6">
+  <header id="contenido" class="pt-32 pb-20 px-6">
     <div class="max-w-6xl mx-auto">
       <div class="max-w-2xl">
         <p class="anim text-xs font-semibold tracking-[0.2em] uppercase text-brand mb-5">Sobre nosotros</p>
@@ -210,7 +229,7 @@
           Somos el puente<br>entre tu negocio<br>y la <span class="italic text-brand">Habana</span>
         </h1>
         <p class="anim d2 text-base sm:text-lg text-bark leading-relaxed max-w-lg">
-          Dos marcas, un mismo propósito: hacer visible lo que La Habana tiene mejor. Desde un paladar en La Vibora hasta un bar en Vedado, nosotros te ponemos en el mapa.
+          Dos marcas, un mismo propósito: hacer visible lo que La Habana tiene mejor. Desde un paladar en La Víbora hasta un bar en Vedado, nosotros te ponemos en el mapa.
         </p>
       </div>
     </div>
@@ -245,7 +264,7 @@
             <div class="relative z-10">
               <div class="flex items-center gap-3 mb-6">
                 <div class="w-12 h-12 rounded-xl bg-brand flex items-center justify-center">
-                  <span class="iconify text-white text-2xl" data-icon="mdi:silverware-fork-knife"></span>
+                  <span aria-hidden="true" class="iconify text-white text-2xl" data-icon="mdi:silverware-fork-knife"></span>
                 </div>
                 <div>
                   <p class="font-serif text-xl">Sabormap</p>
@@ -254,26 +273,26 @@
               </div>
               <div class="space-y-3 text-sm">
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:map-marker-radius"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:map-marker-radius"></span>
                   <span>Mapa interactivo de La Habana</span>
                 </div>
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:store"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:store"></span>
                   <span>Bares, restaurantes y heladerías</span>
                 </div>
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:food-fork-drink"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:food-fork-drink"></span>
                   <span>Cartas, precios y delivery</span>
                 </div>
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:account-group"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:account-group"></span>
                   <span>Dashboard para dueños</span>
                 </div>
               </div>
               <div class="warm-line mt-6 mb-6 !bg-gradient-to-r !from-transparent !via-white/10 !to-transparent"></div>
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-12 h-12 rounded-xl bg-brand-light flex items-center justify-center">
-                  <span class="iconify text-white text-2xl" data-icon="mdi:palette-swatch-variant"></span>
+                  <span aria-hidden="true" class="iconify text-white text-2xl" data-icon="mdi:palette-swatch-variant"></span>
                 </div>
                 <div>
                   <p class="font-serif text-xl">Imperium</p>
@@ -282,15 +301,15 @@
               </div>
               <div class="space-y-3 text-sm">
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:web"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:web"></span>
                   <span>Páginas web profesionales</span>
                 </div>
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:cellphone"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:cellphone"></span>
                   <span>100% responsive y rápidas</span>
                 </div>
                 <div class="flex items-center gap-3 text-cream/80">
-                  <span class="iconify text-brand-light" data-icon="mdi:shopping"></span>
+                  <span aria-hidden="true" class="iconify text-brand-light" data-icon="mdi:shopping"></span>
                   <span>Tiendas online y catálogos</span>
                 </div>
               </div>
@@ -320,7 +339,7 @@
         <!-- Card 1 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:map-search"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:map-search"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Directorio Sabormap</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -330,7 +349,7 @@
         <!-- Card 2 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:food-menu"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:food-menu"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Carta Digital</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -340,7 +359,7 @@
         <!-- Card 3 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:chart-line"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:chart-line"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Dashboard de Autogestión</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -350,7 +369,7 @@
         <!-- Card 4 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:bullhorn-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:bullhorn-outline"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Marketing Activo</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -360,7 +379,7 @@
         <!-- Card 5 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:web"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:web"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Páginas Web Imperium</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -370,11 +389,11 @@
         <!-- Card 6 -->
         <div class="value-card">
           <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-            <span class="iconify text-brand text-2xl" data-icon="mdi:headset"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl" data-icon="mdi:headset"></span>
           </div>
           <h3 class="font-serif text-xl text-charcoal mb-2">Soporte Directo</h3>
           <p class="text-sm text-bark leading-relaxed">
-            Atención personalizada por WhatsApp. No hay bots, no hay formularios que nadie lee. Escribís, te respondemos. Si tenés un problema con tu ficha o tu web, lo resolvemos rápido.
+            Atención personalizada por WhatsApp. No hay bots, no hay formularios que nadie lee. Escribes, te respondemos. Si tienes un problema con tu ficha o tu web, lo resolvemos rápido.
           </p>
         </div>
       </div>
@@ -405,9 +424,9 @@
                 1
               </div>
               <div class="pt-1">
-                <h3 class="font-semibold text-charcoal text-base mb-1">Escríbinos por WhatsApp</h3>
+                <h3 class="font-semibold text-charcoal text-base mb-1">Escríbenos por WhatsApp</h3>
                 <p class="text-sm text-bark leading-relaxed">
-                  El primer paso es simple: enviá un mensaje a nuestro WhatsApp. Contanos el nombre de tu local, qué tipo de negocio es (restaurante, bar, heladería, cafetería...), y tu dirección. No necesitás enviar nada más todavía, solo la información básica para que creemos tu ficha.
+                  El primer paso es simple: envía un mensaje a nuestro WhatsApp. Cuéntanos el nombre de tu local, qué tipo de negocio es (restaurante, bar, heladería, cafetería...), y tu dirección. No necesitas enviar nada más todavía, solo la información básica para que creemos tu ficha.
                 </p>
               </div>
             </div>
@@ -418,9 +437,9 @@
                 2
               </div>
               <div class="pt-1">
-                <h3 class="font-semibold text-charcoal text-base mb-1">Elegí tu plan</h3>
+                <h3 class="font-semibold text-charcoal text-base mb-1">Elige tu plan</h3>
                 <p class="text-sm text-bark leading-relaxed">
-                  Te presentamos los planes disponibles: Básico (presencia mínima en el mapa), Pro (con dashboard para que gestiones tu ficha vos mismo) o Destacado (con marketing activo y prioridad en búsquedas). También podés combinarlo con una web de Imperium si querés algo más completo. Elegís el que mejor se adapte a tu negocio y presupuesto.
+                  Te presentamos los planes disponibles: Básico (presencia mínima en el mapa), Pro (con dashboard para que gestiones tu ficha tú mismo) o Destacado (con marketing activo y prioridad en búsquedas). También puedes combinarlo con una web de Imperium si quieres algo más completo. Eliges el que mejor se adapte a tu negocio y presupuesto.
                 </p>
               </div>
             </div>
@@ -431,9 +450,9 @@
                 3
               </div>
               <div class="pt-1">
-                <h3 class="font-semibold text-charcoal text-base mb-1">Envianos los materiales</h3>
+                <h3 class="font-semibold text-charcoal text-base mb-1">Envíanos los materiales</h3>
                 <p class="text-sm text-bark leading-relaxed">
-                  Nos enviás por WhatsApp las fotos de tu local y de tus platos, la carta con precios, horarios de apertura y cierre, y los enlaces a tus redes sociales (Instagram, Facebook, etc.) o plataformas de delivery (PedidosYa, Rappi, ALaMesa). Cuanta más información nos des, más completa queda tu ficha.
+                  Nos envías por WhatsApp las fotos de tu local y de tus platos, la carta con precios, horarios de apertura y cierre, y los enlaces a tus redes sociales (Instagram, Facebook, etc.) o plataformas de delivery (PedidosYa, Rappi, ALaMesa). Cuanta más información nos des, más completa queda tu ficha.
                 </p>
               </div>
             </div>
@@ -444,9 +463,9 @@
                 4
               </div>
               <div class="pt-1">
-                <h3 class="font-semibold text-charcoal text-base mb-1">Realizá el pago</h3>
+                <h3 class="font-semibold text-charcoal text-base mb-1">Realiza el pago</h3>
                 <p class="text-sm text-bark leading-relaxed">
-                  Efectuás el pago del plan elegido por el método que te resulte más cómodo: Transfermóvil, EnZona o en USD. Una vez confirmado el pago, pasamos a la siguiente fase de publicación.
+                  Efectúas el pago del plan elegido por el método que te resulte más cómodo: Transfermóvil, EnZona o en USD. Una vez confirmado el pago, pasamos a la siguiente fase de publicación.
                 </p>
               </div>
             </div>
@@ -507,11 +526,11 @@
 
           <div class="bg-white border border-cream-dim rounded-2xl p-6">
             <div class="flex items-center gap-3 mb-3">
-              <span class="iconify text-brand text-xl" data-icon="mdi:lightbulb-on-outline"></span>
+              <span aria-hidden="true" class="iconify text-brand text-xl" data-icon="mdi:lightbulb-on-outline"></span>
               <p class="font-semibold text-charcoal text-sm">Tip para dueños</p>
             </div>
             <p class="text-sm text-bark leading-relaxed">
-              Si no estás seguro de qué plan elegir, empezá con Básico y luego podés subir de categoría cuando quieras. Muchos dueños empiezan con lo mínimo, ven los resultados y deciden actualizar a Pro o Destacado para tener más control y visibilidad.
+              Si no estás seguro de qué plan elegir, empieza con Básico y luego puedes subir de categoría cuando quieras. Muchos dueños empiezan con lo mínimo, ven los resultados y deciden actualizar a Pro o Destacado para tener más control y visibilidad.
             </p>
           </div>
         </div>
@@ -527,10 +546,10 @@
       <div class="text-center mb-14">
         <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-3">Formas de pago</p>
         <h2 class="font-serif text-3xl md:text-4xl text-charcoal mb-4">
-          Pagá como te <span class="italic text-brand">resulte más fácil</span>
+          Paga como te <span class="italic text-brand">resulte más fácil</span>
         </h2>
         <p class="text-bark max-w-lg mx-auto leading-relaxed">
-          Entendemos la realidad cubana. Por eso ofrecemos múltiples vías de pago para que nadie se quede fuera. Elegí la que mejor se adapte a tu situación.
+          Entendemos la realidad cubana. Por eso ofrecemos múltiples vías de pago para que nadie se quede fuera. Elige la que mejor se adapte a tu situación.
         </p>
       </div>
 
@@ -538,12 +557,12 @@
         <!-- Transfermóvil -->
         <div class="payment-card">
           <div class="payment-icon bg-blue-50">
-            <span class="iconify text-blue-600 text-3xl" data-icon="mdi:cellphone"></span>
+            <span aria-hidden="true" class="iconify text-blue-600 text-3xl" data-icon="mdi:cellphone"></span>
           </div>
           <div>
             <h3 class="font-semibold text-charcoal mb-1">Transfermóvil</h3>
             <p class="text-sm text-bark leading-relaxed">
-              La vía más usada por nuestros clientes. Hacés la transferencia desde tu celular en segundos y nos envías el comprobante por WhatsApp. Aceptamos pagos en CUP desde cualquier cuenta bancaria.
+              La vía más usada por nuestros clientes. Haces la transferencia desde tu celular en segundos y nos envías el comprobante por WhatsApp. Aceptamos pagos en CUP desde cualquier cuenta bancaria.
             </p>
           </div>
         </div>
@@ -551,12 +570,12 @@
         <!-- EnZona -->
         <div class="payment-card">
           <div class="payment-icon bg-emerald-50">
-            <span class="iconify text-emerald-600 text-3xl" data-icon="mdi:bank"></span>
+            <span aria-hidden="true" class="iconify text-emerald-600 text-3xl" data-icon="mdi:bank"></span>
           </div>
           <div>
             <h3 class="font-semibold text-charcoal mb-1">EnZona</h3>
             <p class="text-sm text-bark leading-relaxed">
-              La plataforma de pagos del Banco Central de Cuba. Podés pagarnos desde la app de EnZona usando tu tarjeta bancaria. Rápido, seguro y con comprobante digital automático.
+              La plataforma de pagos del Banco Central de Cuba. Puedes pagarnos desde la app de EnZona usando tu tarjeta bancaria. Rápido, seguro y con comprobante digital automático.
             </p>
           </div>
         </div>
@@ -564,12 +583,12 @@
         <!-- USD -->
         <div class="payment-card">
           <div class="payment-icon bg-amber-50">
-            <span class="iconify text-amber-600 text-3xl" data-icon="mdi:currency-usd"></span>
+            <span aria-hidden="true" class="iconify text-amber-600 text-3xl" data-icon="mdi:currency-usd"></span>
           </div>
           <div>
             <h3 class="font-semibold text-charcoal mb-1">USD (Dólares)</h3>
             <p class="text-sm text-bark leading-relaxed">
-              Para los planes de Imperium (pago único) o si preferís pagar en dólares. Ideal si tenés acceso a moneda libremente convertible o recibes pagos del extranjero.
+              Para los planes de Imperium (pago único) o si prefieres pagar en dólares. Ideal si tienes acceso a moneda libremente convertible o recibes pagos del extranjero.
             </p>
           </div>
         </div>
@@ -578,15 +597,15 @@
       <!-- Nota de precios -->
       <div class="bg-cream-warm border border-cream-dim rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto">
         <div class="flex items-start gap-4">
-          <span class="iconify text-brand text-2xl mt-0.5 shrink-0" data-icon="mdi:information-outline"></span>
+          <span aria-hidden="true" class="iconify text-brand text-2xl mt-0.5 shrink-0" data-icon="mdi:information-outline"></span>
           <div>
             <h4 class="font-semibold text-charcoal mb-2">¿Cómo funcionan los precios?</h4>
             <div class="space-y-2 text-sm text-bark leading-relaxed">
               <p>
-                <strong class="text-charcoal">Sabormap</strong> funciona con suscripción mensual en CUP (también aceptamos el equivalente en USD). Los planes van desde 6,700 CUP/mes hasta 10,000 CUP/mes según el nivel de visibilidad y herramientas que necesites. Podés cancelar cuando quieras, sin contratos de permanencia.
+                <strong class="text-charcoal">Sabormap</strong> funciona con suscripción mensual en CUP (también aceptamos el equivalente en USD). Los planes van desde 6,700 CUP/mes hasta 10,000 CUP/mes según el nivel de visibilidad y herramientas que necesites. Puedes cancelar cuando quieras, sin contratos de permanencia.
               </p>
               <p>
-                <strong class="text-charcoal">Imperium Web Design</strong> es un pago único en USD. Pagás una vez y la página web es tuya para siempre. Los precios empiezan desde $80 USD para una landing básica y pueden llegar a $250+ USD para sitios más complejos con tienda online.
+                <strong class="text-charcoal">Imperium Web Design</strong> es un pago único en USD. Pagas una vez y la página web es tuya para siempre. Los precios empiezan desde $80 USD para una landing básica y pueden llegar a $250+ USD para sitios más complejos con tienda online.
               </p>
               <p>
                 También ofrecemos un <strong class="text-charcoal">Combo Sabormap + Imperium</strong> con precio especial para quien quiere estar en el mapa y tener su propia web al mismo tiempo.
@@ -612,16 +631,16 @@
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div class="text-center p-6">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
-            <span class="iconify text-brand text-3xl" data-icon="mdi:eye-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-3xl" data-icon="mdi:eye-outline"></span>
           </div>
           <h3 class="font-serif text-lg text-charcoal mb-2">Transparencia</h3>
           <p class="text-sm text-bark leading-relaxed">
-            Precios claros sin letras pequeñas. Sabés exactamente qué pagás y qué recibís. Sin sorpresas ni cobros ocultos.
+            Precios claros sin letras pequeñas. Sabes exactamente qué pagas y qué recibís. Sin sorpresas ni cobros ocultos.
           </p>
         </div>
         <div class="text-center p-6">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
-            <span class="iconify text-brand text-3xl" data-icon="mdi:heart-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-3xl" data-icon="mdi:heart-outline"></span>
           </div>
           <h3 class="font-serif text-lg text-charcoal mb-2">Cerca del cliente</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -630,7 +649,7 @@
         </div>
         <div class="text-center p-6">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
-            <span class="iconify text-brand text-3xl" data-icon="mdi:lightning-bolt-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-3xl" data-icon="mdi:lightning-bolt-outline"></span>
           </div>
           <h3 class="font-serif text-lg text-charcoal mb-2">Rapidez</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -639,7 +658,7 @@
         </div>
         <div class="text-center p-6">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
-            <span class="iconify text-brand text-3xl" data-icon="mdi:shield-check-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-3xl" data-icon="mdi:shield-check-outline"></span>
           </div>
           <h3 class="font-serif text-lg text-charcoal mb-2">Calidad</h3>
           <p class="text-sm text-bark leading-relaxed">
@@ -658,19 +677,19 @@
       <div class="grid md:grid-cols-2 gap-12 lg:gap-20">
         <!-- Info -->
         <div>
-          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-3">Visitanos</p>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase text-brand/70 mb-3">Visítanos</p>
           <h2 class="font-serif text-3xl md:text-4xl text-charcoal mb-6">
             Nuestra <span class="italic text-brand">oficina</span>
           </h2>
           <p class="text-bark leading-relaxed mb-8">
-            Estamos en el corazón de Playa, La Habana. Si querés venir a conocernos, hablar sobre tu negocio o simplemente tomar un café y ver cómo podemos ayudarte, estás invitado. También podés escribirnos por WhatsApp y lo resolvemos sin que te muevas de tu local.
+            Estamos en el corazón de Playa, La Habana. Si quieres venir a conocernos, hablar sobre tu negocio o simplemente tomar un café y ver cómo podemos ayudarte, estás invitado. También puedes escribirnos por WhatsApp y lo resolvemos sin que te muevas de tu local.
           </p>
 
           <div class="space-y-5">
             <!-- Dirección -->
             <div class="flex items-start gap-4">
               <div class="w-11 h-11 rounded-xl bg-brand/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="iconify text-brand text-xl" data-icon="mdi:map-marker"></span>
+                <span aria-hidden="true" class="iconify text-brand text-xl" data-icon="mdi:map-marker"></span>
               </div>
               <div>
                 <p class="font-semibold text-charcoal text-sm mb-1">Dirección</p>
@@ -683,18 +702,18 @@
             <!-- WhatsApp -->
             <div class="flex items-start gap-4">
               <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="iconify text-green-600 text-xl" data-icon="mdi:whatsapp"></span>
+                <span aria-hidden="true" class="iconify text-green-600 text-xl" data-icon="mdi:whatsapp"></span>
               </div>
               <div>
                 <p class="font-semibold text-charcoal text-sm mb-1">WhatsApp</p>
-                <p class="text-sm text-bark">Escribinos y te respondemos al instante +53 56578961</p>
+                <p class="text-sm text-bark">Escríbenos y te respondemos al instante +53 56578961</p>
               </div>
             </div>
 
             <!-- Horario -->
             <div class="flex items-start gap-4">
               <div class="w-11 h-11 rounded-xl bg-brand/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="iconify text-brand text-xl" data-icon="mdi:clock-outline"></span>
+                <span aria-hidden="true" class="iconify text-brand text-xl" data-icon="mdi:clock-outline"></span>
               </div>
               <div>
                 <p class="font-semibold text-charcoal text-sm mb-1">Atención</p>
@@ -708,8 +727,8 @@
 
           <div class="mt-8">
             <button class="btn-fill" onclick="wspContacto()">
-              <span class="iconify" data-icon="mdi:whatsapp"></span>
-              Escribinos por WhatsApp
+              <span aria-hidden="true" class="iconify" data-icon="mdi:whatsapp"></span>
+              Escríbenos por WhatsApp
             </button>
           </div>
         </div>
@@ -728,7 +747,7 @@
             <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-charcoal via-charcoal/80 to-transparent">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center shrink-0">
-                  <span class="iconify text-white text-lg" data-icon="mdi:silverware-fork-knife"></span>
+                  <span aria-hidden="true" class="iconify text-white text-lg" data-icon="mdi:silverware-fork-knife"></span>
                 </div>
                 <div>
                   <p class="font-serif text-cream text-base">Sabormap & Imperium</p>
@@ -752,10 +771,10 @@
             ¿Listo para que te <span class="italic text-brand-light">encuentren</span>?
           </h2>
           <p class="text-sand max-w-md mx-auto leading-relaxed mb-8">
-            Escribinos ahora por WhatsApp y en menos de 48 horas tu negocio puede estar visible en el mapa gastronómico de La Habana.
+            Escríbenos ahora por WhatsApp y en menos de 48 horas tu negocio puede estar visible en el mapa gastronómico de La Habana.
           </p>
           <button class="btn-fill !text-base !py-4 !px-8" onclick="wspContacto()">
-            <span class="iconify text-lg" data-icon="mdi:whatsapp"></span>
+            <span aria-hidden="true" class="iconify text-lg" data-icon="mdi:whatsapp"></span>
             Contratar ahora
           </button>
         </div>
@@ -773,7 +792,7 @@
         <div class="relative z-10">
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6">
             <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
-              <span class="iconify text-brand text-3xl" data-icon="mdi:rocket-launch-outline"></span>
+              <span aria-hidden="true" class="iconify text-brand text-3xl" data-icon="mdi:rocket-launch-outline"></span>
             </div>
             <div>
               <h3 class="font-serif text-2xl text-charcoal mb-2">Tecnología sin fricción</h3>
@@ -790,7 +809,7 @@
               <div class="flex items-start gap-4">
                 <div class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center font-serif text-base shrink-0 mt-0.5">1</div>
                 <p class="text-sm text-charcoal leading-relaxed pt-1">
-                  Abre <strong>sabormap.com</strong> en el navegador de tu celular (Chrome o Safari).
+                  <!-- TODO (T-06): confirma dominio --> Abre <strong>sabormap.com</strong> en el navegador de tu celular (Chrome o Safari).
                 </p>
               </div>
               <!-- Paso 2 -->
@@ -804,7 +823,7 @@
           </div>
 
           <div class="flex items-center gap-3 mt-6">
-            <span class="iconify text-brand text-2xl shrink-0" data-icon="mdi:check-circle-outline"></span>
+            <span aria-hidden="true" class="iconify text-brand text-2xl shrink-0" data-icon="mdi:check-circle-outline"></span>
             <p class="text-sm font-medium text-charcoal leading-relaxed">
               ¡Listo! Tendrás el ícono de Sabormap en tu escritorio y podrás usarlo incluso sin conexión a internet.
             </p>
@@ -824,7 +843,7 @@
         <div class="sm:col-span-2 lg:col-span-1">
           <div class="flex items-center gap-2.5 mb-4">
             <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-              <span class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
+              <span aria-hidden="true" class="iconify text-white text-sm" data-icon="mdi:silverware-fork-knife"></span>
             </div>
             <span class="font-serif text-lg">Sabormap</span>
             <span class="text-sand text-xs">× Imperium</span>
@@ -833,16 +852,16 @@
             El directorio gastronómico de La Habana y diseño web profesional para negocios cubanos. Hacemos visible lo que merece ser visto.
           </p>
           <div class="flex items-center gap-3">
-            <a href="#" onclick="wspContacto(); return false;" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-green-600 transition-colors" aria-label="WhatsApp">
-              <span class="iconify text-base text-sand hover:text-white" data-icon="mdi:whatsapp"></span>
+            <a href="https://wa.me/5356578961" target="_blank" rel="noopener" onclick="wspContacto(); return false;" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-green-600 transition-colors" aria-label="WhatsApp">
+              <span aria-hidden="true" class="iconify text-base text-sand hover:text-white" data-icon="mdi:whatsapp"></span>
             </a>
             <!-- Corregido: Añadir enlace real de Instagram -->
-            <a href="https://instagram.com/sabormap" target="_blank" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-orange-400 transition-colors" aria-label="Instagram">
-              <span class="iconify text-base text-sand" data-icon="mdi:instagram"></span>
+            <a href="https://instagram.com/sabormap" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-orange-400 transition-colors" aria-label="Instagram">
+              <span aria-hidden="true" class="iconify text-base text-sand" data-icon="mdi:instagram"></span>
             </a>
             <!-- Corregido: Añadir enlace real de Facebook -->
-            <a href="https://facebook.com/sabormap" target="_blank" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
-              <span class="iconify text-base text-sand" data-icon="mdi:facebook"></span>
+            <a href="https://facebook.com/sabormap" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-charcoal-light/60 flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
+              <span aria-hidden="true" class="iconify text-base text-sand" data-icon="mdi:facebook"></span>
             </a>
           </div>
         </div>
@@ -854,31 +873,31 @@
             <li>
               <!-- Corregido: #servicios a #hacemos -->
               <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Directorio Sabormap
               </a>
             </li>
             <li>
               <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Carta Digital
               </a>
             </li>
             <li>
               <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Páginas Web (Imperium)
               </a>
             </li>
             <li>
               <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Delivery & Links
               </a>
             </li>
             <li>
               <a href="#hacemos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Marketing Activo
               </a>
             </li>
@@ -892,27 +911,27 @@
             <li>
               <!-- Corregido: #nosotros a #quienes -->
               <a href="#quienes" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Nosotros
               </a>
             </li>
             <li>
               <!-- Corregido: #planes a #pago (ahí están los precios) -->
               <a href="#pago" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Planes & Precios
               </a>
             </li>
             <li>
               <a href="#contacto" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Contacto
               </a>
             </li>
             <li>
               <!-- Corregido: #faq a #pasos -->
               <a href="#pasos" class="text-sm text-sand/70 hover:text-brand-light transition-colors inline-flex items-center gap-1.5">
-                <span class="iconify text-xs" data-icon="mdi:chevron-right"></span>
+                <span aria-hidden="true" class="iconify text-xs" data-icon="mdi:chevron-right"></span>
                 Cómo funcionamos
               </a>
             </li>
@@ -924,15 +943,15 @@
           <h4 class="font-semibold text-sm text-cream mb-4 tracking-wide uppercase">Contacto</h4>
           <ul class="space-y-3.5">
             <li class="flex items-start gap-2.5">
-              <span class="iconify text-brand text-sm mt-0.5 shrink-0" data-icon="mdi:map-marker"></span>
+              <span aria-hidden="true" class="iconify text-brand text-sm mt-0.5 shrink-0" data-icon="mdi:map-marker"></span>
               <span class="text-sm text-sand/70 leading-relaxed">Calle 19 e/ 60 y 62 #6012<br>Playa, La Habana, Cuba</span>
             </li>
             <li class="flex items-center gap-2.5">
-              <span class="iconify text-green-500 text-sm shrink-0" data-icon="mdi:whatsapp"></span>
-              <a href="#" onclick="wspContacto(); return false;" class="text-sm text-sand/70 hover:text-green-400 transition-colors">+53 56578961</a>
+              <span aria-hidden="true" class="iconify text-green-500 text-sm shrink-0" data-icon="mdi:whatsapp"></span>
+              <a href="https://wa.me/5356578961" target="_blank" rel="noopener" class="text-sm text-sand/70 hover:text-green-400 transition-colors">+53 56578961</a>
             </li>
             <li class="flex items-center gap-2.5">
-              <span class="iconify text-brand text-sm shrink-0" data-icon="mdi:clock-outline"></span>
+              <span aria-hidden="true" class="iconify text-brand text-sm shrink-0" data-icon="mdi:clock-outline"></span>
               <span class="text-sm text-sand/70 leading-relaxed">Lun – Sáb: 9:00 AM – 6:00 PM</span>
             </li>
           </ul>
@@ -945,21 +964,21 @@
     <div class="border-t border-sand/10">
       <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p class="text-xs text-sand/50">
-          &copy; 2025 Sabormap &amp; Imperium. Todos los derechos reservados.
+          &copy; 2026 Sabormap &amp; Imperium. Todos los derechos reservados.
         </p>
         <div class="flex items-center gap-5">
-          <!-- Corregido: Evitar que suban al top con javascript:void(0) hasta que tengas las páginas legales -->
-          <a href="javascript:void(0)" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Términos y condiciones</a>
+          <!-- [U-13] Apuntan a la página legal real (v1.3) -->
+          <a href="informacion.html#terminos" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Términos y condiciones</a>
           <span class="text-sand/20">·</span>
-          <a href="javascript:void(0)" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Privacidad</a>
+          <a href="informacion.html#privacidad" class="text-xs text-sand/50 hover:text-sand/80 transition-colors">Privacidad</a>
         </div>
       </div>
     </div>
   </footer>
 
   <!-- WhatsApp flotante -->
-  <a href="#" class="whatsapp-float" onclick="wspContacto(); return false;" aria-label="Contactar por WhatsApp">
-    <span class="iconify" data-icon="mdi:whatsapp"></span>
+  <a href="https://wa.me/5356578961" target="_blank" rel="noopener" class="whatsapp-float" onclick="wspContacto(); return false;" aria-label="Contactar por WhatsApp">
+    <span aria-hidden="true" class="iconify" data-icon="mdi:whatsapp"></span>
   </a>
 
   <script>
@@ -969,6 +988,11 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); observer.unobserve(e.target); } });
     }, { threshold: 0.15 });
     srEls.forEach(el => observer.observe(el));
+
+    // Escape cierra el menú móvil [A-20]
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') document.getElementById('mobMenu').classList.remove('open');
+    });
 
     // ── WhatsApp helpers ──
     // Reemplazá este número por el número real de WhatsApp de Sabormap (con código de país, sin +)
