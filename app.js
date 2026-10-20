@@ -1,6 +1,39 @@
-/* ═══════════════════════════════════════════════════
-   TOGGLE DE TEMA — Oscuro / Claro
-   ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   app.js — Sabormap  [VERSIÓN CORREGIDA]
+   Correcciones aplicadas (ver CAMBIOS.md):
+   T-01  normalización defensiva de categorías
+   T-03  populateBarrios sin duplicados, conserva selección
+   T-11  toggleTheme actualiza todas las meta theme-color
+   W-02  sin recarga automática al actualizar el service worker
+   A-01  colecciones accesibles por teclado (role=button + aria-pressed)
+   A-02  drawer como diálogo modal con trampa de foco
+   A-03  menú móvil y drawer fuera del árbol a11y al cerrarse
+   A-04  tarjetas activables con Enter y barra espaciadora
+   A-09  "copiar dirección" como <button> real, sin inyección
+   A-11  iconos decorativos con aria-hidden
+   P-01/U-06  refresco de 60 s solo de badges (sin re-render)
+   P-02/U-10  grilla paginada (60 tarjetas por lote)
+   P-03/U-01  Leaflet se carga bajo demanda
+   P-09  el refresco se omite con la pestaña oculta
+   U-04  búsqueda indexa platos, cartas y descripciones
+   U-11  el modal legal ya no destruye el detalle del local
+   C-09/C-10  tuteo y tildes unificados en los textos de UI
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   [B-01] INTERRUPTOR DE BETA — Delivery y reservas fuera de servicio
+   ───────────────────────────────────────────────────────────────────
+   El dueño mantiene los botones PedidosYa, Rappi y Reservar Mesa
+   visibles pero en modo "No disponible por ahora" durante la beta,
+   hasta tener clientes reales con URLs propias (PENDIENTES 2.1).
+
+   → Cuando cada local tenga su URL real de delivery/reserva,
+     cambia esta constante a false y los botones vuelven a funcionar
+     solos con los datos de places.js (o muestran "próximamente"
+     si el local aún tiene links placeholder).
+   ═══════════════════════════════════════════════════════════════════ */
+const DELIVERY_BETA_OFF = true;
+
 function toggleTheme() {
     const html = document.documentElement;
     const current = html.getAttribute('data-theme');
@@ -8,11 +41,10 @@ function toggleTheme() {
     html.setAttribute('data-theme', next);
     localStorage.setItem('sabormap-theme', next);
 
-    // Actualizar meta theme-color dinamicamente
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', next === 'dark' ? '#8b5cf6' : '#7c3aed');
-    }
+    // [T-11] Actualizar TODAS las meta theme-color (hay una por esquema de color)
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+        m.setAttribute('content', next === 'dark' ? '#8b5cf6' : '#7c3aed');
+    });
 
     // Si el mapa existe, cambiar tiles
     if (map && typeof mapTileLayer !== 'undefined') {
@@ -77,6 +109,22 @@ document.addEventListener('DOMContentLoaded', handleMobileThemeToggle);
 if (typeof staticPlaces === 'undefined') {
     console.error('places.js no se cargó: staticPlaces no está definido.');
     window.staticPlaces = [];
+}
+
+/* [T-01] Normalización defensiva de categorías: si un typo vuelve a colarse
+   (p. ej. "restaurant"), los filtros no se rompen y queda aviso en consola. */
+const CATEGORY_ALIAS = { restaurant: 'restaurante' };
+function normCat(c) { return CATEGORY_ALIAS[c] || c; }
+const _warnedCats = new Set();
+function catMetaFor(p) {
+    if (!catMeta[p.category] && !_warnedCats.has(p.category)) {
+        _warnedCats.add(p.category);
+        console.warn('[Sabormap] Categoría desconocida, usando fallback:', p.category, '(id', p.id + ')');
+    }
+    return catMeta[p.category] || catMeta.bar;
+}
+if (typeof staticPlaces !== 'undefined') {
+    staticPlaces.forEach(p => { p.category = normCat(p.category); });
 }
 
 
@@ -268,6 +316,7 @@ let map = null;
 let markers = [];
 let swiperInstance = null;
 let currentModalPlace = null;
+let legalReturnPlace = null; // [U-11] lugar a restaurar tras cerrar el modal legal
 
 /* ═══════════════════════════════════════════
    COLECCIONES
@@ -276,10 +325,10 @@ let currentModalPlace = null;
 let collections = [
     { id:'cena-romantica',      title:'Cena Romantica',     desc:'Candlelight, vino y esa mesa esquinada',     icon:'fa-heart',          color:'#ec4899', bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.2)', staticIds:[1,2,7], dbIds:[] },
     { id:'mejores-cocteles',    title:'Mejores Cocteles',   desc:'Donde el ron se vuelve arte',                 icon:'fa-martini-glass',  color:'#8b5cf6', bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.2)', staticIds:[7,8,10], dbIds:[] },
-    { id:'familiar',            title:'En Familia',          desc:'Menus para todos y espacio para los peques',  icon:'fa-people-group',   color:'#06b6d4', bg:'rgba(6,182,212,0.12)',  border:'rgba(6,182,212,0.2)', staticIds:[1,4,6], dbIds:[] },
+    { id:'familiar',            title:'En Familia',          desc:'Menús para todos y espacio para los peques',  icon:'fa-people-group',   color:'#06b6d4', bg:'rgba(6,182,212,0.12)',  border:'rgba(6,182,212,0.2)', staticIds:[1,4,6], dbIds:[] },
     { id:'mariscos-frescos',    title:'Mariscos Frescos',    desc:'Directo del mar al plato',                    icon:'fa-fish',           color:'#10b981', bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.2)', staticIds:[4,8], dbIds:[] },
     { id:'helados-artesanales', title:'Helados Artesanales', desc:'Bochas que valen la espera',                  icon:'fa-ice-cream',      color:'#f472b6', bg:'rgba(244,114,182,0.12)',border:'rgba(244,114,182,0.2)', staticIds:[3,6,9], dbIds:[] },
-    { id:'delivery-noche',      title:'Delivery Nocturno',   desc:'Antojos a las 2am? Resueltos',                icon:'fa-moon',           color:'#f59e0b', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.2)', staticIds:[1,5,9], dbIds:[] },
+    { id:'delivery-noche',      title:'Delivery Nocturno',   desc:'Antojos a las 2am, resueltos',                icon:'fa-moon',           color:'#f59e0b', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.2)', staticIds:[1,5,9], dbIds:[] },
 ];
 
 // Cargar colecciones desde Supabase (reemplaza las de fallback si hay datos)
@@ -340,9 +389,9 @@ function getCollectionCount(col) {
    MAPEO DE CATEGORÍAS
    ═══════════════════════════════════════════ */
 const catMeta = {
-    bar: { label:'Bar / Cafeteria', icon:'fa-wine-glass-alt', cssClass:'cat-bar' },
+    bar: { label:'Bar / Cafetería', icon:'fa-wine-glass-alt', cssClass:'cat-bar' },
     restaurante: { label:'Restaurante', icon:'fa-utensils', cssClass:'cat-restaurante' },
-    heladeria: { label:'Heladeria', icon:'fa-ice-cream', cssClass:'cat-heladeria' }
+    heladeria: { label:'Heladería', icon:'fa-ice-cream', cssClass:'cat-heladeria' }
 };
 
 /* ═══════════════════════════════════════════
@@ -372,7 +421,7 @@ function mapDbPlaceToPublic(p) {
     return {
         id:             p.id,                                   // uuid (string)
         name:           p.name || 'Sin nombre',
-        category:       p.category || 'restaurante',
+        category:       normCat(p.category) || 'restaurante',
         neighborhood:   p.neighborhood || 'Habana Vieja',
         address:        p.address || '',
         rating:         Number(p.rating) || 0,
@@ -441,6 +490,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCollections();
     renderPlaces();
     populateBarrios();
+    // [A-03] Estado inicial: overlay y drawer fuera del árbol de accesibilidad
+    document.getElementById('modalOverlay').setAttribute('aria-hidden', 'true');
+    document.getElementById('modalDrawer').setAttribute('aria-hidden', 'true');
+    document.getElementById('modalDrawer').setAttribute('inert', '');
+    closeMobileMenu();
     setupSearch();
     setupScrollReveal();
     setupScrollBtns();
@@ -450,9 +504,19 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPlacesFromSupabase();
     // ★ Cargar colecciones dinamicas desde Supabase ★
     loadCollectionsFromSupabase();
-    // Refresca los badges "Abierto/Cerrado" cada 60s sin intervención manual
+    /* [P-01/U-06] Refresca SOLO los badges "Abierto/Cerrado" cada 60 s, sin
+       reconstruir la grilla (antes se re-renderizaban 258 tarjetas: parpadeo,
+       pérdida de scroll y de foco). [P-09] Se omite si la pestaña está oculta. */
     setInterval(() => {
-        if (currentView === 'grid') renderPlaces();
+        if (document.hidden) return;
+        if (currentView === 'grid') {
+            document.querySelectorAll('.place-card').forEach(card => {
+                const p = staticPlaces.find(pl => String(pl.id) === card.dataset.placeId);
+                if (!p) return;
+                const badge = card.querySelector('.open-badge');
+                if (badge) badge.outerHTML = renderOpenBadge(p);
+            });
+        }
         if (currentModalPlace) {
             // Si hay un modal abierto, actualiza solo el badge dentro del drawer
             const badges = document.querySelectorAll('.drawer-meta-row .open-badge');
@@ -477,11 +541,15 @@ function renderCollections() {
     if (!container) return;
     container.innerHTML = collections.map(c => `
         <div class="collection-card" style="--collection-color:${c.color};--collection-bg:${c.bg};--collection-border:${c.border};"
-             onclick="toggleCollection('${c.id}')" id="col-${c.id}">
-            <div class="collection-icon"><i class="fas ${c.icon}"></i></div>
+             role="button" tabindex="0" aria-pressed="false"
+             aria-label="Colección ${c.title}. ${c.desc}. ${getCollectionCount(c)} lugares"
+             onclick="toggleCollection('${c.id}')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCollection('${c.id}')}"
+             id="col-${c.id}">
+            <div class="collection-icon"><i class="fas ${c.icon}" aria-hidden="true"></i></div>
             <div class="collection-title">${c.title}</div>
             <div class="collection-desc">${c.desc}</div>
-            <div class="collection-count"><i class="fas fa-store"></i> ${getCollectionCount(c)} lugares</div>
+            <div class="collection-count"><i class="fas fa-store" aria-hidden="true"></i> ${getCollectionCount(c)} lugares</div>
         </div>
     `).join('');
 }
@@ -489,8 +557,13 @@ function renderCollections() {
 function toggleCollection(id) {
     if (activeCollection === id) { clearCollection(); return; }
     activeCollection = id;
-    document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active'));
-    document.getElementById('col-' + id).classList.add('active');
+    document.querySelectorAll('.collection-card').forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-pressed', 'false');
+    });
+    const card = document.getElementById('col-' + id);
+    card.classList.add('active');
+    card.setAttribute('aria-pressed', 'true');
     const col = collections.find(c => c.id === id);
     document.getElementById('activeCollectionBar').classList.add('show');
     document.getElementById('activeCollectionName').textContent = col.title;
@@ -499,7 +572,10 @@ function toggleCollection(id) {
 
 function clearCollection() {
     activeCollection = null;
-    document.querySelectorAll('.collection-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.collection-card').forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-pressed', 'false');
+    });
     document.getElementById('activeCollectionBar').classList.remove('show');
     applyFilters();
 }
@@ -520,38 +596,48 @@ function getFilteredPlaces() {
     if (openNowOnly) places = places.filter(p => isPlaceOpenNow(p));
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        places = places.filter(p =>
-            p.name.toLowerCase().includes(q) ||
-            p.neighborhood.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q) ||
-            p.tags.some(t => t.toLowerCase().includes(q))
-        );
+        // [U-04] La búsqueda cubre también platos, cartas, mustOrder y descripción
+        places = places.filter(p => buildSearchBlob(p).includes(q));
     }
     return places;
 }
 
-function renderPlaces() {
-    const places = getFilteredPlaces();
-    const grid = document.getElementById('placesGrid');
-    const noResults = document.getElementById('noResults');
-    document.getElementById('resultCount').textContent = `${places.length} resultado${places.length !== 1 ? 's' : ''}`;
-
-    if (places.length === 0) {
-        grid.innerHTML = '';
-        noResults.style.display = 'block';
-        return;
+/* [U-04] Índice de búsqueda por local (memoizado con WeakMap: sin fugas ni
+   recálculos en cada tecleo). Indexa nombre, barrio, categoría, tags,
+   descripción, mustOrder y todos los platos de la carta. */
+const searchIndex = new WeakMap();
+function buildSearchBlob(p) {
+    if (searchIndex.has(p)) return searchIndex.get(p);
+    const parts = [p.name, p.neighborhood, p.category, (p.tags || []).join(' '),
+                   p.description || '', p.mustOrder || ''];
+    if (Array.isArray(p.menu)) {
+        p.menu.forEach(sec => {
+            parts.push(sec.category || '');
+            (sec.items || []).forEach(it => { parts.push(it.name || ''); parts.push(it.desc || ''); });
+        });
     }
-    noResults.style.display = 'none';
+    const blob = parts.join(' ').toLowerCase();
+    searchIndex.set(p, blob);
+    return blob;
+}
 
-    grid.innerHTML = places.map(p => {
-        const meta = catMeta[p.category] || catMeta.bar;
+/* [P-02/U-10] Paginación incremental: se pintan 60 tarjetas y el resto se
+   añade por lotes con un IntersectionObserver (el "contador" de resultados
+   sigue mostrando el total filtrado). Evita construir 258 nodos de golpe. */
+const PAGE_SIZE = 60;
+let renderedCount = 0;
+let gridSentinelObserver = null;
+
+function cardHTML(p) {
+    { // cuerpo de la antigua función .map(p => { … })
+        const meta = catMetaFor(p);
         const priceDots = Array.from({length:4}, (_,i) =>
             `<span class="price-dot ${i < p.priceLevel ? 'filled' : 'empty'}"></span>`
         ).join('');
 
         return `
         <article class="place-card${p.featured ? ' featured' : ''}" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)" tabindex="0"
-                 onkeydown="if(event.key==='Enter')openModal(this.dataset.placeId)" role="button" aria-label="Ver ${p.name}">
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.placeId)}" role="button" aria-label="Ver ${p.name}">
             <div class="card-img-wrapper">
                 <span class="cat-badge ${meta.cssClass}"><i class="fas ${meta.icon}" style="margin-right:4px;font-size:0.6rem;"></i>${meta.label}</span>
                 ${p.images[0] ? `<img class="card-img" src="${p.images[0]}" alt="${p.name}" loading="lazy">` :
@@ -571,7 +657,48 @@ function renderPlaces() {
                     ${p.mustOrder ? `<div class="must-order-badge"><i class="fas fa-fire"></i>${p.mustOrder}</div>` : ''}
                 </div>
         </article>`;
-    }).join('');
+    }
+}
+
+function renderPlaces() {
+    const places = getFilteredPlaces();
+    const grid = document.getElementById('placesGrid');
+    const noResults = document.getElementById('noResults');
+    document.getElementById('resultCount').textContent = `${places.length} resultado${places.length !== 1 ? 's' : ''}`;
+
+    renderedCount = 0;
+    grid.innerHTML = '';
+    if (gridSentinelObserver) { gridSentinelObserver.disconnect(); gridSentinelObserver = null; }
+
+    if (places.length === 0) {
+        noResults.style.display = 'block';
+        return;
+    }
+    noResults.style.display = 'none';
+
+    const sentinel = document.createElement('div');
+    sentinel.id = 'gridSentinel';
+    sentinel.setAttribute('aria-hidden', 'true');
+    grid.appendChild(sentinel);
+
+    const appendPage = () => {
+        const chunk = places.slice(renderedCount, renderedCount + PAGE_SIZE);
+        const frag = document.createElement('div');
+        frag.innerHTML = chunk.map(cardHTML).join('');
+        Array.from(frag.children).forEach(el => grid.insertBefore(el, sentinel));
+        renderedCount += chunk.length;
+        if (renderedCount >= places.length) sentinel.style.display = 'none';
+    };
+    appendPage();
+
+    if (places.length > renderedCount && 'IntersectionObserver' in window) {
+        gridSentinelObserver = new IntersectionObserver((entries) => {
+            if (entries.some(e => e.isIntersecting)) appendPage();
+        }, { rootMargin: '600px' });
+        gridSentinelObserver.observe(sentinel);
+    } else {
+        while (renderedCount < places.length) appendPage();
+    }
 
     if (currentView === 'map') renderMapMarkers(places);
 }
@@ -597,9 +724,20 @@ function navigateToFilter(cat) {
 }
 
 function populateBarrios() {
-    const barrios = [...new Set(staticPlaces.map(p => p.neighborhood))].sort();
+    // [T-03] Añade solo los barrios que faltan: recargar desde Supabase ya no
+    // duplica las opciones, y se conserva la selección vigente del usuario.
     const sel = document.getElementById('barrioFilter');
-    barrios.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; sel.appendChild(o); });
+    if (!sel) return;
+    const prev = sel.value;
+    const existing = new Set(Array.from(sel.options).map(o => o.value));
+    const barrios = [...new Set(staticPlaces.map(p => p.neighborhood))].sort();
+    barrios.forEach(b => {
+        if (existing.has(b)) return;
+        const o = document.createElement('option');
+        o.value = b; o.textContent = b;
+        sel.appendChild(o);
+    });
+    if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
 }
 
 function setupSearch() {
@@ -614,6 +752,32 @@ function setupSearch() {
 /* ═══════════════════════════════════════════
    VISTA MAPA
    ═══════════════════════════════════════════ */
+
+/* [P-03/U-01] Leaflet se carga bajo demanda: solo cuando alguien activa la
+   vista mapa por primera vez. La vista grilla ya no descarga ~200 KB de
+   JS+CSS de un feature que hoy está deshabilitado. */
+let _leafletPromise = null;
+function ensureLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (_leafletPromise) return _leafletPromise;
+    _leafletPromise = new Promise((resolve, reject) => {
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+        css.crossOrigin = '';
+        document.head.appendChild(css);
+        const js = document.createElement('script');
+        js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+        js.crossOrigin = '';
+        js.onload = () => resolve();
+        js.onerror = () => reject(new Error('Leaflet no disponible'));
+        document.head.appendChild(js);
+    }).catch(err => { _leafletPromise = null; throw err; });
+    return _leafletPromise;
+}
+
 function setView(view) {
     currentView = view;
     document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
@@ -621,8 +785,12 @@ function setView(view) {
     document.getElementById('gridView').style.display = view === 'grid' ? 'block' : 'none';
     document.getElementById('mapView').classList.toggle('visible', view === 'map');
     if (view === 'map') {
-        if (!map) initMap();
-        else { setTimeout(() => map.invalidateSize(), 100); renderMapMarkers(getFilteredPlaces()); }
+        ensureLeaflet()
+            .then(() => {
+                if (!map) initMap();
+                else { setTimeout(() => map.invalidateSize(), 100); renderMapMarkers(getFilteredPlaces()); }
+            })
+            .catch(() => showToast('El mapa no está disponible ahora'));
     }
 }
 
@@ -643,7 +811,7 @@ function renderMapMarkers(places) {
     markers = [];
     places.forEach(p => {
         if (!p.lat || !p.lng) return;
-        const meta = catMeta[p.category] || catMeta.bar;
+        const meta = catMetaFor(p);
         const markerClass = `marker-${p.category}`;
         const icon = L.divIcon({
             className: 'custom-marker',
@@ -665,6 +833,54 @@ function renderMapMarkers(places) {
 /* ═══════════════════════════════════════════
    MODAL — DRAWER LATERAL REDISEÑADO
    ═══════════════════════════════════════════ */
+/* [A-02] El drawer se comporta como un diálogo modal real: role=dialog,
+   aria-modal, foco inicial en cerrar, trampa de Tab y devolución del foco
+   al elemento que lo abrió. [A-03] aria-hidden/inert cuando está cerrado. */
+let lastFocusedElement = null;
+
+function openDrawerUI() {
+    const overlay = document.getElementById('modalOverlay');
+    const drawer = document.getElementById('modalDrawer');
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-labelledby', 'drawerPlaceName');
+    drawer.removeAttribute('aria-hidden');
+    drawer.removeAttribute('inert');
+    overlay.removeAttribute('aria-hidden');
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lastFocusedElement = document.activeElement;
+    setTimeout(() => { const c = drawer.querySelector('.drawer-close-btn'); if (c) c.focus(); }, 80);
+}
+
+function closeDrawerUI() {
+    const overlay = document.getElementById('modalOverlay');
+    const drawer = document.getElementById('modalDrawer');
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+    document.getElementById('menuSubModal').classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    drawer.setAttribute('inert', '');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (lastFocusedElement && document.contains(lastFocusedElement)) lastFocusedElement.focus();
+    lastFocusedElement = null;
+}
+
+// Trampa de foco dentro del drawer mientras está abierto
+document.addEventListener('keydown', (e) => {
+    const drawer = document.getElementById('modalDrawer');
+    if (e.key !== 'Tab' || !drawer.classList.contains('open')) return;
+    const focusables = drawer.querySelectorAll(
+        'button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
 function openModal(id) {
     // Comparación flexible: los IDs estáticos son numéricos, los de DB son uuid strings.
     // dataset siempre devuelve strings, así que comparamos con String(pl.id).
@@ -672,7 +888,7 @@ function openModal(id) {
     if (!p) return;
     currentModalPlace = p;
 
-    const meta = catMeta[p.category] || catMeta.bar;
+    const meta = catMetaFor(p);
     const priceDots = Array.from({length:4}, (_,i) =>
         `<span class="price-dot ${i < p.priceLevel ? 'filled' : 'empty'}"></span>`
     ).join('');
@@ -701,14 +917,14 @@ function openModal(id) {
         <div class="drawer-cat-chip ${meta.cssClass}">
             <i class="fas ${meta.icon}"></i> ${meta.label}
         </div>
-        <h2 class="drawer-place-name">${p.name}</h2>
+        <h2 class="drawer-place-name" id="drawerPlaceName">${p.name}</h2>
         <div class="drawer-meta-row">
-            <span class="drawer-rating-pill"><i class="fas fa-star"></i> ${p.rating}</span>
+            <span class="drawer-rating-pill"><i class="fas fa-star" aria-hidden="true"></i> ${p.rating}</span>
             <span class="drawer-meta-item">
                 ${renderOpenBadge(p)}
             </span>
             <span class="drawer-meta-item" style="display:flex;align-items:center;gap:3px;">${priceDots}</span>
-            <span class="drawer-meta-item"><i class="fas fa-map-pin"></i> ${p.neighborhood}</span>
+            <span class="drawer-meta-item"><i class="fas fa-map-pin" aria-hidden="true"></i> ${p.neighborhood}</span>
         </div>
     </div>`;
 
@@ -716,9 +932,9 @@ function openModal(id) {
         html += `
         <div class="drawer-section" style="animation-delay:0.1s;">
             <div class="drawer-must-order">
-                <div class="drawer-must-order-icon"><i class="fas fa-fire"></i></div>
+                <div class="drawer-must-order-icon"><i class="fas fa-fire" aria-hidden="true"></i></div>
                 <div>
-                    <div class="drawer-must-order-label">Lo que tenes que pedir</div>
+                    <div class="drawer-must-order-label">Lo que tienes que pedir</div>
                     <div class="drawer-must-order-text">${p.mustOrder}</div>
                 </div>
             </div>
@@ -729,7 +945,7 @@ function openModal(id) {
         html += `
         <div class="drawer-section" style="animation-delay:0.15s;">
             <div class="drawer-editor-note">
-                <div class="editor-note-label" style="margin-bottom:6px;"><i class="fas fa-pen-nib" style="font-size:0.6rem;"></i> Nota del editor</div>
+                <div class="editor-note-label" style="margin-bottom:6px;"><i class="fas fa-pen-nib" aria-hidden="true" style="font-size:0.6rem;"></i> Nota del editor</div>
                 ${p.editorNote}
             </div>
         </div>`;
@@ -755,11 +971,11 @@ function openModal(id) {
 
     html += `
     <div class="drawer-section" style="animation-delay:0.3s;">
-        <div class="drawer-section-label">Informacion practica</div>
+        <div class="drawer-section-label">Información práctica</div>
         <div class="drawer-info-card">
             ${p.hours ? `
             <div class="drawer-info-row">
-                <div class="drawer-info-icon"><i class="fas fa-clock"></i></div>
+                <div class="drawer-info-icon"><i class="fas fa-clock" aria-hidden="true"></i></div>
                 <div>
                     <div class="drawer-info-label">Horario</div>
                     <div class="drawer-info-value">${p.hours}</div>
@@ -767,17 +983,17 @@ function openModal(id) {
             </div>` : ''}
             ${p.address ? `
             <div class="drawer-info-row">
-                <div class="drawer-info-icon"><i class="fas fa-location-dot"></i></div>
+                <div class="drawer-info-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></div>
                 <div>
-                    <div class="drawer-info-label">Direccion</div>
-                    <div class="drawer-info-value copy-address" onclick="copyText('${p.address.replace(/'/g, "\\'")}');event.stopPropagation();">${p.address} <i class="fas fa-copy" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></div>
+                    <div class="drawer-info-label">Dirección</div>
+                    <button type="button" class="drawer-info-value copy-address" data-address="${escAttr(p.address)}" onclick="copyText(this.dataset.address);event.stopPropagation();" aria-label="Copiar dirección">${p.address} <i class="fas fa-copy" aria-hidden="true" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></button>
                 </div>
             </div>` : ''}
             ${p.phone && p.phone !== '#' ? `
             <div class="drawer-info-row">
-                <div class="drawer-info-icon"><i class="fas fa-phone"></i></div>
+                <div class="drawer-info-icon"><i class="fas fa-phone" aria-hidden="true"></i></div>
                 <div>
-                    <div class="drawer-info-label">Telefono</div>
+                    <div class="drawer-info-label">Teléfono</div>
                     <div class="drawer-info-value"><a href="tel:${p.phone}" style="color:var(--secondary);text-decoration:none;">${p.phone}</a></div>
                 </div>
             </div>` : ''}
@@ -788,11 +1004,12 @@ function openModal(id) {
     // BOTÓN UBICACIÓN — Google Maps
     // ═══════════════════════════════════════════
     if (p.lat && p.lng) {
-        const gmapsUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(p.name + ', ' + p.address);
+        // [T-09] Se respeta el gmapsUrl propio del local si existe; si no, se genera
+        const gmapsUrl = p.gmapsUrl || ('https://www.google.com/maps?q=' + encodeURIComponent(p.name + ', ' + p.address));
         html += `
         <div class="drawer-section" style="animation-delay:0.32s;">
             <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="drawer-ubicacion-btn">
-                <i class="fas fa-map-location-dot"></i> Ubicación
+                <i class="fas fa-map-location-dot" aria-hidden="true"></i> Ubicación
                 <i class="fas fa-external-link-alt" style="font-size:0.7rem;margin-left:auto;opacity:0.6;"></i>
             </a>
         </div>`;
@@ -803,7 +1020,24 @@ function openModal(id) {
     const isPlaceholder = p.links && p.links.length > 0 && p.links.every(l =>
         placeholderDomains.some(d => l.url.includes(d))
     );
-    if (p.links && p.links.length && !isPlaceholder) {
+    // [B-01] Beta: los botones (PedidosYa, Rappi, Reservar Mesa) se muestran
+    // deshabilitados con el aviso "No disponible por ahora" (ver DELIVERY_BETA_OFF)
+    if (DELIVERY_BETA_OFF && p.links && p.links.length) {
+        html += `
+        <div class="drawer-section" style="animation-delay:0.35s;">
+            <div class="drawer-section-label">Delivery y reservas</div>
+            <div class="drawer-delivery">
+                ${p.links.map(l => `
+                    <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
+                        <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                    </span>
+                `).join('')}
+            </div>
+            <div class="delivery-off-note">
+                <i class="fas fa-clock" aria-hidden="true"></i> No disponible por ahora — esta sección se activará próximamente.
+            </div>
+        </div>`;
+    } else if (p.links && p.links.length && !isPlaceholder) {
         html += `
         <div class="drawer-section" style="animation-delay:0.35s;">
             <div class="drawer-section-label">Delivery y reservas</div>
@@ -820,7 +1054,7 @@ function openModal(id) {
         <div class="drawer-section" style="animation-delay:0.35s;">
             <div class="drawer-section-label">Delivery y reservas</div>
             <div style="padding:14px 18px;border-radius:12px;background:rgba(139,92,246,0.06);border:1px dashed rgba(139,92,246,0.2);color:var(--muted);font-size:0.85rem;display:flex;align-items:center;gap:8px;">
-                <i class="fas fa-clock"></i> Delivery y reservas online proximamente
+                <i class="fas fa-clock"></i> Delivery y reservas online próximamente
             </div>
         </div>`;
     }
@@ -829,7 +1063,7 @@ function openModal(id) {
         html += `
         <div class="drawer-section" style="animation-delay:0.4s;">
             <button class="drawer-menu-btn" onclick="openMenuSubModal()">
-                <i class="fas fa-book-open"></i> Ver la carta completa
+                <i class="fas fa-book-open" aria-hidden="true"></i> Ver la carta completa
             </button>
         </div>`;
     }
@@ -843,7 +1077,7 @@ function openModal(id) {
             <div class="drawer-banner-claim" style="background: rgba(139,92,246,0.1); border: 1px dashed var(--accent); padding: 14px; border-radius: 12px; margin: 0 28px; text-align: center;">
                 <p style="font-size: 0.85rem; color: var(--cream); margin-bottom: 8px;">¿Eres el dueño de este local?</p>
                 <a href="publicar.html" class="btn-fill" style="font-size: 0.8rem; padding: 8px 16px; display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; text-decoration:none; border-radius:10px; font-weight:700;">
-                    <i class="fas fa-check-circle"></i> Reclamar este Local
+                    <i class="fas fa-check-circle" aria-hidden="true"></i> Reclamar este Local
                 </a>
             </div>
         </div>`;
@@ -852,17 +1086,15 @@ function openModal(id) {
     html += `
     <div class="drawer-section" style="animation-delay:0.45s;margin-bottom:32px;">
         <button class="drawer-share-btn" data-place-id="${p.id}" onclick="sharePlace(this.dataset.placeId)">
-            <i class="fas fa-share-nodes"></i> Compartir este lugar
+            <i class="fas fa-share-nodes" aria-hidden="true"></i> Compartir este lugar
         </button>
     </div>`;
 
     document.getElementById('modalDrawerScroll').innerHTML = html;
 
-    document.getElementById('modalOverlay').classList.add('open');
-    document.getElementById('modalDrawer').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    openDrawerUI();
 
-    if (hasImages && validImages.length > 1) {
+    if (hasImages && validImages.length > 1 && typeof Swiper !== 'undefined') {
         setTimeout(() => {
             swiperInstance = new Swiper('#modalSwiper', {
                 loop: true, grabCursor: true,
@@ -877,12 +1109,21 @@ function openModal(id) {
 }
 
 function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-    document.getElementById('modalDrawer').classList.remove('open');
-    document.getElementById('menuSubModal').classList.remove('open');
-    document.body.style.overflow = '';
+    closeDrawerUI();
     if (swiperInstance) { swiperInstance.destroy(); swiperInstance = null; }
     currentModalPlace = null;
+    // [U-11] Si el modal legal pisó el detalle de un local, se restaura el drawer
+    if (legalReturnPlace) {
+        const rp = legalReturnPlace;
+        legalReturnPlace = null;
+        openModal(String(rp.id));
+    }
+}
+
+// [A-09] Escapado de atributos HTML para valores de datos
+function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /* ═══════════════════════════════════════════
@@ -898,7 +1139,7 @@ function openMenuSubModal() {
     const notice = document.createElement('div');
     notice.id = 'menuExampleNotice';
     notice.style.cssText = 'padding:12px 16px;margin:8px 16px 0;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:var(--amber);font-size:0.8rem;font-weight:500;display:flex;align-items:center;gap:8px;';
-    notice.innerHTML = '<i class="fas fa-info-circle"></i> Carta de ejemplo — la carta real estara disponible proximamente';
+    notice.innerHTML = '<i class="fas fa-info-circle"></i> Carta de ejemplo — la carta real estará disponible próximamente';
     document.getElementById('menuSubBody').parentElement.insertBefore(notice, document.getElementById('menuSubBody'));
 
     let html = '';
@@ -918,11 +1159,15 @@ function openMenuSubModal() {
     });
 
     if (p.links && p.links.length) {
+        // [B-01] Beta: mismos botones en modo "No disponible por ahora"
         html += `<div class="delivery-section">${p.links.map(l => `
-            <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                <i class="fas ${l.icon}"></i> ${l.platform}
-            </a>
-        `).join('')}</div>`;
+            <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
+                <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+            </span>
+        `).join('')}</div>
+        <div class="delivery-off-note">
+            <i class="fas fa-clock" aria-hidden="true"></i> Delivery y reservas no disponibles por ahora.
+        </div>`;
     }
 
     document.getElementById('menuSubBody').innerHTML = html;
@@ -954,7 +1199,7 @@ function scrollMenuToTop() {
    UTILIDADES
    ═══════════════════════════════════════════ */
 function copyText(text) {
-    navigator.clipboard.writeText(text).then(() => showToast('Direccion copiada')).catch(() => showToast('No se pudo copiar'));
+    navigator.clipboard.writeText(text).then(() => showToast('Dirección copiada')).catch(() => showToast('No se pudo copiar'));
 }
 
 function sharePlace(id) {
@@ -980,16 +1225,17 @@ function showToast(msg) {
    MODAL LEGAL
    ═══════════════════════════════════════════ */
 function openLegalModal(type) {
-    const titles = { terminos: 'Terminos de Uso', privacidad: 'Politica de Privacidad' };
+    const titles = { terminos: 'Términos de Uso', privacidad: 'Política de Privacidad' };
     const bodies = {
-        terminos: '<p style="color:var(--muted);line-height:1.8;">Al usar Sabormap aceptas que la informacion de locales, precios y horarios puede variar y es referencial. No nos responsabilizamos por cambios en los comercios listados.</p>',
-        privacidad: '<p style="color:var(--muted);line-height:1.8;">Respetamos tu privacidad. No recopilamos datos personales sin tu consentimiento. Las cookies se usan unicamente para mejorar la experiencia de navegacion.</p>'
+        terminos: '<p style="color:var(--muted);line-height:1.8;">Al usar Sabormap aceptas que la información de locales, precios y horarios puede variar y es referencial. No nos responsabilizamos por cambios en los comercios listados.</p>',
+        privacidad: '<p style="color:var(--muted);line-height:1.8;">Respetamos tu privacidad. No recopilamos datos personales sin tu consentimiento. Las cookies se usan únicamente para mejorar la experiencia de navegación.</p>'
     };
     currentModalPlace = null;
+    legalReturnPlace = currentModalPlace; // [U-11] recordar si había un local abierto
     const html = `
         <div class="drawer-cat-banner cat-bar" style="padding-top:60px;">
             <div class="drawer-cat-orb" style="width:180px;height:180px;top:-40px;right:-30px;"></div>
-            <h2 class="drawer-place-name">${titles[type] || 'Legal'}</h2>
+            <h2 class="drawer-place-name" id="drawerPlaceName">${titles[type] || 'Legal'}</h2>
         </div>
         <div class="drawer-section">
             ${bodies[type] || ''}
@@ -997,16 +1243,26 @@ function openLegalModal(type) {
     `;
     document.getElementById('modalDrawerScroll').innerHTML = html;
     document.getElementById('menuSubModal').classList.remove('open');
-    document.getElementById('modalOverlay').classList.add('open');
-    document.getElementById('modalDrawer').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    openDrawerUI();
 }
 
 /* ═══════════════════════════════════════════
    MENÚ MÓVIL
    ═══════════════════════════════════════════ */
-function openMobileMenu() { document.getElementById('mobileMenu').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); document.body.style.overflow = ''; }
+function openMobileMenu() {
+    const m = document.getElementById('mobileMenu');
+    m.classList.add('open');
+    m.removeAttribute('aria-hidden');   // [A-03]
+    m.removeAttribute('inert');
+    document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+    const m = document.getElementById('mobileMenu');
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden', 'true');   // [A-03] invisible para lectores y para Tab
+    m.setAttribute('inert', '');
+    document.body.style.overflow = '';
+}
 
 /* ═══════════════════════════════════════════
    SCROLL REVEAL
@@ -1073,6 +1329,8 @@ document.addEventListener('keydown', (e) => {
             closeMenuSubModal();
         } else if (document.getElementById('modalDrawer').classList.contains('open')) {
             closeModal();
+        } else if (document.getElementById('mobileMenu').classList.contains('open')) {
+            closeMobileMenu();
         }
     }
 });
@@ -1091,12 +1349,9 @@ if ('serviceWorker' in navigator) {
             });
     });
 
-    // Opcional: avisar al usuario cuando hay nueva versión
-    let refreshing = false;
+    // [W-02] Sin recarga automática (riesgo de bucle): se avisa al usuario
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
+        showToast('Sabormap se ha actualizado');
     });
 }
 
@@ -1104,8 +1359,8 @@ if ('serviceWorker' in navigator) {
    Detectar offline y avisar a la UI
    ============================================================ */
 window.addEventListener('online', () => {
-    showToast('Conexion restablecida');
+    showToast('Conexión restablecida');
 });
 window.addEventListener('offline', () => {
-    showToast('Sin conexion — modo offline activo');
+    showToast('Sin conexión — modo offline activo');
 });
