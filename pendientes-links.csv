@@ -1,0 +1,523 @@
+id,local,barrio,plataforma,url_actual
+1,"Yo Invito",Playa,PedidosYa,https://pedidosya.com
+1,"Yo Invito",Playa,Reservar Mesa,https://opentable.com
+2,"5 Esquinas Trattoria",Habana Vieja,Reservar Mesa,https://opentable.com
+3,"Sapori",Playa,PedidosYa,https://pedidosya.com
+3,"Sapori",Playa,Rappi,https://rappi.com
+4,"El Portal de Cojímar",Habana del Este,PedidosYa,https://pedidosya.com
+6,"Ela y Paleta",Playa,PedidosYa,https://pedidosya.com
+6,"Ela y Paleta",Playa,Rappi,https://rappi.com
+7,"Café de la Esquina",Playa,Reservar Mesa,https://opentable.com
+8,"Crispy Chicken",Diez de Octubre,PedidosYa,https://pedidosya.com
+8,"Crispy Chicken",Diez de Octubre,Rappi,https://rappi.com
+9,"Cafetería Pilón",Vedado,Reservar Mesa,https://opentable.com
+10,"Parranda Grill Bar",Diez de Octubre,PedidosYa,https://pedidosya.com
+10,"Parranda Grill Bar",Diez de Octubre,Reservar Mesa,https://opentable.com
+11,"Sensaciones Restaurante-Grill",Playa,PedidosYa,https://pedidosya.com
+11,"Sensaciones Restaurante-Grill",Playa,Rappi,https://rappi.com
+12,"Zooppelia Heladería",Vedado,Rappi,https://rappi.com
+13,"El Jardín",Vedado,Reservar Mesa,https://opentable.com
+15,"Fuego Lento Steakhouse",Vedado,PedidosYa,https://pedidosya.com
+15,"Fuego Lento Steakhouse",Vedado,Rappi,https://rappi.com
+15,"Fuego Lento Steakhouse",Vedado,Reservar Mesa,https://opentable.com
+16,"The Monkey Restobar",Vedado,PedidosYa,https://pedidosya.com
+16,"The Monkey Restobar",Vedado,Rappi,https://rappi.com
+16,"The Monkey Restobar",Vedado,Reservar Mesa,https://opentable.com
+17,"Malcriado",Centro Habana,PedidosYa,https://pedidosya.com
+17,"Malcriado",Centro Habana,Rappi,https://rappi.com
+17,"Malcriado",Centro Habana,Reservar Mesa,https://opentable.com
+18,"El Frito",Habana Vieja,PedidosYa,https://pedidosya.com
+18,"El Frito",Habana Vieja,Rappi,https://rappi.com
+19,"Birra | Casa de la Cerveza",Vedado,Reservar Mesa,https://opentable.com
+20,"Jama - Asian Inspired Restaurant",Habana Vieja,PedidosYa,https://pedidosya.com
+20,"Jama - Asian Inspired Restaurant",Habana Vieja,Rappi,https://rappi.com
+20,"Jama - Asian Inspired Restaurant",Habana Vieja,Reservar Mesa,https://opentable.com
+21,"Café Literario La Copa",Playa,Reservar Mesa,https://opentable.com
+22,"LUQUE HABANA",Playa,PedidosYa,https://pedidosya.com
+22,"LUQUE HABANA",Playa,Rappi,https://rappi.com
+22,"LUQUE HABANA",Playa,Reservar Mesa,https://opentable.com
+23,"Encuentro Restaurante Chino",Habana Vieja,PedidosYa,https://pedidosya.com
+23,"Encuentro Restaurante Chino",Habana Vieja,Rappi,https://rappi.com
+23,"Encuentro Restaurante Chino",Habana Vieja,Reservar Mesa,https://opentable.com
+24,"La Carreta",Vedado,PedidosYa,https://pedidosya.com
+24,"La Carreta",Vedado,Rappi,https://rappi.com
+24,"La Carreta",Vedado,Reservar Mesa,https://opentable.com
+25,"Café Clington",Playa,Reservar Mesa,https://opentable.com
+26,"Food Master",Playa,PedidosYa,https://pedidosya.com
+26,"Food Master",Playa,Rappi,https://rappi.com
+26,"Food Master",Playa,Reservar Mesa,https://opentable.com
+27,"Sibarita 🍍",Habana Vieja,PedidosYa,https://pedidosya.com
+27,"Sibarita 🍍",Habana Vieja,Rappi,https://rappi.com
+27,"Sibarita 🍍",Habana Vieja,Reservar Mesa,https://opentable.com
+28,"EL PROYECTO",Vedado,Reservar Mesa,https://opentable.com
+29,"Mila",Vedado,PedidosYa,https://pedidosya.com
+29,"Mila",Vedado,Rappi,https://rappi.com
+29,"Mila",Vedado,Reservar Mesa,https://opentable.com
+30,"Brasserie 255 Restaurant",Diez de Octubre,PedidosYa,https://pedidosya.com
+30,"Brasserie 255 Restaurant",Diez de Octubre,Rappi,https://rappi.com
+30,"Brasserie 255 Restaurant",Diez de Octubre,Reservar Mesa,https://opentable.com
+31,"ATENEO DE LA HABANA",Habana Vieja,Reservar Mesa,https://opentable.com
+32,"Kore • Café",Vedado,Reservar Mesa,https://opentable.com
+33,"Bar-Restaurente Imperios",Playa,PedidosYa,https://pedidosya.com
+33,"Bar-Restaurente Imperios",Playa,Rappi,https://rappi.com
+33,"Bar-Restaurente Imperios",Playa,Reservar Mesa,https://opentable.com
+34,"Mambo",Vedado,PedidosYa,https://pedidosya.com
+34,"Mambo",Vedado,Rappi,https://rappi.com
+34,"Mambo",Vedado,Reservar Mesa,https://opentable.com
+35,"Alta Casa",Nuevo Vedado,PedidosYa,https://pedidosya.com
+35,"Alta Casa",Nuevo Vedado,Rappi,https://rappi.com
+35,"Alta Casa",Nuevo Vedado,Reservar Mesa,https://opentable.com
+36,"El Bejuco",Vedado,Reservar Mesa,https://opentable.com
+37,"Montefreddo",Plaza de la Revolución,PedidosYa,https://pedidosya.com
+37,"Montefreddo",Plaza de la Revolución,Rappi,https://rappi.com
+38,"Paladar El jardin de los Milagros",Nuevo Vedado,PedidosYa,https://pedidosya.com
+38,"Paladar El jardin de los Milagros",Nuevo Vedado,Rappi,https://rappi.com
+38,"Paladar El jardin de los Milagros",Nuevo Vedado,Reservar Mesa,https://opentable.com
+39,"Nero di seppia 🦑",Playa,PedidosYa,https://pedidosya.com
+39,"Nero di seppia 🦑",Playa,Rappi,https://rappi.com
+39,"Nero di seppia 🦑",Playa,Reservar Mesa,https://opentable.com
+40,"San Ignacio 214",Habana Vieja,PedidosYa,https://pedidosya.com
+40,"San Ignacio 214",Habana Vieja,Rappi,https://rappi.com
+40,"San Ignacio 214",Habana Vieja,Reservar Mesa,https://opentable.com
+41,"A la Turca Istanbul",Vedado,PedidosYa,https://pedidosya.com
+41,"A la Turca Istanbul",Vedado,Rappi,https://rappi.com
+42,"Amaya",Vedado,PedidosYa,https://pedidosya.com
+42,"Amaya",Vedado,Rappi,https://rappi.com
+42,"Amaya",Vedado,Reservar Mesa,https://opentable.com
+43,"PanParaPan 23y18",Vedado,PedidosYa,https://pedidosya.com
+43,"PanParaPan 23y18",Vedado,Rappi,https://rappi.com
+43,"PanParaPan 23y18",Vedado,Reservar Mesa,https://opentable.com
+44,"Restaurante Snack Bar G310",Vedado,PedidosYa,https://pedidosya.com
+44,"Restaurante Snack Bar G310",Vedado,Rappi,https://rappi.com
+44,"Restaurante Snack Bar G310",Vedado,Reservar Mesa,https://opentable.com
+45,"La Macorina",Habana Vieja,PedidosYa,https://pedidosya.com
+45,"La Macorina",Habana Vieja,Rappi,https://rappi.com
+45,"La Macorina",Habana Vieja,Reservar Mesa,https://opentable.com
+46,"Café FM",Playa,Reservar Mesa,https://opentable.com
+47,"Razones y Motivos",Vedado,PedidosYa,https://pedidosya.com
+47,"Razones y Motivos",Vedado,Rappi,https://rappi.com
+47,"Razones y Motivos",Vedado,Reservar Mesa,https://opentable.com
+48,"El Idilio",Vedado,PedidosYa,https://pedidosya.com
+48,"El Idilio",Vedado,Rappi,https://rappi.com
+48,"El Idilio",Vedado,Reservar Mesa,https://opentable.com
+49,"Café Del Ángel",Habana Vieja,Reservar Mesa,https://opentable.com
+50,"Sushi Level_Qva",Habana Vieja,PedidosYa,https://pedidosya.com
+50,"Sushi Level_Qva",Habana Vieja,Rappi,https://rappi.com
+50,"Sushi Level_Qva",Habana Vieja,Reservar Mesa,https://opentable.com
+51,"MiauCafé",Vedado,Reservar Mesa,https://opentable.com
+52,"ENPLAZA23",Vedado,Reservar Mesa,https://opentable.com
+53,"Thaly’s Cafe",Playa,Reservar Mesa,https://opentable.com
+54,"La Torre de Marfil Restaurant & Bar",Habana Vieja,PedidosYa,https://pedidosya.com
+54,"La Torre de Marfil Restaurant & Bar",Habana Vieja,Rappi,https://rappi.com
+54,"La Torre de Marfil Restaurant & Bar",Habana Vieja,Reservar Mesa,https://opentable.com
+55,"Teniente Rey 360",Habana Vieja,PedidosYa,https://pedidosya.com
+55,"Teniente Rey 360",Habana Vieja,Rappi,https://rappi.com
+55,"Teniente Rey 360",Habana Vieja,Reservar Mesa,https://opentable.com
+56,"Restuarante Perla Negra🏴",Diez de Octubre,PedidosYa,https://pedidosya.com
+56,"Restuarante Perla Negra🏴",Diez de Octubre,Rappi,https://rappi.com
+56,"Restuarante Perla Negra🏴",Diez de Octubre,Reservar Mesa,https://opentable.com
+57,"Restaurant Habana Blues",Vedado,PedidosYa,https://pedidosya.com
+57,"Restaurant Habana Blues",Vedado,Rappi,https://rappi.com
+57,"Restaurant Habana Blues",Vedado,Reservar Mesa,https://opentable.com
+58,"La Lola Bar & Cafeteria",Plaza de la Revolución,Reservar Mesa,https://opentable.com
+59,"Kanda",Vedado,Reservar Mesa,https://opentable.com
+60,"Tiky Tiky",Vedado,Reservar Mesa,https://opentable.com
+61,"Mojito Mojito",Habana Vieja,PedidosYa,https://pedidosya.com
+61,"Mojito Mojito",Habana Vieja,Rappi,https://rappi.com
+61,"Mojito Mojito",Habana Vieja,Reservar Mesa,https://opentable.com
+62,"🍝Sfornabontà by Amalfi🍸",Playa,PedidosYa,https://pedidosya.com
+62,"🍝Sfornabontà by Amalfi🍸",Playa,Rappi,https://rappi.com
+62,"🍝Sfornabontà by Amalfi🍸",Playa,Reservar Mesa,https://opentable.com
+63,"Betty Boom",Playa,PedidosYa,https://pedidosya.com
+63,"Betty Boom",Playa,Rappi,https://rappi.com
+63,"Betty Boom",Playa,Reservar Mesa,https://opentable.com
+64,"Restaurante 7 Dias",Playa,PedidosYa,https://pedidosya.com
+64,"Restaurante 7 Dias",Playa,Rappi,https://rappi.com
+64,"Restaurante 7 Dias",Playa,Reservar Mesa,https://opentable.com
+65,"FONDA LA PAILA",Vedado,PedidosYa,https://pedidosya.com
+65,"FONDA LA PAILA",Vedado,Rappi,https://rappi.com
+65,"FONDA LA PAILA",Vedado,Reservar Mesa,https://opentable.com
+66,"Bohío Mercadito",Vedado,Reservar Mesa,https://opentable.com
+67,"El Farallón",Vedado,PedidosYa,https://pedidosya.com
+67,"El Farallón",Vedado,Rappi,https://rappi.com
+67,"El Farallón",Vedado,Reservar Mesa,https://opentable.com
+68,"PaZillo bar",Vedado,PedidosYa,https://pedidosya.com
+68,"PaZillo bar",Vedado,Rappi,https://rappi.com
+68,"PaZillo bar",Vedado,Reservar Mesa,https://opentable.com
+69,"El Gelato",Playa,PedidosYa,https://pedidosya.com
+69,"El Gelato",Playa,Rappi,https://rappi.com
+70,"Café & Estancia Bohemia",Vedado,PedidosYa,https://pedidosya.com
+70,"Café & Estancia Bohemia",Vedado,Rappi,https://rappi.com
+70,"Café & Estancia Bohemia",Vedado,Reservar Mesa,https://opentable.com
+71,"Mango Gelateria & Cafe",Habana Vieja,PedidosYa,https://pedidosya.com
+71,"Mango Gelateria & Cafe",Habana Vieja,Rappi,https://rappi.com
+72,"Bar Restaurante Industria 8",Centro Habana,PedidosYa,https://pedidosya.com
+72,"Bar Restaurante Industria 8",Centro Habana,Rappi,https://rappi.com
+72,"Bar Restaurante Industria 8",Centro Habana,Reservar Mesa,https://opentable.com
+73,"Los Mercaderes",Habana Vieja,PedidosYa,https://pedidosya.com
+73,"Los Mercaderes",Habana Vieja,Rappi,https://rappi.com
+73,"Los Mercaderes",Habana Vieja,Reservar Mesa,https://opentable.com
+74,"Restaurante El Rum Rum de La Habana",Habana Vieja,PedidosYa,https://pedidosya.com
+74,"Restaurante El Rum Rum de La Habana",Habana Vieja,Rappi,https://rappi.com
+74,"Restaurante El Rum Rum de La Habana",Habana Vieja,Reservar Mesa,https://opentable.com
+75,"La Guarida",Centro Habana,PedidosYa,https://pedidosya.com
+75,"La Guarida",Centro Habana,Rappi,https://rappi.com
+75,"La Guarida",Centro Habana,Reservar Mesa,https://opentable.com
+76,"LA ESQUINA DE CUBA",Habana Vieja,PedidosYa,https://pedidosya.com
+76,"LA ESQUINA DE CUBA",Habana Vieja,Rappi,https://rappi.com
+76,"LA ESQUINA DE CUBA",Habana Vieja,Reservar Mesa,https://opentable.com
+77,"Vistamar Restaurante",Playa,PedidosYa,https://pedidosya.com
+77,"Vistamar Restaurante",Playa,Rappi,https://rappi.com
+77,"Vistamar Restaurante",Playa,Reservar Mesa,https://opentable.com
+78,"ChaChaChá Bar-Restaurante",Habana Vieja,PedidosYa,https://pedidosya.com
+78,"ChaChaChá Bar-Restaurante",Habana Vieja,Rappi,https://rappi.com
+78,"ChaChaChá Bar-Restaurante",Habana Vieja,Reservar Mesa,https://opentable.com
+79,"Bar El Dandy",Habana Vieja,Reservar Mesa,https://opentable.com
+80,"O'Reilly 304",Habana Vieja,PedidosYa,https://pedidosya.com
+80,"O'Reilly 304",Habana Vieja,Rappi,https://rappi.com
+80,"O'Reilly 304",Habana Vieja,Reservar Mesa,https://opentable.com
+81,"Restaurante El Atelier",Vedado,PedidosYa,https://pedidosya.com
+81,"Restaurante El Atelier",Vedado,Rappi,https://rappi.com
+81,"Restaurante El Atelier",Vedado,Reservar Mesa,https://opentable.com
+82,"Adastra Restaurante",Habana Vieja,PedidosYa,https://pedidosya.com
+82,"Adastra Restaurante",Habana Vieja,Rappi,https://rappi.com
+82,"Adastra Restaurante",Habana Vieja,Reservar Mesa,https://opentable.com
+83,"Doña Eutimia",Habana Vieja,PedidosYa,https://pedidosya.com
+83,"Doña Eutimia",Habana Vieja,Rappi,https://rappi.com
+83,"Doña Eutimia",Habana Vieja,Reservar Mesa,https://opentable.com
+84,"La Catedral Bar Restaurante",Vedado,PedidosYa,https://pedidosya.com
+84,"La Catedral Bar Restaurante",Vedado,Rappi,https://rappi.com
+84,"La Catedral Bar Restaurante",Vedado,Reservar Mesa,https://opentable.com
+85,"EN EL PATIO PANINOTECA",Habana del Este,PedidosYa,https://pedidosya.com
+85,"EN EL PATIO PANINOTECA",Habana del Este,Rappi,https://rappi.com
+85,"EN EL PATIO PANINOTECA",Habana del Este,Reservar Mesa,https://opentable.com
+86,"New Georges",Vedado,PedidosYa,https://pedidosya.com
+86,"New Georges",Vedado,Rappi,https://rappi.com
+86,"New Georges",Vedado,Reservar Mesa,https://opentable.com
+87,"La Vitrola",Habana Vieja,Reservar Mesa,https://opentable.com
+88,"La Bodeguita Del Medio Cuba",Habana Vieja,Reservar Mesa,https://opentable.com
+89,"La Mixóloga",Vedado,Reservar Mesa,https://opentable.com
+90,"La Moneda Cubana Restaurant",Habana Vieja,PedidosYa,https://pedidosya.com
+90,"La Moneda Cubana Restaurant",Habana Vieja,Rappi,https://rappi.com
+90,"La Moneda Cubana Restaurant",Habana Vieja,Reservar Mesa,https://opentable.com
+91,"Café Ajiaco Restaurant",Habana Vieja,PedidosYa,https://pedidosya.com
+91,"Café Ajiaco Restaurant",Habana Vieja,Rappi,https://rappi.com
+91,"Café Ajiaco Restaurant",Habana Vieja,Reservar Mesa,https://opentable.com
+92,"Decamerón Restaurant",Vedado,PedidosYa,https://pedidosya.com
+92,"Decamerón Restaurant",Vedado,Rappi,https://rappi.com
+92,"Decamerón Restaurant",Vedado,Reservar Mesa,https://opentable.com
+93,"Al Carbón",Habana Vieja,PedidosYa,https://pedidosya.com
+93,"Al Carbón",Habana Vieja,Rappi,https://rappi.com
+93,"Al Carbón",Habana Vieja,Reservar Mesa,https://opentable.com
+94,"Pizzeria LA RAMPA",Cotorro,PedidosYa,https://pedidosya.com
+94,"Pizzeria LA RAMPA",Cotorro,Rappi,https://rappi.com
+94,"Pizzeria LA RAMPA",Cotorro,Reservar Mesa,https://opentable.com
+95,"Los Nardos",Habana Vieja,PedidosYa,https://pedidosya.com
+95,"Los Nardos",Habana Vieja,Rappi,https://rappi.com
+95,"Los Nardos",Habana Vieja,Reservar Mesa,https://opentable.com
+96,"La Foresta",Playa,PedidosYa,https://pedidosya.com
+96,"La Foresta",Playa,Rappi,https://rappi.com
+96,"La Foresta",Playa,Reservar Mesa,https://opentable.com
+97,"La Cocina De Lilliam",Playa,PedidosYa,https://pedidosya.com
+97,"La Cocina De Lilliam",Playa,Rappi,https://rappi.com
+97,"La Cocina De Lilliam",Playa,Reservar Mesa,https://opentable.com
+98,"EL RINCÓN DE MAMÁ",Centro Habana,PedidosYa,https://pedidosya.com
+98,"EL RINCÓN DE MAMÁ",Centro Habana,Rappi,https://rappi.com
+98,"EL RINCÓN DE MAMÁ",Centro Habana,Reservar Mesa,https://opentable.com
+99,"Restaurante 5 Sentidos",Habana Vieja,PedidosYa,https://pedidosya.com
+99,"Restaurante 5 Sentidos",Habana Vieja,Rappi,https://rappi.com
+99,"Restaurante 5 Sentidos",Habana Vieja,Reservar Mesa,https://opentable.com
+100,"TerrazaCafé",Vedado,Reservar Mesa,https://opentable.com
+101,"La Zorra y El Cuervo",Vedado,Reservar Mesa,https://opentable.com
+102,"LM Bar",Playa,Reservar Mesa,https://opentable.com
+103,"Habana 61 Restaurante-Bar",Habana Vieja,PedidosYa,https://pedidosya.com
+103,"Habana 61 Restaurante-Bar",Habana Vieja,Rappi,https://rappi.com
+103,"Habana 61 Restaurante-Bar",Habana Vieja,Reservar Mesa,https://opentable.com
+104,"DELACREM",Vedado,PedidosYa,https://pedidosya.com
+104,"DELACREM",Vedado,Rappi,https://rappi.com
+105,"Mini market & Hot dog",Habana Vieja,Reservar Mesa,https://opentable.com
+106,"Sport Bar 23 y 12",Vedado,Reservar Mesa,https://opentable.com
+107,"SolMar Music Grillhouse",Plaza de la Revolución,PedidosYa,https://pedidosya.com
+107,"SolMar Music Grillhouse",Plaza de la Revolución,Rappi,https://rappi.com
+107,"SolMar Music Grillhouse",Plaza de la Revolución,Reservar Mesa,https://opentable.com
+108,"Mimosa",Centro Habana,PedidosYa,https://pedidosya.com
+108,"Mimosa",Centro Habana,Rappi,https://rappi.com
+108,"Mimosa",Centro Habana,Reservar Mesa,https://opentable.com
+109,"La Cocinita",Vedado,PedidosYa,https://pedidosya.com
+109,"La Cocinita",Vedado,Rappi,https://rappi.com
+109,"La Cocinita",Vedado,Reservar Mesa,https://opentable.com
+110,"Joe’s Burger",Diez de Octubre,Reservar Mesa,https://opentable.com
+111,"Sandwich Gourmet",Vedado,Reservar Mesa,https://opentable.com
+112,"Bueníssimo heladería",Vedado,PedidosYa,https://pedidosya.com
+112,"Bueníssimo heladería",Vedado,Rappi,https://rappi.com
+113,"El Arca de Noe",Vedado,Reservar Mesa,https://opentable.com
+114,"Kono Pizza_ML",Playa,PedidosYa,https://pedidosya.com
+114,"Kono Pizza_ML",Playa,Rappi,https://rappi.com
+114,"Kono Pizza_ML",Playa,Reservar Mesa,https://opentable.com
+115,"Finca La Pinta",La Lisa,PedidosYa,https://pedidosya.com
+115,"Finca La Pinta",La Lisa,Rappi,https://rappi.com
+115,"Finca La Pinta",La Lisa,Reservar Mesa,https://opentable.com
+116,"Restaurante RAMONE'S",Playa,PedidosYa,https://pedidosya.com
+116,"Restaurante RAMONE'S",Playa,Rappi,https://rappi.com
+116,"Restaurante RAMONE'S",Playa,Reservar Mesa,https://opentable.com
+117,"Arrecife Restaurante",Playa,PedidosYa,https://pedidosya.com
+117,"Arrecife Restaurante",Playa,Rappi,https://rappi.com
+117,"Arrecife Restaurante",Playa,Reservar Mesa,https://opentable.com
+118,"Asia de Cuba",Vedado,PedidosYa,https://pedidosya.com
+118,"Asia de Cuba",Vedado,Rappi,https://rappi.com
+118,"Asia de Cuba",Vedado,Reservar Mesa,https://opentable.com
+119,"Grado",Vedado,PedidosYa,https://pedidosya.com
+119,"Grado",Vedado,Rappi,https://rappi.com
+119,"Grado",Vedado,Reservar Mesa,https://opentable.com
+120,"Santy Pescador",Playa,PedidosYa,https://pedidosya.com
+120,"Santy Pescador",Playa,Rappi,https://rappi.com
+120,"Santy Pescador",Playa,Reservar Mesa,https://opentable.com
+121,"Iván Chefs Justo",Habana Vieja,PedidosYa,https://pedidosya.com
+121,"Iván Chefs Justo",Habana Vieja,Rappi,https://rappi.com
+121,"Iván Chefs Justo",Habana Vieja,Reservar Mesa,https://opentable.com
+122,"Donde Juan",Playa,PedidosYa,https://pedidosya.com
+122,"Donde Juan",Playa,Rappi,https://rappi.com
+122,"Donde Juan",Playa,Reservar Mesa,https://opentable.com
+123,"La Esquina de Oro",Habana Vieja,PedidosYa,https://pedidosya.com
+123,"La Esquina de Oro",Habana Vieja,Rappi,https://rappi.com
+123,"La Esquina de Oro",Habana Vieja,Reservar Mesa,https://opentable.com
+124,"Restaurante Mammamía",Playa,PedidosYa,https://pedidosya.com
+124,"Restaurante Mammamía",Playa,Rappi,https://rappi.com
+124,"Restaurante Mammamía",Playa,Reservar Mesa,https://opentable.com
+125,"El Vampirito",Vedado,Reservar Mesa,https://opentable.com
+126,"Luly Bar Cafe",Playa,Reservar Mesa,https://opentable.com
+127,"NaO Habana",Habana Vieja,PedidosYa,https://pedidosya.com
+127,"NaO Habana",Habana Vieja,Rappi,https://rappi.com
+127,"NaO Habana",Habana Vieja,Reservar Mesa,https://opentable.com
+128,"Chucha’s Tapas Bar",Playa,Reservar Mesa,https://opentable.com
+129,"Tempo",Vedado,Reservar Mesa,https://opentable.com
+130,"Restaurante G 310",Vedado,Reservar Mesa,https://opentable.com
+131,"El Cocinero",Vedado,Reservar Mesa,https://opentable.com
+132,"El Bleco",Centro Habana,Reservar Mesa,https://opentable.com
+133,"SangriLa",Playa,Reservar Mesa,https://opentable.com
+134,"MAREA Restaurant",Playa,PedidosYa,https://pedidosya.com
+134,"MAREA Restaurant",Playa,Rappi,https://rappi.com
+134,"MAREA Restaurant",Playa,Reservar Mesa,https://opentable.com
+135,"MarAdentro",Vedado,PedidosYa,https://pedidosya.com
+135,"MarAdentro",Vedado,Rappi,https://rappi.com
+135,"MarAdentro",Vedado,Reservar Mesa,https://opentable.com
+136,"Flavio fast 5ta y A",Vedado,PedidosYa,https://pedidosya.com
+136,"Flavio fast 5ta y A",Vedado,Rappi,https://rappi.com
+136,"Flavio fast 5ta y A",Vedado,Reservar Mesa,https://opentable.com
+137,"Bigote Gato",Habana Vieja,Reservar Mesa,https://opentable.com
+138,"La Concordia",Centro Habana,PedidosYa,https://pedidosya.com
+138,"La Concordia",Centro Habana,Rappi,https://rappi.com
+138,"La Concordia",Centro Habana,Reservar Mesa,https://opentable.com
+139,"Milla Cero",Habana Vieja,PedidosYa,https://pedidosya.com
+139,"Milla Cero",Habana Vieja,Rappi,https://rappi.com
+139,"Milla Cero",Habana Vieja,Reservar Mesa,https://opentable.com
+140,"El Louvre Bazar Café",Habana Vieja,PedidosYa,https://pedidosya.com
+140,"El Louvre Bazar Café",Habana Vieja,Rappi,https://rappi.com
+140,"El Louvre Bazar Café",Habana Vieja,Reservar Mesa,https://opentable.com
+141,"Havanas 21",Vedado,PedidosYa,https://pedidosya.com
+141,"Havanas 21",Vedado,Rappi,https://rappi.com
+141,"Havanas 21",Vedado,Reservar Mesa,https://opentable.com
+142,"28 & Mar",Playa,PedidosYa,https://pedidosya.com
+142,"28 & Mar",Playa,Rappi,https://rappi.com
+142,"28 & Mar",Playa,Reservar Mesa,https://opentable.com
+143,"La Familia Habana",Playa,PedidosYa,https://pedidosya.com
+143,"La Familia Habana",Playa,Rappi,https://rappi.com
+143,"La Familia Habana",Playa,Reservar Mesa,https://opentable.com
+144,"Esquina D Fraile",Vedado,PedidosYa,https://pedidosya.com
+144,"Esquina D Fraile",Vedado,Rappi,https://rappi.com
+144,"Esquina D Fraile",Vedado,Reservar Mesa,https://opentable.com
+145,"Tribe Café",Centro Habana,Reservar Mesa,https://opentable.com
+146,"El Ya!",Vedado,PedidosYa,https://pedidosya.com
+146,"El Ya!",Vedado,Rappi,https://rappi.com
+146,"El Ya!",Vedado,Reservar Mesa,https://opentable.com
+147,"12x17",Vedado,Reservar Mesa,https://opentable.com
+148,"Mango Habana",Playa,Reservar Mesa,https://opentable.com
+149,"Sol d’ suini en el Tun Tun",Playa,Reservar Mesa,https://opentable.com
+150,"V&S Bar",Centro Habana,Reservar Mesa,https://opentable.com
+151,"ILUXION",Vedado,Reservar Mesa,https://opentable.com
+152,"Fuumiyaki",Vedado,PedidosYa,https://pedidosya.com
+152,"Fuumiyaki",Vedado,Rappi,https://rappi.com
+152,"Fuumiyaki",Vedado,Reservar Mesa,https://opentable.com
+153,"El Laurel",Playa,PedidosYa,https://pedidosya.com
+153,"El Laurel",Playa,Rappi,https://rappi.com
+153,"El Laurel",Playa,Reservar Mesa,https://opentable.com
+154,"Vista Habana",San Miguel del Padron,Reservar Mesa,https://opentable.com
+155,"Salsa Río Terraza Cristal",Playa,PedidosYa,https://pedidosya.com
+155,"Salsa Río Terraza Cristal",Playa,Rappi,https://rappi.com
+155,"Salsa Río Terraza Cristal",Playa,Reservar Mesa,https://opentable.com
+156,"Restaurante Antojos",Habana Vieja,PedidosYa,https://pedidosya.com
+156,"Restaurante Antojos",Habana Vieja,Rappi,https://rappi.com
+156,"Restaurante Antojos",Habana Vieja,Reservar Mesa,https://opentable.com
+157,"La Rosa Negra",Nuevo Vedado,PedidosYa,https://pedidosya.com
+157,"La Rosa Negra",Nuevo Vedado,Rappi,https://rappi.com
+157,"La Rosa Negra",Nuevo Vedado,Reservar Mesa,https://opentable.com
+158,"La Catrina Restaurante Mexicano",Playa,PedidosYa,https://pedidosya.com
+158,"La Catrina Restaurante Mexicano",Playa,Rappi,https://rappi.com
+158,"La Catrina Restaurante Mexicano",Playa,Reservar Mesa,https://opentable.com
+159,"La Urraca Restaurante - Licorería",Vedado,PedidosYa,https://pedidosya.com
+159,"La Urraca Restaurante - Licorería",Vedado,Rappi,https://rappi.com
+159,"La Urraca Restaurante - Licorería",Vedado,Reservar Mesa,https://opentable.com
+160,"Restaurante Doña Alicia",Centro Habana,PedidosYa,https://pedidosya.com
+160,"Restaurante Doña Alicia",Centro Habana,Rappi,https://rappi.com
+160,"Restaurante Doña Alicia",Centro Habana,Reservar Mesa,https://opentable.com
+161,"Totò e Peppino Ristorante Italiano",Vedado,PedidosYa,https://pedidosya.com
+161,"Totò e Peppino Ristorante Italiano",Vedado,Rappi,https://rappi.com
+161,"Totò e Peppino Ristorante Italiano",Vedado,Reservar Mesa,https://opentable.com
+162,"TOROS & TAPAS",Playa,PedidosYa,https://pedidosya.com
+162,"TOROS & TAPAS",Playa,Rappi,https://rappi.com
+162,"TOROS & TAPAS",Playa,Reservar Mesa,https://opentable.com
+163,"cafeZillo",Vedado,Reservar Mesa,https://opentable.com
+164,"El Balcón de Diego",Nuevo Vedado,PedidosYa,https://pedidosya.com
+164,"El Balcón de Diego",Nuevo Vedado,Rappi,https://rappi.com
+164,"El Balcón de Diego",Nuevo Vedado,Reservar Mesa,https://opentable.com
+165,"La Familia Manrique 519",Centro Habana,PedidosYa,https://pedidosya.com
+165,"La Familia Manrique 519",Centro Habana,Rappi,https://rappi.com
+165,"La Familia Manrique 519",Centro Habana,Reservar Mesa,https://opentable.com
+166,"Cuatro Lunas",Vedado,PedidosYa,https://pedidosya.com
+166,"Cuatro Lunas",Vedado,Rappi,https://rappi.com
+166,"Cuatro Lunas",Vedado,Reservar Mesa,https://opentable.com
+167,"Bar Encuentro",Vedado,Reservar Mesa,https://opentable.com
+168,"Restaurante Monakeño",Diez de Octubre,PedidosYa,https://pedidosya.com
+168,"Restaurante Monakeño",Diez de Octubre,Rappi,https://rappi.com
+168,"Restaurante Monakeño",Diez de Octubre,Reservar Mesa,https://opentable.com
+169,"Bom Apettite",Playa,Reservar Mesa,https://opentable.com
+170,"Bar K5",Habana del Este,Reservar Mesa,https://opentable.com
+171,"La Comidilla del Barrio",Arroyo Naranjo,Reservar Mesa,https://opentable.com
+172,"San Lázaro 113",Centro Habana,Reservar Mesa,https://opentable.com
+173,"PAL KAR.AJO",Cotorro,Reservar Mesa,https://opentable.com
+174,"Restaurante Pal Karajo",Habana Vieja,PedidosYa,https://pedidosya.com
+174,"Restaurante Pal Karajo",Habana Vieja,Rappi,https://rappi.com
+174,"Restaurante Pal Karajo",Habana Vieja,Reservar Mesa,https://opentable.com
+175,"El Lucero Gastro",Habana Vieja,Reservar Mesa,https://opentable.com
+176,"Máximo bar",Habana Vieja,Reservar Mesa,https://opentable.com
+177,"DONG TÉ",Vedado,Reservar Mesa,https://opentable.com
+178,"Dí Nuestro",Vedado,Reservar Mesa,https://opentable.com
+179,"La Juliana cuba",Centro Habana,PedidosYa,https://pedidosya.com
+179,"La Juliana cuba",Centro Habana,Rappi,https://rappi.com
+179,"La Juliana cuba",Centro Habana,Reservar Mesa,https://opentable.com
+180,"Candela",Vedado,PedidosYa,https://pedidosya.com
+180,"Candela",Vedado,Rappi,https://rappi.com
+180,"Candela",Vedado,Reservar Mesa,https://opentable.com
+181,"Euforia Restaurante",Vedado,PedidosYa,https://pedidosya.com
+181,"Euforia Restaurante",Vedado,Rappi,https://rappi.com
+181,"Euforia Restaurante",Vedado,Reservar Mesa,https://opentable.com
+182,"Bar Club 23",Vedado,Reservar Mesa,https://opentable.com
+183,"Karai Restaurante",Playa,PedidosYa,https://pedidosya.com
+183,"Karai Restaurante",Playa,Rappi,https://rappi.com
+183,"Karai Restaurante",Playa,Reservar Mesa,https://opentable.com
+184,"Café Bomn",Habana Vieja,PedidosYa,https://pedidosya.com
+184,"Café Bomn",Habana Vieja,Rappi,https://rappi.com
+184,"Café Bomn",Habana Vieja,Reservar Mesa,https://opentable.com
+185,"Tablazo Bar Restaurante",Vedado,PedidosYa,https://pedidosya.com
+185,"Tablazo Bar Restaurante",Vedado,Rappi,https://rappi.com
+185,"Tablazo Bar Restaurante",Vedado,Reservar Mesa,https://opentable.com
+186,"Habana 5 Rooftop",Habana Vieja,PedidosYa,https://pedidosya.com
+186,"Habana 5 Rooftop",Habana Vieja,Rappi,https://rappi.com
+186,"Habana 5 Rooftop",Habana Vieja,Reservar Mesa,https://opentable.com
+187,"La Marina 1ra y 70",Playa,Reservar Mesa,https://opentable.com
+188,"El Gabán",Playa,PedidosYa,https://pedidosya.com
+188,"El Gabán",Playa,Rappi,https://rappi.com
+188,"El Gabán",Playa,Reservar Mesa,https://opentable.com
+189,"VOYA Café",Diez de Octubre,Reservar Mesa,https://opentable.com
+190,"Marechiaro",Centro Habana,PedidosYa,https://pedidosya.com
+190,"Marechiaro",Centro Habana,Rappi,https://rappi.com
+190,"Marechiaro",Centro Habana,Reservar Mesa,https://opentable.com
+191,"Juanky’s Pan",La Lisa,Reservar Mesa,https://opentable.com
+192,"ROVI",Playa,Reservar Mesa,https://opentable.com
+193,"Café Infinito",Vedado,Reservar Mesa,https://opentable.com
+194,"Wapa",Centro Habana,PedidosYa,https://pedidosya.com
+194,"Wapa",Centro Habana,Rappi,https://rappi.com
+194,"Wapa",Centro Habana,Reservar Mesa,https://opentable.com
+195,"Beirut",Vedado,Reservar Mesa,https://opentable.com
+196,"Paladar Kilómetro Zero",Habana Vieja,PedidosYa,https://pedidosya.com
+196,"Paladar Kilómetro Zero",Habana Vieja,Rappi,https://rappi.com
+196,"Paladar Kilómetro Zero",Habana Vieja,Reservar Mesa,https://opentable.com
+197,"K-Delicia CAFÉ COREANO",Playa,Reservar Mesa,https://opentable.com
+198,"Restaurante DBatule",Vedado,PedidosYa,https://pedidosya.com
+198,"Restaurante DBatule",Vedado,Rappi,https://rappi.com
+198,"Restaurante DBatule",Vedado,Reservar Mesa,https://opentable.com
+199,"DalePizza",Playa,PedidosYa,https://pedidosya.com
+199,"DalePizza",Playa,Rappi,https://rappi.com
+199,"DalePizza",Playa,Reservar Mesa,https://opentable.com
+200,"Café Tilín Galiano",Centro Habana,PedidosYa,https://pedidosya.com
+200,"Café Tilín Galiano",Centro Habana,Rappi,https://rappi.com
+200,"Café Tilín Galiano",Centro Habana,Reservar Mesa,https://opentable.com
+201,"Fusion Frappé",Vedado,Reservar Mesa,https://opentable.com
+202,"Café Turin",Vedado,Reservar Mesa,https://opentable.com
+203,"Café Enlace",Vedado,Reservar Mesa,https://opentable.com
+204,"Habana Level. Restaurant & Bar",Vedado,PedidosYa,https://pedidosya.com
+204,"Habana Level. Restaurant & Bar",Vedado,Rappi,https://rappi.com
+204,"Habana Level. Restaurant & Bar",Vedado,Reservar Mesa,https://opentable.com
+205,"Visavis",Vedado,PedidosYa,https://pedidosya.com
+205,"Visavis",Vedado,Rappi,https://rappi.com
+205,"Visavis",Vedado,Reservar Mesa,https://opentable.com
+206,"Donde Adrian",Centro Habana,PedidosYa,https://pedidosya.com
+206,"Donde Adrian",Centro Habana,Rappi,https://rappi.com
+206,"Donde Adrian",Centro Habana,Reservar Mesa,https://opentable.com
+207,"Del Prado",Centro Habana,PedidosYa,https://pedidosya.com
+207,"Del Prado",Centro Habana,Rappi,https://rappi.com
+207,"Del Prado",Centro Habana,Reservar Mesa,https://opentable.com
+208,"Vitola",Centro Habana,PedidosYa,https://pedidosya.com
+208,"Vitola",Centro Habana,Rappi,https://rappi.com
+208,"Vitola",Centro Habana,Reservar Mesa,https://opentable.com
+209,"La California Restaurant",Centro Habana,PedidosYa,https://pedidosya.com
+209,"La California Restaurant",Centro Habana,Rappi,https://rappi.com
+209,"La California Restaurant",Centro Habana,Reservar Mesa,https://opentable.com
+210,"Chago Habana",Centro Habana,PedidosYa,https://pedidosya.com
+210,"Chago Habana",Centro Habana,Rappi,https://rappi.com
+210,"Chago Habana",Centro Habana,Reservar Mesa,https://opentable.com
+211,"Restaurante Castropol La Habana",Centro Habana,PedidosYa,https://pedidosya.com
+211,"Restaurante Castropol La Habana",Centro Habana,Rappi,https://rappi.com
+211,"Restaurante Castropol La Habana",Centro Habana,Reservar Mesa,https://opentable.com
+212,"7 de Espada Restaurante Bar",Habana Vieja,PedidosYa,https://pedidosya.com
+212,"7 de Espada Restaurante Bar",Habana Vieja,Rappi,https://rappi.com
+212,"7 de Espada Restaurante Bar",Habana Vieja,Reservar Mesa,https://opentable.com
+213,"Chacon 162",Habana Vieja,PedidosYa,https://pedidosya.com
+213,"Chacon 162",Habana Vieja,Rappi,https://rappi.com
+213,"Chacon 162",Habana Vieja,Reservar Mesa,https://opentable.com
+214,"Café Fortuna Joe",Habana Vieja,Reservar Mesa,https://opentable.com
+215,"Dominica Like",Boyeros,Reservar Mesa,https://opentable.com
+216,"Mercy Bar Cafe",Playa,Reservar Mesa,https://opentable.com
+217,"Todo & TODO",Playa,Reservar Mesa,https://opentable.com
+218,"El Balcón de Bruno y Pilar",Vedado,Reservar Mesa,https://opentable.com
+219,"Luna Café",Vedado,Reservar Mesa,https://opentable.com
+220,"G de Gato",Vedado,Reservar Mesa,https://opentable.com
+221,"Prêt à Porter",Vedado,PedidosYa,https://pedidosya.com
+221,"Prêt à Porter",Vedado,Rappi,https://rappi.com
+222,"Libertador Havana Cigars & Antiques Lounge",Vedado,Reservar Mesa,https://opentable.com
+223,"Veroccini",Vedado,Reservar Mesa,https://opentable.com
+224,"Fangio Habana",Vedado,Reservar Mesa,https://opentable.com
+225,"KING KEBAB",Vedado,Reservar Mesa,https://opentable.com
+226,"King Bar",Vedado,Reservar Mesa,https://opentable.com
+227,"Casa Mia Paladar",Vedado,Reservar Mesa,https://opentable.com
+228,"Vaivén PizzasBar🍕",Vedado,Reservar Mesa,https://opentable.com
+229,"Basheshe Habana",Vedado,Reservar Mesa,https://opentable.com
+230,"Café Madrigal",Vedado,Reservar Mesa,https://opentable.com
+231,"La Chela",Nuevo Vedado,Reservar Mesa,https://opentable.com
+232,"REI sushibar",Plaza de la Revolución,Reservar Mesa,https://opentable.com
+233,"Mr. Paco",Nuevo Vedado,Reservar Mesa,https://opentable.com
+234,"LOS MULTIPAPIS",Nuevo Vedado,Reservar Mesa,https://opentable.com
+235,"All momento",Diez de Octubre,Reservar Mesa,https://opentable.com
+236,"La Corte del Príncipe",Playa,Reservar Mesa,https://opentable.com
+237,"Yaro’s Cafe Song",Playa,Reservar Mesa,https://opentable.com
+238,"Fuego & Hielo",Playa,Reservar Mesa,https://opentable.com
+239,"Guachinango",Playa,Reservar Mesa,https://opentable.com
+240,"Sau Café",Playa,Reservar Mesa,https://opentable.com
+241,"Altahabana club",Boyeros,Reservar Mesa,https://opentable.com
+242,"Judo Café",Playa,Reservar Mesa,https://opentable.com
+243,"LOS ATREVIDOS PIZZERÍA 🍕",Arroyo Naranjo,Reservar Mesa,https://opentable.com
+244,"Al Campestre",Habana del Este,Reservar Mesa,https://opentable.com
+245,"Plan H: Vino y cocina tailandesa",Habana Vieja,Reservar Mesa,https://opentable.com
+246,"Ole Ole",Cotorro,Reservar Mesa,https://opentable.com
+247,"El Guajirito Restaurante",Habana Vieja,Reservar Mesa,https://opentable.com
+248,"LATERAL",Diez de Octubre,Reservar Mesa,https://opentable.com
+249,"Villa Hernández",Diez de Octubre,Reservar Mesa,https://opentable.com
+250,"BAHIA Rooftop",Habana Vieja,Reservar Mesa,https://opentable.com
+251,"LA HAMBURGUESITA",Centro Habana,Reservar Mesa,https://opentable.com
+252,"EGIDO 653",Habana Vieja,Reservar Mesa,https://opentable.com
+253,"Taky Taky",Vedado,Reservar Mesa,https://opentable.com
+254,"Neder Café",Vedado,Reservar Mesa,https://opentable.com
+255,"El Biky",Centro Habana,Reservar Mesa,https://opentable.com
+256,"Kasa Takos",Centro Habana,Reservar Mesa,https://opentable.com
+257,"Rico Rico",Vedado,Reservar Mesa,https://opentable.com
+258,"FEROZ",Vedado,Reservar Mesa,https://opentable.com
