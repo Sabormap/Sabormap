@@ -1069,9 +1069,12 @@ function openModal(id) {
     }
 
     // ═══════════════════════════════════════════════════
-    // EL ANZUELO: Banner "Reclamar este Local" 
+    // EL ANZUELO: Banner "Reclamar este Local"
+    // Se OCULTA si:
+    //   · is_pro === true  → local ya tiene plan PRO (gestionado y pago)
+    //   · _fromDb === true → local ya viene de Supabase, ya tiene un dueño gestionándolo
     // ═══════════════════════════════════════════════════
-    if (!p.is_pro) {
+    if (!p.is_pro && !p._fromDb) {
         html += `
         <div class="drawer-section" style="padding: 0; margin-bottom: 24px; animation-delay:0.42s;">
             <div class="drawer-banner-claim" style="background: rgba(139,92,246,0.1); border: 1px dashed var(--accent); padding: 14px; border-radius: 12px; margin: 0 28px; text-align: center;">
