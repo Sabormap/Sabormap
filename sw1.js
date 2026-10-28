@@ -1,23 +1,32 @@
 /* ═══════════════════════════════════════════════════════════════════
-   sw.js — Service Worker del Dashboard SaborMap
-   [v1.0.0 — Primer despliegue: soporte offline básico del panel]
+   sw1.js — Service Worker del Dashboard SaborMap
+   [v2.0.5 — FIX: dashboard.html/app.js/places.js con estrategia
+    network-first para que los cambios (iconos, fixes de menú,
+    nuevos campos) se vean de inmediato en Firefox sin tener que
+    bump VERSION cada vez.
+    Base v1.0.0: soporte offline básico del panel + Background Sync]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled: un 404 no aborta el
-     SW) + CDNs críticos del primer render (Tailwind, Supabase, Fonts).
+     SW) + CDNs críticos del primer render (Supabase, Fonts, FA6).
    · Navegación: network-first con cadena de fallback y página offline.
-   · Recursos propios y CDNs permitidos: stale-while-revalidate; se
-     aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
-     woff2 nunca entrarían en caché.
+   · dashboard.html, app.js, places.js → network-first ★ (FIX: antes
+     eran stale-while-revalidate y Firefox servía la versión cacheada
+     con el bug de los iconos `fafa-` durante días).
+   · Otros recursos propios y CDNs permitidos: stale-while-revalidate;
+     se aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
+     woff2 y los tiles del mapa nunca entrarían en caché.
    · API de Supabase: PASSTHROUGH (nunca se cachea → no hay datos stale
      ni respuestas de auth en caché). Esto es crítico para que el
      dashboard refresque perfiles/suscripciones/locales siempre desde
      el servidor cuando haya conexión.
+   · Tailwind eliminado del precache y de CDN_HOSTS: ya no se usa en
+     el dashboard (conflictuaba con Font Awesome 6).
 
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v1.0.0'; // ↑ súbelo en cada despliegue
+const VERSION = 'v2.0.5'; // ↑ súbelo en cada despliegue — v2.0.5: network-first para dashboard.html + todos los HTML/JS
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
@@ -26,21 +35,20 @@ const PRECACHE_URLS = [
     './',
     './dashboard.html',
     './manifest.json',
-    // CDNs críticos del primer render — URLs EXACTAS del HTML [T-10]
+    // CDNs críticos del primer render — URLs EXACTAS del HTML
     'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
-    'https://cdn.tailwindcss.com',
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4'
 ];
 
 /* Orígenes de terceros cuyas respuestas SÍ se cachean en runtime (SWR).
-   OJO: supabase.co queda FUERA a propósito [R-03]: es la API de datos. */
+   OJO: supabase.co queda FUERA a propósito [R-03]: es la API de datos.
+   Tailwind removido: ya no se carga en el dashboard. */
 const CDN_HOSTS = [
     'fonts.googleapis.com',
     'fonts.gstatic.com',
     'cdnjs.cloudflare.com',
-    'cdn.jsdelivr.net',
-    'cdn.tailwindcss.com'
+    'cdn.jsdelivr.net'
 ];
 
 /* ---------- INSTALL: precache tolerante + fuentes woff2 best-effort ---------- */
@@ -107,6 +115,18 @@ self.addEventListener('fetch', (event) => {
 
     // 3) Recursos propios
     if (url.origin === self.location.origin) {
+        // ★ FIX [v2.0.5]: dashboard.html, app.js, places.js siempre frescos cuando hay red.
+        //   Antes eran stale-while-revalidate y servían la versión cacheada
+        //   con el bug de los iconos `fafa-` y sin el fix del timeout en el save.
+        //   Firefox es más conservador que Chrome con el SWR y no refrescaba.
+        if (url.pathname.endsWith('/dashboard.html') ||
+            url.pathname.endsWith('/app.js') ||
+            url.pathname.endsWith('/places.js') ||
+            url.pathname.endsWith('/index.html') ||
+            url.pathname === '/' || url.pathname === './') {
+            event.respondWith(networkFirst(req));
+            return;
+        }
         event.respondWith(staleWhileRevalidate(req, false));
         return;
     }
@@ -125,7 +145,7 @@ async function networkFirst(req) {
     const cache = await caches.open(RUNTIME_CACHE);
     try {
         const fresh = await fetch(req);
-        if (fresh && fresh.status === 200) {
+        if (fresh && (fresh.status === 200 || fresh.type === 'opaque')) {
             cache.put(req, fresh.clone()).catch(() => {});
         }
         return fresh;
@@ -224,7 +244,6 @@ async function processQueueInSW() {
     // Necesitamos al menos un cliente visible para ejecutar las ops
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (clients.length === 0) {
-        // No hay cliente: dejar en cola para la próxima vez que se abra el dashboard
         console.log('[SW] No hay clientes activos para procesar cola de', pending.length, 'ops');
         return;
     }
@@ -238,17 +257,14 @@ async function processQueueInSW() {
             } else if (result && result.fatal) {
                 await swUpdateOpStatus(db, op.id, 'failed', result.error);
             } else {
-                // Error recuperable: marcar para reintento
                 await swUpdateOpStatus(db, op.id, 'retry', (result && result.error) || 'unknown');
             }
         } catch (err) {
-            // Timeout o cliente caído: dejar en cola
             console.warn('[SW] Op', op.id, 'no procesada:', err);
             await swUpdateOpStatus(db, op.id, 'retry', err.message || String(err));
         }
     }
 
-    // Notificar al cliente que actualice el badge
     client.postMessage({ type: 'queue-processed' });
 }
 
