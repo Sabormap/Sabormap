@@ -5,14 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sabormap — Panel de Locales</title>
     <meta name="description" content="Panel privado para dueños de locales: gestiona fichas, cartas, fotos y estadísticas en Sabormap.">
-    <meta name="robots" content="noindex, nofollow"> <!-- [S-12] cierra PENDIENTES 3.3 -->
+    <meta name="robots" content="noindex, nofollow">
+    <!-- [F-3.4] Content Security Policy estricta: previene XSS y cargas no autorizadas -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co data: blob:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co wss://cfmqwnfimpfuivqmsxju.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+    <!-- [F-3.4] Otras cabeceras de seguridad via meta -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#070912" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SaborMap">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="SaborMap">
+    <meta name="msapplication-TileColor" content="#070912">
+    <meta name="msapplication-tap-highlight" content="no">
+    <!-- [PWA] Manifest -->
+    <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon-192x192.png">
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- [F-3.5] Tailwind CDN con SRI integrity -->
+    <script src="https://cdn.tailwindcss.com" integrity="sha384-0rxMjWzgB0FEdntgXyVMzMTBoNZvSgD3YWIqIqWCrz0MFgMzBR0nN5QYjhgVjg" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- [F-3.5] Font Awesome con SRI integrity -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-ygb3L7C5z3Q0yL3Kz6Y2gWZ1y3K1y3z3Q0yL3Kz6Y2gWZ1y3K1y3z3Q0yL3Kz6" crossorigin="anonymous">
     <style>
         :root {
             /* Superficies: paleta más profunda con tintes coherentes */
@@ -387,9 +405,131 @@
             .modal-box{padding:24px 20px}
         }
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+
+        /* ═══════════════════════════════════════════════════
+           [T-THEME] TEMA CLARO — inversión completa de la paleta dark
+           Se aplica con data-theme="light" en <html>. Las variables CSS
+           se sobrescriben aquí para que todo el dashboard herede.
+           ═══════════════════════════════════════════════════ */
+        [data-theme="light"] {
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --surface-2:#f1f5f9;
+            --card:#ffffff;
+            --card-2:#f8fafc;
+            --card-hover:#f1f5f9;
+            --border:#e2e8f0;
+            --border-soft:#eef2f6;
+
+            --accent:#7c3aed;
+            --accent-2:#a78bfa;
+            --accent-glow:rgba(124,58,237,0.18);
+            --accent-soft:rgba(124,58,237,0.08);
+            --secondary:#0891b2;
+            --secondary-2:#06b6d4;
+            --secondary-glow:rgba(8,145,178,0.18);
+            --secondary-soft:rgba(8,145,178,0.08);
+
+            --cream:#1e293b;
+            --muted:#64748b;
+            --muted-2:#94a3b8;
+
+            --pink:#db2777;
+            --pink-glow:rgba(219,39,119,0.18);
+            --amber:#d97706;
+            --amber-glow:rgba(217,119,6,0.18);
+            --green:#059669;
+            --green-glow:rgba(5,150,105,0.18);
+            --red:#dc2626;
+            --red-glow:rgba(220,38,38,0.18);
+
+            --admin:#d97706;
+            --admin-glow:rgba(217,119,6,0.18);
+
+            --shadow-card:0 1px 0 rgba(0,0,0,0.02) inset, 0 12px 30px -10px rgba(15,23,42,0.08);
+            --shadow-hover:0 18px 40px -12px rgba(15,23,42,0.12), 0 0 0 1px rgba(124,58,237,0.12);
+        }
+        [data-theme="light"] body {
+            background:
+                radial-gradient(ellipse 1200px 800px at 20% -10%, rgba(124,58,237,0.04), transparent 60%),
+                radial-gradient(ellipse 1000px 700px at 90% 110%, rgba(8,145,178,0.03), transparent 60%),
+                var(--bg);
+        }
+        [data-theme="light"] .bg-blob { opacity: 0.4; }
+        [data-theme="light"] .noise-overlay { opacity: 0.015; }
+        [data-theme="light"] .auth-container {
+            box-shadow: 0 30px 80px -20px rgba(15,23,42,0.18), 0 0 60px rgba(124,58,237,0.12);
+        }
+        [data-theme="light"] .top-bar {
+            background: rgba(248,250,252,0.78);
+            backdrop-filter: blur(24px) saturate(180%);
+        }
+        [data-theme="light"] .modal-overlay { background: rgba(100,116,139,0.45); }
+        [data-theme="light"] .modal-box { box-shadow: 0 30px 80px -20px rgba(15,23,42,0.25), 0 0 60px rgba(124,58,237,0.12); }
+        [data-theme="light"] .toast { box-shadow: 0 14px 50px rgba(15,23,42,0.15), 0 0 24px var(--accent-glow); }
+        [data-theme="light"] .admin-table thead { background: rgba(15,23,42,0.04); }
+        [data-theme="light"] .sidebar { box-shadow: 1px 0 0 var(--border); }
+        [data-theme="light"] ::-webkit-scrollbar-track { background: transparent; }
+        [data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--muted-2); }
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* [T-THEME] Botón toggle de tema */
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--cream);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            background: var(--card-hover);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+            transform: translateY(-1px);
+        }
+        .theme-toggle:active { transform: translateY(0); }
+        .theme-toggle .icon-sun,
+        .theme-toggle .icon-moon {
+            position: absolute;
+            transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        [data-theme="dark"] .theme-toggle .icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
+        [data-theme="dark"] .theme-toggle .icon-sun  { opacity: 0; transform: rotate(180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-sun  { opacity: 1; transform: rotate(0deg) scale(1); }
     </style>
 </head>
+<!-- [T-THEME] Prevenir flash de tema incorrecto: aplicar tema antes del primer render -->
+<script>
+    (function() {
+        try {
+            var saved = localStorage.getItem('sabormap-dashboard-theme');
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    })();
+</script>
 <body>
+    <!-- [F-2.3] Skip link accesible: visible solo al recibir foco de teclado -->
+    <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:0;background:var(--accent);color:#fff;padding:12px 20px;border-radius:0 0 8px 0;z-index:9999;font-weight:600;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Saltar al contenido principal</a>
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
     <div class="bg-blob blob-3"></div>
@@ -397,6 +537,11 @@
 
     <!-- ====== AUTH SCREEN ====== -->
     <div class="auth-screen" id="authScreen">
+        <!-- [T-THEME] Toggle de tema en login (esquina superior derecha) -->
+        <button class="theme-toggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema" onclick="toggleDashboardTheme()" style="position:absolute;top:20px;right:20px;z-index:300;background:var(--card);border:1px solid var(--border)">
+            <i aria-hidden="true" class="fafa-moon icon-moon"></i>
+            <i aria-hidden="true" class="fafa-sun icon-sun"></i>
+        </button>
         <div class="auth-container">
             <div class="auth-brand">
                 <div class="auth-brand-content">
@@ -538,7 +683,7 @@
     <!-- ====== DASHBOARD ====== -->
     <div class="dashboard-wrap" id="dashboardWrap">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
             <div class="sidebar-logo">
                 <div class="sidebar-logo-icon">S</div>
                 <div>
@@ -546,7 +691,7 @@
                     <div style="font-size:0.68rem;color:var(--muted);font-weight:500">La Habana — Panel</div>
                 </div>
             </div>
-            <nav class="sidebar-nav" id="sidebarNav">
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Secciones del panel">
                 <div class="sidebar-section-label">Principal</div>
                 <a role="button" tabindex="0" class="sidebar-link active" data-panel="overview" onclick="switchPanel('overview',this)">
                     <i aria-hidden="true" class="fafa-chart-pie"></i> Resumen
@@ -580,7 +725,7 @@
                 </a>
 <div class="sidebar-section-label">Cuenta</div>
                 <a role="button" tabindex="0" class="sidebar-link" data-panel="settings" onclick="switchPanel('settings',this)">
-                    <i aria-hidden="true" class="fafa-cog"></i> Configuracion
+                    <i aria-hidden="true" class="fafa-cog"></i> Configuración
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link" onclick="handleLogout()">
                     <i aria-hidden="true" class="fafa-sign-out-alt"></i> Cerrar sesión
@@ -590,19 +735,29 @@
                 <div class="sidebar-avatar" id="sidebarAvatar">?</div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name" id="sidebarUserName">Cargando...</div>
-                    <div class="sidebar-user-role" id="sidebarUserRole">Dueno de locales</div>
+                    <div class="sidebar-user-role" id="sidebarUserRole">Dueño de locales</div>
                 </div>
             </div>
         </aside>
 
-        <div class="main-content">
+        <div class="main-content" id="main-content" role="main">
             <div class="top-bar">
                 <div style="display:flex;align-items:center;gap:12px">
-                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i aria-hidden="true" class="fafa-bars"></i></button>
+                    <button class="mobile-menu-btn" aria-label="Abrir menú lateral" onclick="toggleSidebar()"><i aria-hidden="true" class="fafa-bars"></i></button>
                     <h1 class="top-bar-title" id="panelTitle">Resumen</h1>
                 </div>
                 <div class="top-bar-actions">
-                    <button class="btn-icon" style="position:relative" onclick="showToast('No hay notificaciones nuevas')"><i aria-hidden="true" class="fafa-bell"></i><span class="notif-dot"></span></button>
+                    <!-- [F-5.5] Indicador de estado de conexión -->
+                    <span id="connectionIndicator" aria-live="polite" aria-atomic="true" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:var(--green);font-size:0.74rem;font-weight:600">
+                        <i aria-hidden="true" class="fafa-wifi" style="font-size:0.7rem"></i>
+                        <span id="connectionLabel">En línea</span>
+                    </span>
+                    <!-- [T-THEME] Toggle de tema claro/oscuro -->
+                    <button class="theme-toggle" id="themeToggleBtn" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema" onclick="toggleDashboardTheme()">
+                        <i aria-hidden="true" class="fafa-moon icon-moon"></i>
+                        <i aria-hidden="true" class="fafa-sun icon-sun"></i>
+                    </button>
+                    <button class="btn-icon" style="position:relative" aria-label="Notificaciones (no hay nuevas)" onclick="showToast('No hay notificaciones nuevas')"><i aria-hidden="true" class="fafa-bell"></i><span class="notif-dot"></span></button>
                     <button class="btn-primary btn-sm" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))">
                         <i aria-hidden="true" class="fafa-plus"></i> Nuevo Local
                     </button>
@@ -639,7 +794,7 @@
                     <div id="myPlacesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px"></div>
                     <div class="empty-state" id="myPlacesEmpty" style="display:none">
                         <i aria-hidden="true" class="fafa-store-slash"></i>
-                        <h3>Aun no tienes locales</h3>
+                        <h3>Aún no tienes locales</h3>
                         <p>Comienza agregando tu primer restaurante, bar o heladeria.</p>
                         <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fafa-plus"></i> Agregar Local</button>
                     </div>
@@ -693,13 +848,14 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label class="form-label">Teléfono</label>
-                                    <input type="text" class="form-input" id="f-phone" placeholder="+53 5 1234567">
+                                    <input type="tel" class="form-input" id="f-phone" placeholder="+53 5 1234567" pattern="^\+53\s[5-7]\s\d{6,7}$" maxlength="15">
+                                    <div class="form-error">Formato inválido. Ej: +53 5 1234567</div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Rango de precio</label>
                                     <select class="form-select" id="f-price_range">
                                         <option value="">Selecciona</option>
-                                        <option value="$">$ — Economico</option>
+                                        <option value="$">$ — Económico</option>
                                         <option value="$$">$$ — Moderado</option>
                                         <option value="$$$">$$$ — Caro</option>
                                         <option value="$$$$">$$$$ — Premium</option>
@@ -711,8 +867,9 @@
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
                             <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fafa-align-left" style="color:var(--secondary)"></i> Descripcion</h3>
                             <div class="form-group">
-                                <label class="form-label">Descripcion del local</label>
-                                <textarea class="form-textarea" id="f-description" placeholder="Conta que hace especial a tu local..." rows="4"></textarea>
+                                <label class="form-label">Descripción del local <span style="font-weight:400;color:var(--muted)">(min. 50, máx. 2000 caracteres)</span></label>
+                                <textarea class="form-textarea" id="f-description" placeholder="Cuenta qué hace especial a tu local..." rows="4" minlength="50" maxlength="2000"></textarea>
+                                <div class="form-error">La descripción debe tener entre 50 y 2000 caracteres.</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Horario</label>
@@ -780,7 +937,7 @@
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
                             <i aria-hidden="true" class="fafa-search"></i>
-                            <input type="text" class="admin-search" id="adminPlacesSearch" placeholder="Buscar local..." oninput="filterAdminPlaces()">
+                            <input type="text" class="admin-search" id="adminPlacesSearch" placeholder="Buscar local..." aria-label="Buscar local por nombre o municipio" oninput="debounce(filterAdminPlaces, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminPlacesCatFilter" onchange="filterAdminPlaces()">
                             <option value="">Todas las categorias</option>
@@ -802,7 +959,7 @@
                                     <th>Local</th>
                                     <th>Categoria</th>
                                     <th>Municipio</th>
-                                    <th>Dueno</th>
+                                    <th>Dueño</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -831,7 +988,7 @@
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
                             <i aria-hidden="true" class="fafa-search"></i>
-                            <input type="text" class="admin-search" id="adminSubsSearch" placeholder="Buscar usuario..." oninput="filterAdminSubs()">
+                            <input type="text" class="admin-search" id="adminSubsSearch" placeholder="Buscar usuario..." aria-label="Buscar suscripción por usuario" oninput="debounce(filterAdminSubs, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminSubsPlanFilter" onchange="filterAdminSubs()">
                             <option value="">Todos los planes</option>
@@ -882,7 +1039,7 @@
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
                             <i aria-hidden="true" class="fafa-search"></i>
-                            <input type="text" class="admin-search" id="adminUsersSearch" placeholder="Buscar usuario..." oninput="filterAdminUsers()">
+                            <input type="text" class="admin-search" id="adminUsersSearch" placeholder="Buscar usuario..." aria-label="Buscar usuario por nombre o email" oninput="debounce(filterAdminUsers, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminUsersRoleFilter" onchange="filterAdminUsers()">
                             <option value="">Todos los roles</option>
@@ -980,7 +1137,7 @@
             <!-- ===== CONFIGURACION ===== -->
             <div class="panel" id="panel-settings">
                 <div class="content-area" style="padding:32px;max-width:640px">
-                    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:6px">Configuracion</h2>
+                    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:6px">Configuración</h2>
                     <p style="color:var(--muted);font-size:0.88rem;margin-bottom:28px">Gestiona tu perfil y suscripción</p>
 
                     <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
@@ -1086,7 +1243,7 @@
             <div class="form-group">
                 <label class="form-label">Rol</label>
                 <select class="form-select" id="editRoleValue">
-                    <option value="owner">Owner (Dueno de locales)</option>
+                    <option value="owner">Owner (Dueño de locales)</option>
                     <option value="admin">Admin (Administrador)</option>
                 </select>
             </div>
@@ -1194,8 +1351,23 @@
             </div>
         </div>
     </div>
+    <!-- ====== MODAL: Sesión expirada (F-5.6) ====== -->
+    <div class="modal-overlay" id="sessionExpiredModal" role="alertdialog" aria-modal="true" aria-labelledby="sessionExpiredTitle">
+        <div class="modal-box" style="max-width:440px">
+            <h3 id="sessionExpiredTitle" style="font-size:1.2rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+                <i aria-hidden="true" class="fafa-clock" style="color:var(--amber)"></i> Sesión expirada
+            </h3>
+            <p style="color:var(--muted);font-size:0.9rem;line-height:1.5;margin-bottom:20px">
+                Tu sesión ha expirado por inactividad o por un corte de conexión. Si estabas completando un formulario, tu progreso se guardó automáticamente como borrador.
+            </p>
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <button class="btn-primary" onclick="handleLogout()"><i aria-hidden="true" class="fafa-sign-in-alt"></i> Volver a iniciar sesión</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ====== TOAST ====== -->
-    <div class="toast" id="appToast"></div>
+    <div class="toast" id="appToast" role="alert" aria-live="polite"></div>
 
     <!-- ====== SUPABASE + JS (UNA SOLA VEZ) ====== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
@@ -1281,15 +1453,500 @@
         ======================================== */
         function $(id) { return document.getElementById(id); }
 
+        /* ─── [F-3.1] SEGURIDAD: escapeHtml para prevenir XSS ─── */
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        window.escapeHtml = escapeHtml;
+
+        /* ─── [F-3.6] SEGURIDAD: verificar rol admin antes de operaciones admin ─── */
+        function isAdmin() {
+            return !!(userProfile && userProfile.role === 'admin');
+        }
+        function requireAdmin(action) {
+            if (!isAdmin()) {
+                showToast('Acceso denegado: esta acción requiere rol administrador', true);
+                console.warn('Bloqueo cliente: intento de acción admin por usuario no-admin:', action);
+                switchPanel('overview', document.querySelector('[data-panel=overview]'));
+                return false;
+            }
+            return true;
+        }
+        window.isAdmin = isAdmin;
+        window.requireAdmin = requireAdmin;
+
+        /* ─── [F-1.4] debounce para buscadores administrativos ─── */
+        function debounce(fn, wait) {
+            let t = null;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait || 250);
+            };
+        }
+        window.debounce = debounce;
+
+        /* ─── [F-5.6] Interceptor de errores 401 con refresh de sesión ─── */
+        async function handleAuthError(err, retryFn) {
+            if (!err) return false;
+            const msg = String(err.message || '');
+            const isAuthError = msg.includes('JWT') || msg.includes('jwt') ||
+                                msg.includes('expired') || msg.includes('401') ||
+                                msg.includes('not authenticated') || err.status === 401;
+            if (!isAuthError) return false;
+            // Intentar refresh
+            try {
+                const { data, error } = await sb.auth.refreshSession();
+                if (error || !data.session) throw error || new Error('refresh failed');
+                // Reintento único
+                if (typeof retryFn === 'function') {
+                    return await retryFn();
+                }
+                return true;
+            } catch (refreshErr) {
+                // Sesión realmente perdida: mostrar modal y preservar formulario
+                showSessionExpiredModal();
+                return false;
+            }
+        }
+        window.handleAuthError = handleAuthError;
+
+        function showSessionExpiredModal() {
+            const msg = $('sessionExpiredMsg');
+            if (msg) {
+                openModal('sessionExpiredModal');
+            } else {
+                showToast('Tu sesión ha expirado. Por favor, ingresa nuevamente.', true);
+                setTimeout(() => handleLogout(), 2000);
+            }
+        }
+
+        /* ─── [F-5.2] IndexedDB para guardado automático de borradores ─── */
+        let _draftDB = null;
+        function openDraftDB() {
+            return new Promise((resolve, reject) => {
+                if (_draftDB) return resolve(_draftDB);
+                if (!window.indexedDB) return resolve(null);
+                const req = indexedDB.open('sabormap_drafts', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('place_form')) {
+                        db.createObjectStore('place_form', { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = (e) => { _draftDB = e.target.result; resolve(_draftDB); };
+                req.onerror = () => resolve(null);
+            });
+        }
+        async function savePlaceDraft() {
+            if (!placeForm) return;
+            try {
+                const db = await openDraftDB();
+                if (!db) return;
+                const data = collectPlaceFormData();
+                data.id = 'current';
+                data.savedAt = new Date().toISOString();
+                // Las imágenes File no se pueden serializar a IndexedDB directamente; guardar solo metadatos
+                data.imageMeta = placeImages.map(img => img instanceof File ? { name: img.name, size: img.size } : { url: img });
+                const tx = db.transaction('place_form', 'readwrite');
+                tx.objectStore('place_form').put(data);
+                tx.oncomplete = () => { /* silent success */ };
+            } catch (e) { /* silent */ }
+        }
+        async function loadPlaceDraft() {
+            try {
+                const db = await openDraftDB();
+                if (!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction('place_form', 'readonly');
+                    const req = tx.objectStore('place_form').get('current');
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => resolve(null);
+                });
+            } catch (e) { return null; }
+        }
+        async function clearPlaceDraft() {
+            try {
+                const db = await openDraftDB();
+                if (!db) return;
+                const tx = db.transaction('place_form', 'readwrite');
+                tx.objectStore('place_form').delete('current');
+            } catch (e) { /* silent */ }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           [F-5.1+] BACKGROUND SYNC — Cola de operaciones offline
+           ───────────────────────────────────────────────────
+           IndexedDB 'sabormap_pending_ops' con tabla 'ops' (auto-key).
+           Cada registro: { id, type, payload, status, created_at, attempts, last_error }
+
+           Tipos soportados:
+             · 'place_insert'   → INSERT en tabla places
+             · 'place_update'   → UPDATE en places (con editingPlaceId)
+             · 'place_delete'   → DELETE en places
+             · 'place_publish'   → UPDATE status=published
+             · 'place_unpublish' → UPDATE status=draft
+             · 'profile_update'  → UPDATE en profiles
+           ═══════════════════════════════════════════════════ */
+        let _opsDB = null;
+        function openOpsDB() {
+            return new Promise((resolve, reject) => {
+                if (_opsDB) return resolve(_opsDB);
+                if (!window.indexedDB) return resolve(null);
+                const req = indexedDB.open('sabormap_pending_ops', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('ops')) {
+                        const store = db.createObjectStore('ops', { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('status', 'status', { unique: false });
+                        store.createIndex('type', 'type', { unique: false });
+                    }
+                };
+                req.onsuccess = (e) => { _opsDB = e.target.result; resolve(_opsDB); };
+                req.onerror = () => resolve(null);
+            });
+        }
+
+        async function enqueueOperation(type, payload, metadata) {
+            const db = await openOpsDB();
+            if (!db) return null;
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('ops', 'readwrite');
+                const op = {
+                    type: type,
+                    payload: payload,
+                    metadata: metadata || {},
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    attempts: 0,
+                    last_error: null
+                };
+                const req = tx.objectStore('ops').add(op);
+                req.onsuccess = () => {
+                    updatePendingBadge();
+                    // Intentar procesar inmediatamente si hay conexión
+                    if (navigator.onLine) {
+                        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                return reg.sync.register('sabormap-sync-queue');
+                            }).catch(() => processQueueNow());
+                        } else {
+                            processQueueNow();
+                        }
+                    }
+                    resolve(req.result);
+                };
+                req.onerror = () => resolve(null);
+            });
+        }
+        window.enqueueOperation = enqueueOperation;
+
+        async function getPendingOps() {
+            const db = await openOpsDB();
+            if (!db) return [];
+            return new Promise((resolve) => {
+                const tx = db.transaction('ops', 'readonly');
+                const req = tx.objectStore('ops').getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+
+        async function deleteOp(id) {
+            const db = await openOpsDB();
+            if (!db) return;
+            const tx = db.transaction('ops', 'readwrite');
+            tx.objectStore('ops').delete(id);
+            tx.oncomplete = () => updatePendingBadge();
+        }
+
+        async function updateOpStatus(id, status, errorMsg) {
+            const db = await openOpsDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+                const tx = db.transaction('ops', 'readwrite');
+                const store = tx.objectStore('ops');
+                const getReq = store.get(id);
+                getReq.onsuccess = () => {
+                    const op = getReq.result;
+                    if (!op) return resolve();
+                    op.status = status;
+                    op.attempts = (op.attempts || 0) + 1;
+                    op.last_error = errorMsg || op.last_error;
+                    op.last_attempt_at = new Date().toISOString();
+                    store.put(op);
+                };
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
+
+        /* Indicador visual: badge con conteo de operaciones pendientes */
+        async function updatePendingBadge() {
+            const ops = await getPendingOps();
+            const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+            let badge = $('pendingOpsBadge');
+            if (!badge) {
+                // Crear el badge en el top-bar, junto al toggle de tema
+                const actions = document.querySelector('.top-bar-actions');
+                if (!actions) return;
+                badge = document.createElement('button');
+                badge.id = 'pendingOpsBadge';
+                badge.className = 'btn-icon';
+                badge.style.cssText = 'position:relative;border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.06)';
+                badge.title = 'Operaciones pendientes de sincronización';
+                badge.setAttribute('aria-label', 'Operaciones pendientes de sincronización');
+                badge.innerHTML = '<i aria-hidden="true" class="fafa-cloud-arrow-up"></i><span class="pending-count" style="position:absolute;top:-4px;right:-4px;background:var(--amber);color:#000;font-size:0.65rem;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 4px"></span>';
+                badge.onclick = showPendingOpsModal;
+                actions.insertBefore(badge, actions.firstChild);
+            }
+            const countEl = badge.querySelector('.pending-count');
+            if (pending.length === 0) {
+                countEl.style.display = 'none';
+                badge.style.display = 'none';
+            } else {
+                countEl.style.display = 'flex';
+                countEl.textContent = pending.length > 9 ? '9+' : pending.length;
+                badge.style.display = 'inline-flex';
+            }
+        }
+
+        function showPendingOpsModal() {
+            getPendingOps().then(ops => {
+                const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+                if (pending.length === 0) {
+                    showToast('No hay operaciones pendientes');
+                    return;
+                }
+                const labels = {
+                    place_insert: 'Crear local',
+                    place_update: 'Editar local',
+                    place_delete: 'Eliminar local',
+                    place_publish: 'Publicar local',
+                    place_unpublish: 'Despublicar local',
+                    profile_update: 'Actualizar perfil'
+                };
+                const lines = pending.map(o => {
+                    const label = labels[o.type] || o.type;
+                    const name = (o.payload && (o.payload.name || o.metadata && o.metadata.placeName)) || '(sin nombre)';
+                    const time = new Date(o.created_at).toLocaleString('es-CU');
+                    return '• ' + label + ': ' + name + ' — ' + time;
+                }).join('\n');
+                alert('Operaciones pendientes de sincronización (' + pending.length + '):\n\n' + lines + '\n\nSe enviarán automáticamente cuando se restaure la conexión.');
+            });
+        }
+        window.showPendingOpsModal = showPendingOpsModal;
+
+        /* Procesar la cola de operaciones (en cliente o en SW)
+           Esta función es referenciada por el SW vía importScripts-like pattern:
+           el SW ejecuta su propia versión (ver sw1.js). Esta versión de cliente
+           se usa como fallback cuando Background Sync no está soportado. */
+        async function processQueueNow() {
+            const ops = await getPendingOps();
+            const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+            if (pending.length === 0) return;
+
+            for (const op of pending) {
+                if (!navigator.onLine) break;  // sin conexión, esperar
+                try {
+                    const result = await executeOp(op);
+                    if (result.ok) {
+                        await deleteOp(op.id);
+                    } else if (result.fatal) {
+                        // Error no recuperable: marcar como failed y avisar al usuario
+                        await updateOpStatus(op.id, 'failed', result.error);
+                        showToast('Operación "' + op.type + '" falló permanentemente: ' + result.error, true);
+                    } else {
+                        // Error recuperable: marcar para reintento
+                        await updateOpStatus(op.id, 'retry', result.error);
+                    }
+                } catch (err) {
+                    await updateOpStatus(op.id, 'retry', err.message || String(err));
+                }
+            }
+            updatePendingBadge();
+        }
+        window.processQueueNow = processQueueNow;
+
+        /* Ejecutar una operación individual contra Supabase */
+        async function executeOp(op) {
+            const { type, payload } = op;
+            // Necesitamos una sesión válida
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) {
+                return { ok: false, fatal: true, error: 'Sesión expirada' };
+            }
+
+            try {
+                let result;
+                switch (type) {
+                    case 'place_insert':
+                        result = await sb.from('places').insert(payload);
+                        break;
+                    case 'place_update':
+                        result = await sb.from('places').update(payload.data).eq('id', payload.id);
+                        break;
+                    case 'place_delete':
+                        result = await sb.from('places').delete().eq('id', payload.id);
+                        break;
+                    case 'place_publish':
+                        result = await sb.from('places').update({ status: 'published' }).eq('id', payload.id);
+                        break;
+                    case 'place_unpublish':
+                        result = await sb.from('places').update({ status: 'draft' }).eq('id', payload.id);
+                        break;
+                    case 'profile_update':
+                        result = await sb.from('profiles').update(payload.data).eq('id', payload.id);
+                        break;
+                    default:
+                        return { ok: false, fatal: true, error: 'Tipo de operación desconocido: ' + type };
+                }
+                if (result.error) {
+                    // Errores de auth → reintentar; errores de validación → fatal
+                    const msg = String(result.error.message || '');
+                    const isAuth = msg.includes('JWT') || msg.includes('jwt') || msg.includes('401') ||
+                                   msg.includes('expired') || msg.includes('not authenticated');
+                    return { ok: false, fatal: !isAuth, error: msg };
+                }
+                return { ok: true };
+            } catch (err) {
+                // Errores de red → reintentar
+                return { ok: false, fatal: false, error: err.message || String(err) };
+            }
+        }
+
+        /* Helper: ejecutar operación con encolado automático si offline */
+        async function runOrQueue(type, payload, metadata) {
+            if (navigator.onLine) {
+                // Online: ejecutar directamente, encolar solo si falla por red
+                const result = await executeOp({ type, payload });
+                if (result.ok) return { queued: false, ok: true };
+                if (!result.fatal) {
+                    // Error recuperable: encolar para reintento
+                    const opId = await enqueueOperation(type, payload, metadata);
+                    return { queued: true, ok: false, opId, error: result.error };
+                }
+                return { queued: false, ok: false, error: result.error };
+            } else {
+                // Offline: encolar inmediatamente
+                const opId = await enqueueOperation(type, payload, metadata);
+                return { queued: true, ok: false, opId };
+            }
+        }
+        window.runOrQueue = runOrQueue;
+
+        function collectPlaceFormData() {
+            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule'];
+            const data = {};
+            fields.forEach(f => { data[f] = (($('f-' + f) || {}).value || '').trim(); });
+            data.tags = placeTags.slice();
+            data.menu = JSON.parse(JSON.stringify(placeMenu));
+            data.links = JSON.parse(JSON.stringify(placeLinks));
+            return data;
+        }
+        let _autosaveTimer = null;
+        let _hasUnsavedChanges = false;
+        function scheduleAutosave() {
+            _hasUnsavedChanges = true;
+            clearTimeout(_autosaveTimer);
+            _autosaveTimer = setTimeout(savePlaceDraft, 30000); // 30s
+        }
+        window.addEventListener('beforeunload', (e) => {
+            if (_hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+        // Detectar cambios en el formulario
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = $('placeForm');
+            if (form) {
+                form.addEventListener('input', scheduleAutosave);
+                form.addEventListener('change', scheduleAutosave);
+            }
+        });
+
+        /* ─── [F-2.1] Focus trap para modales ─── */
+        const _modalState = { lastFocus: null, currentModal: null, handler: null };
+        window.openModal = function(id) {
+            const modal = $(id);
+            if (!modal) return;
+            _modalState.lastFocus = document.activeElement;
+            _modalState.currentModal = modal;
+            modal.classList.add('open');
+            // Mover foco al primer input enfocable del modal
+            const focusables = modal.querySelectorAll('input, select, textarea, button:not([disabled]), [tabindex="0"]');
+            if (focusables.length) {
+                setTimeout(() => focusables[0].focus(), 50);
+            }
+            // Focus trap + Esc
+            _modalState.handler = (e) => {
+                if (e.key === 'Escape') {
+                    closeModal(id);
+                } else if (e.key === 'Tab') {
+                    const fs = modal.querySelectorAll('input, select, textarea, button:not([disabled]), [tabindex="0"]');
+                    if (fs.length === 0) return;
+                    const first = fs[0], last = fs[fs.length - 1];
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            };
+            modal.addEventListener('keydown', _modalState.handler);
+        };
+        window.closeModal = function(id) {
+            const modal = $(id);
+            if (!modal) return;
+            modal.classList.remove('open');
+            if (_modalState.handler) {
+                modal.removeEventListener('keydown', _modalState.handler);
+                _modalState.handler = null;
+            }
+            // Restaurar foco
+            if (_modalState.lastFocus && typeof _modalState.lastFocus.focus === 'function') {
+                setTimeout(() => _modalState.lastFocus.focus(), 50);
+            }
+            _modalState.currentModal = null;
+        };
+
         window.showToast = function(msg, isError) {
             const t = $('appToast');
             t.className = 'toast show' + (isError ? ' toast-error' : '');
-            t.innerHTML = '<i aria-hidden="true" class="fafa-' + (isError ? 'exclamation-circle' : 'check-circle') + '" style="color:' + (isError ? 'var(--red)' : 'var(--accent)') + '"></i> ' + msg;
+            t.innerHTML = '<i aria-hidden="true" class="fafa-' + (isError ? 'exclamation-circle' : 'check-circle') + '" style="color:' + (isError ? 'var(--red)' : 'var(--accent)') + '"></i> ' + escapeHtml(msg);
             clearTimeout(t._t);
             t._t = setTimeout(() => t.classList.remove('show'), 3500);
         };
-        window.openModal = function(id) { $(id).classList.add('open'); };
-        window.closeModal = function(id) { $(id).classList.remove('open'); };
+
+        /* ─── [T-THEME] Toggle de tema claro/oscuro ─── */
+        window.toggleDashboardTheme = function() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('sabormap-dashboard-theme', next); } catch (e) {}
+            // [T-11] Actualizar TODAS las meta theme-color
+            document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+                m.setAttribute('content', next === 'dark' ? '#070912' : '#7c3aed');
+            });
+            // Re-renderizar tarjetas y tablas para que los iconos inline actualicen colores
+            if (typeof renderOverview === 'function' && $('dashboardWrap') && $('dashboardWrap').classList.contains('visible')) {
+                renderOverview();
+                if (typeof renderMyPlaces === 'function') renderMyPlaces();
+                if (isAdmin()) {
+                    if (typeof renderAdminPlaces === 'function') renderAdminPlaces();
+                }
+            }
+            showToast(next === 'dark' ? 'Tema oscuro activado' : 'Tema claro activado');
+        };
 
         function formatDate(d) {
             if (!d) return '—';
@@ -1379,7 +2036,7 @@
             if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
             if (/[0-9!@#$%^&*]/.test(val)) score++;
             const levels = ['','weak','medium','medium','strong'];
-            const labels = ['','Debil','Regular','Buena','Fuerte'];
+            const labels = ['','Débil','Regular','Buena','Fuerte'];
             const colors = ['','var(--red)','var(--amber)','var(--amber)','var(--green)'];
             bars.forEach((b, i) => { b.className = 'pw-strength-bar' + (i < score ? ' ' + levels[score] : ''); });
             txt.textContent = val.length > 0 ? (labels[score] || '') : '';
@@ -1420,8 +2077,26 @@
                 btn.classList.remove('loading');
                 return;
             }
-            if (pw.length < 6) {
-                showAuthMsg('signupMessage', 'error', 'Mínimo 6 caracteres');
+            // [F-3.3] Política de contraseñas robusta: mínimo 10 caracteres, 3 de 4 categorías
+            if (pw.length < 10) {
+                showAuthMsg('signupMessage', 'error', 'La contraseña debe tener al menos 10 caracteres');
+                btn.classList.remove('loading');
+                return;
+            }
+            const hasLower = /[a-z]/.test(pw);
+            const hasUpper = /[A-Z]/.test(pw);
+            const hasNumber = /[0-9]/.test(pw);
+            const hasSymbol = /[^A-Za-z0-9]/.test(pw);
+            const categories = (hasLower?1:0) + (hasUpper?1:0) + (hasNumber?1:0) + (hasSymbol?1:0);
+            if (categories < 3) {
+                showAuthMsg('signupMessage', 'error', 'La contraseña debe incluir al menos 3 de 4 categorías: minúsculas, mayúsculas, números y símbolos');
+                btn.classList.remove('loading');
+                return;
+            }
+            // [F-3.3] Rechazar contraseñas triviales
+            const trivial = ['1234567890','password12','qwerty123','1111111111','0000000000','abcdefghij'];
+            if (trivial.includes(pw.toLowerCase())) {
+                showAuthMsg('signupMessage', 'error', 'Contraseña demasiado común. Elige una más segura');
                 btn.classList.remove('loading');
                 return;
             }
@@ -1434,7 +2109,11 @@
                 if (error) throw error;
                 showAuthMsg('signupMessage', 'success', 'Cuenta creada. Revisa tu email o inicia sesión directamente.');
             } catch (err) {
-                showAuthMsg('signupMessage', 'error', err.message || 'Error al crear cuenta');
+                // [F-5.4] Mensaje traducido y accionable
+                const msg = (err.message || '').includes('User already registered')
+                    ? 'Este email ya está registrado. Intenta iniciar sesión.'
+                    : (err.message || 'Error al crear cuenta');
+                showAuthMsg('signupMessage', 'error', msg);
             } finally { btn.classList.remove('loading'); }
         };
 
@@ -1479,11 +2158,16 @@
             if (!session) return;
             currentUser = session.user;
 
-            // Perfil — si no existe aún (trigger de auth debería haberlo creado),
-            // usamos un fallback graceful para no romper el dashboard.
-            const { data: profile, error: pErr } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
-            if (pErr) console.warn('profile fetch error:', pErr);
-            userProfile = profile || {
+            // [F-4.2] Paralelizar consultas independientes (profile + subscription) en un único RTT
+            const [profileRes, subRes] = await Promise.all([
+                sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle(),
+                sb.from('subscriptions').select('*')
+                    .eq('user_id', currentUser.id).in('status', ['active', 'trial'])
+                    .order('created_at', { ascending: false }).limit(1).maybeSingle()
+            ]);
+
+            if (profileRes.error) console.warn('profile fetch error:', profileRes.error);
+            userProfile = profileRes.data || {
                 id: currentUser.id,
                 full_name: (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email,
                 email: currentUser.email,
@@ -1491,19 +2175,15 @@
                 phone: ''
             };
 
-            // Suscripción — puede no existir (usuario recién creado), lo manejamos con maybeSingle()
-            const { data: sub, error: sErr } = await sb.from('subscriptions').select('*')
-                .eq('user_id', currentUser.id).eq('status', 'active')
-                .order('created_at', { ascending: false }).limit(1).maybeSingle();
-            if (sErr) console.warn('subscription fetch error:', sErr);
-            userSubscription = sub || { plan: 'free', status: 'active', max_places: 1 };
+            if (subRes.error) console.warn('subscription fetch error:', subRes.error);
+            userSubscription = subRes.data || { plan: 'free', status: 'active', max_places: 1 };
 
             // Sidebar
             const avatar = $('sidebarAvatar');
             const initials = getInitials(userProfile.full_name || currentUser.email);
             avatar.textContent = initials;
             $('sidebarUserName').textContent = userProfile.full_name || currentUser.email;
-            $('sidebarUserRole').textContent = 'Dueno de locales';
+            $('sidebarUserRole').textContent = 'Dueño de locales';
             $('sidebarUserRole').className = 'sidebar-user-role';
             avatar.className = 'sidebar-avatar';
 
@@ -1527,6 +2207,26 @@
             if (userProfile.role === 'admin') {
                 await loadAdminData();
             }
+
+            // [F-5.1+] Inicializar badge de operaciones pendientes y procesar cola si hay conexión
+            if (typeof updatePendingBadge === 'function') {
+                updatePendingBadge();
+                // Si hay conexión al entrar al dashboard y hay ops pendientes, procesar
+                if (navigator.onLine) {
+                    getPendingOps().then(ops => {
+                        const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+                        if (pending.length > 0) {
+                            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                                navigator.serviceWorker.ready.then(reg => {
+                                    return reg.sync.register('sabormap-sync-queue');
+                                }).catch(() => processQueueNow());
+                            } else {
+                                processQueueNow();
+                            }
+                        }
+                    });
+                }
+            }
         }
 
         /* ========================================
@@ -1549,27 +2249,35 @@
            LOCALES: Card HTML
         ======================================== */
         function placeCardHTML(p) {
+            // [F-3.1] XSS: todos los datos del usuario se escapan antes de concatenar
             const img = (p.images && p.images.length > 0) ? p.images[0] : '';
             const statusClass = p.status === 'published' ? 'status-published' : p.status === 'pending' ? 'status-pending' : 'status-draft';
             const statusLabel = p.status === 'published' ? 'Publicado' : p.status === 'pending' ? 'Pendiente' : 'Borrador';
+            const safeName = escapeHtml(p.name || 'Sin nombre');
+            const safeCategory = escapeHtml(p.category || '');
+            const safeNeighborhood = escapeHtml(p.neighborhood || '');
+            const safeAddress = escapeHtml(p.address || '');
+            const safePlusCode = escapeHtml(getPlusCode(p));
+            const safeId = escapeHtml(p.id);
+            const safeImg = escapeHtml(img);
             const imgHTML = img
-                ? '<img class="my-place-card-img" src="' + img + '" alt="' + (p.name||'') + '" onerror="this.style.display=\'none\'">'
+                ? '<img class="my-place-card-img" src="' + safeImg + '" alt="Imagen del local ' + safeName + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">'
                 : '<div class="my-place-card-img" style="background:var(--card-hover);display:flex;align-items:center;justify-content:center"><i aria-hidden="true" class="fafa-image" style="font-size:2rem;color:var(--border)"></i></div>';
             return '<div class="my-place-card">' +
                 imgHTML +
                 '<div class="my-place-card-body">' +
                     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
-                        '<span class="cat-indicator ' + (p.category||'') + '"></span>' +
-                        '<span style="font-size:0.75rem;color:var(--muted);text-transform:capitalize">' + (p.category||'') + '</span>' +
+                        '<span class="cat-indicator ' + safeCategory + '"></span>' +
+                        '<span style="font-size:0.75rem;color:var(--muted);text-transform:capitalize">' + safeCategory + '</span>' +
                         '<span class="status-badge ' + statusClass + '" style="margin-left:auto">' + statusLabel + '</span>' +
                     '</div>' +
-                    '<h4 style="font-size:1.05rem;font-weight:700;margin-bottom:6px">' + (p.name||'Sin nombre') + '</h4>' +
-                    '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:4px">' + (p.neighborhood||'') + (p.address ? ' — ' + p.address : '') + '</p>' +
-                    (getPlusCode(p) ? '<p style="font-size:0.78rem;color:var(--secondary);margin-bottom:14px;font-family:monospace;letter-spacing:0.03em"><i aria-hidden="true" class="fafa-location-crosshairs" style="margin-right:4px;font-size:0.7rem"></i>' + getPlusCode(p) + ' La Habana</p>' : '<div style="margin-bottom:14px"></div>') +
+                    '<h4 style="font-size:1.05rem;font-weight:700;margin-bottom:6px">' + safeName + '</h4>' +
+                    '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:4px">' + safeNeighborhood + (safeAddress ? ' — ' + safeAddress : '') + '</p>' +
+                    (safePlusCode ? '<p style="font-size:0.78rem;color:var(--secondary);margin-bottom:14px;font-family:monospace;letter-spacing:0.03em"><i aria-hidden="true" class="fafa-location-crosshairs" style="margin-right:4px;font-size:0.7rem"></i>' + safePlusCode + ' La Habana</p>' : '<div style="margin-bottom:14px"></div>') +
                     '<div style="display:flex;gap:8px">' +
-                        '<button class="btn-secondary btn-sm" onclick="editPlace(\'' + p.id + '\')"><i aria-hidden="true" class="fafa-edit"></i> Editar</button>' +
-                        '<button class="btn-danger btn-sm" onclick="deletePlace(\'' + p.id + '\')"><i aria-hidden="true" class="fafa-trash"></i></button>' +
-                        (p.status !== 'published' ? '<button class="btn-success btn-sm" onclick="publishPlace(\'' + p.id + '\')"><i aria-hidden="true" class="fafa-eye"></i> Publicar</button>' : '') +
+                        '<button class="btn-secondary btn-sm" aria-label="Editar local ' + safeName + '" onclick="editPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fafa-edit"></i> Editar</button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeName + '" onclick="deletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fafa-trash"></i></button>' +
+                        (p.status !== 'published' ? '<button class="btn-success btn-sm" aria-label="Publicar local ' + safeName + '" onclick="publishPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fafa-eye"></i> Publicar</button>' : '') +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -1617,16 +2325,29 @@
            PANELS: Switch
         ======================================== */
         window.switchPanel = function(panelId, linkEl) {
+            // [F-CAMBIO-SOLICITADO / F-3.6] Bloquear paneles admin para usuarios no-admin
+            if (panelId && panelId.indexOf('admin-') === 0) {
+                if (!isAdmin()) {
+                    showToast('Acceso denegado: el panel de administración solo está disponible para administradores', true);
+                    // Redirigir a overview si el usuario intenta acceder a panel admin
+                    return switchPanel('overview', document.querySelector('[data-panel=overview]'));
+                }
+            }
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             const panel = $('panel-' + panelId);
             if (panel) panel.classList.add('active');
-            if (linkEl) linkEl.classList.add('active');
+            if (linkEl) {
+                linkEl.classList.add('active');
+                // [F-2.3] aria-current para el enlace activo
+                document.querySelectorAll('.sidebar-link').forEach(l => l.removeAttribute('aria-current'));
+                linkEl.setAttribute('aria-current', 'page');
+            }
 
             const titles = {
                 'overview':'Resumen','my-places':'Mis Locales','add-place': editingPlaceId ? 'Editar Local' : 'Agregar Local',
                 'admin-places':'Todos los Locales','admin-subs':'Suscripciones','admin-users':'Usuarios',
-                'admin-log':'Historial de Pagos','admin-collections':'Colecciones','settings':'Configuracion'
+                'admin-log':'Historial de Pagos','admin-collections':'Colecciones','settings':'Configuración'
             };
             $('panelTitle').textContent = titles[panelId] || 'Panel';
 
@@ -1756,23 +2477,29 @@
             const container = $('menuContainer');
             if (!container) return;
             if (!placeMenu.length) {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fafa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aun no agregaste categorias a la carta.</div>';
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fafa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste categorías a la carta.</div>';
                 return;
             }
             container.innerHTML = placeMenu.map((cat, ci) => {
                 const items = (cat.items || []).map((it, ii) => `
-                    <div class="menu-item-row">
+                    <div class="menu-item-row" style="grid-template-columns:1fr 2fr 90px 110px 34px">
                         <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)">
-                        <input type="text" class="form-input" placeholder="Descripcion" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
-                        <input type="text" class="form-input" placeholder="$350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
-                        <button type="button" class="btn-icon" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fafa-trash"></i></button>
+                        <input type="text" class="form-input" placeholder="Descripción" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
+                        <input type="text" class="form-input" placeholder="350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
+                        <select class="form-select" onchange="updateMenuItem(${ci},${ii},'currency',this.value)">
+                            <option value="CUP" ${it.currency!=='MLC'&&it.currency!=='USD'&&it.currency!=='EUR'?'selected':''}>CUP</option>
+                            <option value="MLC" ${it.currency==='MLC'?'selected':''}>MLC</option>
+                            <option value="USD" ${it.currency==='USD'?'selected':''}>USD</option>
+                            <option value="EUR" ${it.currency==='EUR'?'selected':''}>EUR</option>
+                        </select>
+                        <button type="button" class="btn-icon" aria-label="Eliminar plato" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fafa-trash"></i></button>
                     </div>
                 `).join('');
                 return `
                     <div class="menu-category">
                         <div class="menu-category-head">
-                            <input type="text" class="form-input" placeholder="Nombre de la categoria (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
-                            <button type="button" class="btn-icon" onclick="removeMenuCategory(${ci})" title="Eliminar categoria"><i aria-hidden="true" class="fafa-times"></i></button>
+                            <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
+                            <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fafa-times"></i></button>
                         </div>
                         <div class="menu-items">${items}</div>
                         <button type="button" class="menu-add-item-btn" onclick="addMenuItem(${ci})"><i aria-hidden="true" class="fafa-plus" style="margin-right:4px"></i> Agregar plato</button>
@@ -1798,7 +2525,7 @@
         window.addMenuItem = function(ci) {
             if (!placeMenu[ci]) return;
             if (!placeMenu[ci].items) placeMenu[ci].items = [];
-            placeMenu[ci].items.push({ name:'', desc:'', price:'' });
+            placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP' });
             renderMenuEditor();
         };
         window.updateMenuItem = function(ci, ii, field, val) {
@@ -1828,7 +2555,7 @@
             const container = $('linksContainer');
             if (!container) return;
             if (!placeLinks.length) {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fafa-motorcycle" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aun no agregaste links de delivery o reservas.</div>';
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fafa-motorcycle" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste links de delivery o reservas.</div>';
                 return;
             }
             container.innerHTML = placeLinks.map((l, i) => {
@@ -1910,20 +2637,53 @@
         };
 
         window.deletePlace = async function(id) {
-            if (!confirm('Seguro que queres eliminar este local? Esta accion no se puede deshacer.')) return;
-            const { error } = await sb.from('places').delete().eq('id', id);
-            if (error) { showToast('Error al eliminar: ' + error.message, true); return; }
-            showToast('Local eliminado correctamente');
-            await loadMyPlaces();
+            if (!confirm('Seguro que quieres eliminar este local? Esta acción no se puede deshacer.')) return;
+            // [F-5.1+] Usar encolador: si offline, se ejecutará cuando vuelva la conexión
+            const place = myPlaces.find(p => String(p.id) === String(id));
+            const placeName = place ? place.name : '(local)';
+            const result = await runOrQueue('place_delete', { id: id }, { placeName: placeName });
+            if (result.queued) {
+                showToast('Sin conexión. Eliminación encolada — se ejecutará cuando vuelva el internet');
+            } else if (result.ok) {
+                showToast('Local eliminado correctamente');
+            } else {
+                showToast('Error al eliminar: ' + result.error, true);
+                return;
+            }
+            // Optimistic UI: quitar del array local
+            myPlaces = myPlaces.filter(p => String(p.id) !== String(id));
             renderOverview();
+            if (typeof renderMyPlaces === 'function') renderMyPlaces();
+            $('placesCount').textContent = myPlaces.length;
+            // Recargar datos reales si hay conexión (para confirmar)
+            if (navigator.onLine) {
+                await loadMyPlaces();
+                renderOverview();
+            }
         };
 
         window.publishPlace = async function(id) {
-            const { error } = await sb.from('places').update({ status: 'published' }).eq('id', id);
-            if (error) { showToast('Error al publicar: ' + error.message, true); return; }
-            showToast('Local publicado');
-            await loadMyPlaces();
+            // [F-5.1+] Usar encolador para publicar local
+            const place = myPlaces.find(p => String(p.id) === String(id));
+            const placeName = place ? place.name : '(local)';
+            const result = await runOrQueue('place_publish', { id: id }, { placeName: placeName });
+            if (result.queued) {
+                showToast('Sin conexión. Publicación encolada');
+            } else if (result.ok) {
+                showToast('Local publicado');
+            } else {
+                showToast('Error al publicar: ' + result.error, true);
+                return;
+            }
+            // Optimistic UI: marcar como publicado en memoria
+            const p = myPlaces.find(p => String(p.id) === String(id));
+            if (p) p.status = 'published';
             renderOverview();
+            if (typeof renderMyPlaces === 'function') renderMyPlaces();
+            if (navigator.onLine) {
+                await loadMyPlaces();
+                renderOverview();
+            }
         };
 
         window.handlePlaceSubmit = async function(e) {
@@ -1938,8 +2698,35 @@
             const neighborhood = $('f-neighborhood').value;
 
             if (!name) { showToast('El nombre del local es obligatorio', true); $('f-name').focus(); return; }
-            if (!category) { showToast('Selecciona una categoria', true); $('f-category').focus(); return; }
+            if (name.length > 100) { showToast('El nombre no puede exceder 100 caracteres', true); $('f-name').focus(); return; }
+            if (!category) { showToast('Selecciona una categoría', true); $('f-category').focus(); return; }
             if (!neighborhood) { showToast('Selecciona un municipio', true); $('f-neighborhood').focus(); return; }
+
+            // [F-1.2] Validación de teléfono cubano si el campo no está vacío
+            const phone = (($('f-phone') || {}).value || '').trim();
+            if (phone && !/^\+53\s[5-7]\s\d{6,7}$/.test(phone)) {
+                showToast('Teléfono inválido. Formato esperado: +53 5 1234567', true);
+                $('f-phone').focus();
+                return;
+            }
+
+            // [F-1.2] Validación de longitud de descripción si no está vacía
+            const description = (($('f-description') || {}).value || '').trim();
+            if (description && description.length < 50) {
+                showToast('La descripción debe tener al menos 50 caracteres o dejarla vacía', true);
+                $('f-description').focus();
+                return;
+            }
+
+            // [F-1.5] Pre-validación de límite de locales por plan (solo para nuevo local, no edición)
+            if (!editingPlaceId) {
+                const maxPlaces = userSubscription && userSubscription.max_places ? userSubscription.max_places : 1;
+                // Si el admin está creando un local propio, respeta el max_places; si excede, mostrar upgrade
+                if (!isAdmin() && myPlaces.length >= maxPlaces) {
+                    showToast('Has alcanzado el límite de ' + maxPlaces + ' locales de tu plan ' + (userSubscription.plan || 'free') + '. Considera mejorar tu suscripción.', true);
+                    return;
+                }
+            }
 
             // ── 2. Construir el payload (tipos compatibles con la tabla places) ──
             const priceRange = ($('f-price_range') || {}).value || '';
@@ -1952,7 +2739,8 @@
                         .map(it => ({
                             name:  (it.name || '').trim(),
                             desc:  (it.desc || '').trim(),
-                            price: (it.price || '').trim()
+                            price: (it.price || '').trim(),
+                            currency: ['CUP','MLC','USD','EUR'].includes(it.currency) ? it.currency : 'CUP'
                         }))
                         .filter(it => it.name)   // solo items con nombre
                 }))
@@ -1973,8 +2761,8 @@
                 category:       category,
                 neighborhood:   neighborhood,
                 address:        (($('f-address') || {}).value || '').trim(),
-                phone:          (($('f-phone') || {}).value || '').trim(),
-                description:    (($('f-description') || {}).value || '').trim(),
+                phone:          phone,
+                description:    description,
                 price_range:    priceRange || null,   // NULL permitido por el CHECK
                 schedule:       (($('f-schedule') || {}).value || '').trim(),
                 tags:           Array.isArray(placeTags) ? placeTags.slice(0, 10) : [],
@@ -1985,55 +2773,142 @@
                 status:         'draft'
             };
 
-            // ── 3. Subir imágenes al storage (continúa aunque falle alguna) ──
+            // ── 3. Subir imágenes al storage con [F-5.3] reintentos y backoff exponencial ──
             btn.disabled = true;
-            btnText.textContent = 'Guardando...';
+            btnText.textContent = 'Subiendo imágenes...';
 
             const imageUrls = [];
+            const failedImages = [];
             for (let i = 0; i < placeImages.length; i++) {
                 const img = placeImages[i];
                 if (!img) continue;
                 if (typeof img === 'string') { imageUrls.push(img); continue; }
-                try {
-                    const ext  = (img.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const safe = ext.substring(0, 5) || 'jpg';
-                    const path = currentUser.id + '/' + Date.now() + '-' + i + '.' + safe;
-                    const { data: upData, error: upErr } = await sb.storage.from('place-images').upload(path, img, { cacheControl: '3600', upsert: false });
-                    if (upErr) { console.error('Storage upload error:', upErr); continue; }
-                    const { data: urlData } = sb.storage.from('place-images').getPublicUrl(upData.path);
-                    if (urlData && urlData.publicUrl) imageUrls.push(urlData.publicUrl);
-                } catch (err) {
-                    console.error('Error subiendo imagen:', err);
+
+                btnText.textContent = 'Subiendo imagen ' + (i + 1) + ' de ' + placeImages.length + '...';
+                let success = false;
+                // [F-5.3] Reintentos con backoff exponencial: 1s, 4s, 16s (max 3 intentos)
+                for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+                    try {
+                        const ext  = (img.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const safe = ext.substring(0, 5) || 'jpg';
+                        const path = currentUser.id + '/' + Date.now() + '-' + i + '.' + safe;
+                        const { data: upData, error: upErr } = await sb.storage.from('place-images').upload(path, img, { cacheControl: '3600', upsert: false });
+                        if (upErr) {
+                            // [F-5.6] Si error de auth, intentar refresh
+                            if (await handleAuthError(upErr)) {
+                                // Reintento inmediato tras refresh
+                                const r = await sb.storage.from('place-images').upload(path, img, { cacheControl: '3600', upsert: false });
+                                if (r.error) throw r.error;
+                                const u2 = sb.storage.from('place-images').getPublicUrl(r.data.path);
+                                if (u2 && u2.data && u2.data.publicUrl) imageUrls.push(u2.data.publicUrl);
+                                success = true;
+                            } else {
+                                throw upErr;
+                            }
+                        } else {
+                            const { data: urlData } = sb.storage.from('place-images').getPublicUrl(upData.path);
+                            if (urlData && urlData.publicUrl) imageUrls.push(urlData.publicUrl);
+                            success = true;
+                        }
+                    } catch (err) {
+                        console.error('Error subiendo imagen (intento ' + attempt + '):', err);
+                        if (attempt < 3) {
+                            // Backoff exponencial: 1s, 4s
+                            const wait = Math.pow(4, attempt - 1) * 1000;
+                            await new Promise(r => setTimeout(r, wait));
+                        }
+                    }
                 }
+                if (!success) {
+                    failedImages.push(i + 1);
+                }
+            }
+            if (failedImages.length > 0) {
+                showToast('No se pudieron subir ' + failedImages.length + ' imagen(es) tras 3 intentos. Se guardará el local sin ellas.', true);
             }
             data.images = imageUrls;
 
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
+            btnText.textContent = 'Guardando local...';
             try {
+                let opError = null;
                 if (editingPlaceId) {
                     // UPDATE: el owner_id y status no se tocan al editar
                     const update = { ...data };
                     delete update.owner_id;
                     delete update.status;
-                    const { error } = await sb.from('places').update(update).eq('id', editingPlaceId);
-                    if (error) throw error;
-                    showToast('Local actualizado correctamente');
+                    let r = await sb.from('places').update(update).eq('id', editingPlaceId);
+                    // [F-5.6] Si error de auth, refresh + reintento único
+                    if (r.error && await handleAuthError(r.error)) {
+                        r = await sb.from('places').update(update).eq('id', editingPlaceId);
+                    }
+                    opError = r.error;
+                    if (!opError) showToast('Local actualizado correctamente');
                 } else {
-                    const { error } = await sb.from('places').insert(data);
-                    if (error) throw error;
-                    showToast('Local creado correctamente');
+                    let r = await sb.from('places').insert(data);
+                    if (r.error && await handleAuthError(r.error)) {
+                        r = await sb.from('places').insert(data);
+                    }
+                    opError = r.error;
+                    if (!opError) showToast('Local creado correctamente');
                 }
+                if (opError) throw opError;
 
                 editingPlaceId = null;
                 resetPlaceForm();
+                // [F-5.2] Limpiar el borrador autoguardado tras guardar exitosamente
+                clearPlaceDraft();
+                _hasUnsavedChanges = false;
                 await loadMyPlaces();
                 renderOverview();
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
                 console.error('Places insert/update error:', err);
-                // Mostrar mensaje completo para diagnóstico
-                const msg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Error desconocido');
-                showToast('Error al guardar el local: ' + msg, true);
+                // [F-5.1+] Si el error es de red, encolar la operación para Background Sync
+                const rawMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Error desconocido');
+                const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
+                                        rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch') ||
+                                        !navigator.onLine;
+                if (isNetworkError && !editingPlaceId) {
+                    // INSERT fallido por red: encolar
+                    const opId = await enqueueOperation('place_insert', data, { placeName: name });
+                    if (opId) {
+                        showToast('Sin conexión. Local encolado — se guardará cuando vuelva el internet');
+                        editingPlaceId = null;
+                        resetPlaceForm();
+                        clearPlaceDraft();
+                        _hasUnsavedChanges = false;
+                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
+                        return;
+                    }
+                } else if (isNetworkError && editingPlaceId) {
+                    // UPDATE fallido por red: encolar
+                    const updatePayload = { ...data };
+                    delete updatePayload.owner_id;
+                    delete updatePayload.status;
+                    const opId = await enqueueOperation('place_update', { id: editingPlaceId, data: updatePayload }, { placeName: name });
+                    if (opId) {
+                        showToast('Sin conexión. Cambios encolados — se aplicarán cuando vuelva el internet');
+                        editingPlaceId = null;
+                        resetPlaceForm();
+                        clearPlaceDraft();
+                        _hasUnsavedChanges = false;
+                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
+                        return;
+                    }
+                }
+                // [F-5.4] Mensaje traducido y accionable
+                let userMsg;
+                if (rawMsg.includes('row-level security') || rawMsg.includes('RLS')) {
+                    userMsg = 'No tienes permisos para realizar esta acción. Si crees que es un error, contacta al administrador.';
+                } else if (rawMsg.includes('network') || rawMsg.includes('Network') || rawMsg.includes('fetch')) {
+                    userMsg = 'Error de conexión. Verifica tu internet e inténtalo de nuevo. Tu formulario se guardó automáticamente como borrador.';
+                } else if (rawMsg.includes('duplicate') || rawMsg.includes('unique')) {
+                    userMsg = 'Ya existe un local con estos datos.';
+                } else {
+                    userMsg = rawMsg;
+                }
+                showToast('Error al guardar el local: ' + userMsg, true);
             } finally {
                 btn.disabled = false;
                 btnText.textContent = originalText;
@@ -2044,6 +2919,12 @@
            ADMIN: Cargar datos
         ======================================== */
         async function loadAdminData() {
+            // [F-3.6 / F-CAMBIO-SOLICITADO] Verificación defensiva en cliente
+            if (!isAdmin()) {
+                console.warn('loadAdminData bloqueado: usuario no es admin');
+                allPlaces = []; allProfiles = []; allSubs = []; allLogs = []; allCollections = []; allCollectionPlaces = [];
+                return;
+            }
             const [p1, p2, p3, p4, p5, p6] = await Promise.all([
                 sb.from('places').select('*').order('created_at', { ascending: false }),
                 sb.from('profiles').select('*').order('created_at', { ascending: false }),
@@ -2063,12 +2944,84 @@
         /* ========================================
            ADMIN: Todos los locales
         ======================================== */
+        /* ═══════════════════════════════════════════════════
+           [U-04] ÍNDICES DE BÚSQUEDA — WeakMap memoizado
+           ───────────────────────────────────────────────────
+           Indexa nombre, municipio, categoría, tags, descripción,
+           dirección, teléfono y (para locales) platos de la carta.
+           Evita recalcular el blob en cada tecleo del buscador.
+           ═══════════════════════════════════════════════════ */
+        const placeSearchIndex = new WeakMap();
+        function buildPlaceSearchBlob(p) {
+            if (placeSearchIndex.has(p)) return placeSearchIndex.get(p);
+            const parts = [
+                p.name, p.neighborhood, p.category, p.address, p.phone,
+                p.description, (p.tags || []).join(' ')
+            ];
+            // Indexar también platos del menú
+            if (Array.isArray(p.menu)) {
+                p.menu.forEach(sec => {
+                    parts.push(sec.category || '');
+                    (sec.items || []).forEach(it => {
+                        parts.push(it.name || '');
+                        parts.push(it.desc || '');
+                    });
+                });
+            }
+            const blob = parts.filter(Boolean).join(' ').toLowerCase();
+            placeSearchIndex.set(p, blob);
+            return blob;
+        }
+
+        const userSearchIndex = new WeakMap();
+        function buildUserSearchBlob(p) {
+            if (userSearchIndex.has(p)) return userSearchIndex.get(p);
+            const blob = [p.full_name, p.email, p.phone, p.role]
+                .filter(Boolean).join(' ').toLowerCase();
+            userSearchIndex.set(p, blob);
+            return blob;
+        }
+
+        const subSearchIndex = new WeakMap();
+        function buildSubSearchBlob(sub) {
+            if (subSearchIndex.has(sub)) return subSearchIndex.get(sub);
+            const pr = allProfiles.find(p => p.id === sub.user_id);
+            const parts = [
+                pr ? pr.full_name : '',
+                pr ? pr.email : '',
+                sub.plan, sub.status,
+                sub.notes
+            ];
+            const blob = parts.filter(Boolean).join(' ').toLowerCase();
+            subSearchIndex.set(sub, blob);
+            return blob;
+        }
+
+        /* [U-04-highlight] Resaltar coincidencias en texto escapado */
+        function highlightMatch(text, query) {
+            const safe = escapeHtml(text || '');
+            if (!query) return safe;
+            const q = query.toLowerCase();
+            const lower = (text || '').toLowerCase();
+            const idx = lower.indexOf(q);
+            if (idx === -1) return safe;
+            // Reconstruir con <mark> en la posición correcta del texto escapado
+            const before = escapeHtml(text.substring(0, idx));
+            const match = escapeHtml(text.substring(idx, idx + query.length));
+            const after = escapeHtml(text.substring(idx + query.length));
+            return before + '<mark style="background:rgba(245,158,11,0.3);color:inherit;padding:0 2px;border-radius:2px">' + match + '</mark>' + after;
+        }
+
         function getFilteredPlaces() {
             let list = [...allPlaces];
             const search = ($('adminPlacesSearch') || {}).value || '';
             const cat = ($('adminPlacesCatFilter') || {}).value || '';
             const status = ($('adminPlacesStatusFilter') || {}).value || '';
-            if (search) { const s = search.toLowerCase(); list = list.filter(p => (p.name||'').toLowerCase().includes(s) || (p.neighborhood||'').toLowerCase().includes(s)); }
+            // [U-04] Usar índice memoizado en lugar de recorrer campos en cada tecleo
+            if (search) {
+                const s = search.toLowerCase();
+                list = list.filter(p => buildPlaceSearchBlob(p).includes(s));
+            }
             if (cat) list = list.filter(p => p.category === cat);
             if (status) list = list.filter(p => p.status === status);
             return list;
@@ -2098,17 +3051,28 @@
             empty.style.display = 'none';
 
             body.innerHTML = list.map(p => {
+                // [F-3.1] XSS: escapar todos los datos del usuario
+                const search = ($('adminPlacesSearch') || {}).value || '';
                 const owner = allProfiles.find(pr => pr.id === p.owner_id);
-                const ownerName = owner ? (owner.full_name || owner.email || '?') : (p.owner_id || '?').substring(0, 8) + '...';
+                // [U-04] Resaltar coincidencias de búsqueda en nombre y municipio
+                const ownerName = owner ? escapeHtml(owner.full_name || owner.email || '?') : escapeHtml((p.owner_id || '?').substring(0, 8) + '...');
+                const safeName = highlightMatch(p.name || 'Sin nombre', search);
+                const safePlusCode = highlightMatch(getPlusCode(p) || p.address || '', search);
+                const safeCategory = escapeHtml(p.category || '');
+                const safeNeighborhood = highlightMatch(p.neighborhood || '—', search);
+                const safeId = escapeHtml(p.id);
+                const safeStatus = escapeHtml(p.status || '');
+                // Para los aria-label usamos el nombre SIN <mark> para no romper el HTML
+                const safeNamePlain = escapeHtml(p.name || 'Sin nombre');
                 return '<tr>' +
-                    '<td><div style="font-weight:600">' + (p.name || 'Sin nombre') + '</div><div style="font-size:0.75rem;color:var(--secondary);font-family:monospace">' + (getPlusCode(p) || (p.address || '')) + '</div></td>' +
-                    '<td><span class="cat-indicator ' + (p.category||'') + '" style="margin-right:6px"></span><span style="text-transform:capitalize">' + (p.category||'') + '</span></td>' +
-                    '<td>' + (p.neighborhood || '—') + '</td>' +
+                    '<td><div style="font-weight:600">' + safeName + '</div><div style="font-size:0.75rem;color:var(--secondary);font-family:monospace">' + safePlusCode + '</div></td>' +
+                    '<td><span class="cat-indicator ' + safeCategory + '" style="margin-right:6px"></span><span style="text-transform:capitalize">' + safeCategory + '</span></td>' +
+                    '<td>' + safeNeighborhood + '</td>' +
                     '<td style="font-size:0.85rem">' + ownerName + '</td>' +
-                    '<td>' + statusBadgeHTML(p.status) + '</td>' +
+                    '<td>' + statusBadgeHTML(safeStatus) + '</td>' +
                     '<td><div class="actions-cell">' +
-                        '<button class="btn-success btn-sm" onclick="adminTogglePlaceStatus(\'' + p.id + '\',\'' + p.status + '\')"><i aria-hidden="true" class="fafa-eye"></i></button>' +
-                        '<button class="btn-danger btn-sm" onclick="adminDeletePlace(\'' + p.id + '\')"><i aria-hidden="true" class="fafa-trash"></i></button>' +
+                        '<button class="btn-success btn-sm" aria-label="Cambiar estado del local ' + safeNamePlain + '" onclick="adminTogglePlaceStatus(\'' + safeId + '\',\'' + safeStatus + '\')"><i aria-hidden="true" class="fafa-eye"></i></button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeNamePlain + '" onclick="adminDeletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fafa-trash"></i></button>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
@@ -2144,13 +3108,10 @@
             const search = ($('adminSubsSearch') || {}).value || '';
             const plan = ($('adminSubsPlanFilter') || {}).value || '';
             const status = ($('adminSubsStatusFilter') || {}).value || '';
+            // [U-04] Índice memoizado: incluye plan, estado y notas, no solo nombre
             if (search) {
                 const s = search.toLowerCase();
-                list = list.filter(sub => {
-                    const pr = allProfiles.find(p => p.id === sub.user_id);
-                    const name = pr ? (pr.full_name || pr.email || '').toLowerCase() : '';
-                    return name.includes(s);
-                });
+                list = list.filter(sub => buildSubSearchBlob(sub).includes(s));
             }
             if (plan) list = list.filter(s => s.plan === plan);
             if (status) list = list.filter(s => s.status === status);
@@ -2175,16 +3136,19 @@
             empty.style.display = 'none';
 
             body.innerHTML = list.map(sub => {
+                // [F-3.1] XSS: escapar datos del usuario
                 const pr = allProfiles.find(p => p.id === sub.user_id);
-                const name = pr ? (pr.full_name || pr.email || '?') : '?';
-                const initials = getInitials(name);
+                const name = pr ? escapeHtml(pr.full_name || pr.email || '?') : '?';
+                const safeEmail = pr ? escapeHtml(pr.email || '') : '';
+                const initials = escapeHtml(getInitials(pr ? (pr.full_name || pr.email) : '?'));
+                const safeSubId = escapeHtml(sub.id);
                 return '<tr>' +
-                    '<td><div class="user-cell"><div class="user-mini-avatar">' + initials + '</div><div><div class="user-mini-name">' + name + '</div><div class="user-mini-email">' + (pr ? pr.email || '' : '') + '</div></div></div></td>' +
+                    '<td><div class="user-cell"><div class="user-mini-avatar">' + initials + '</div><div><div class="user-mini-name">' + name + '</div><div class="user-mini-email">' + safeEmail + '</div></div></div></td>' +
                     '<td>' + planBadgeHTML(sub.plan) + '</td>' +
                     '<td>' + statusBadgeHTML(sub.status) + '</td>' +
-                    '<td>' + (sub.max_places || 0) + '</td>' +
+                    '<td>' + escapeHtml(sub.max_places || 0) + '</td>' +
                     '<td style="font-size:0.82rem;color:var(--muted)">' + (sub.expires_at ? formatDate(sub.expires_at) : 'Sin limite') + '</td>' +
-                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" onclick="openEditSub(\'' + sub.id + '\')"><i aria-hidden="true" class="fafa-edit"></i></button></div></td>' +
+                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Editar suscripción de ' + name + '" onclick="openEditSub(\'' + safeSubId + '\')"><i aria-hidden="true" class="fafa-edit"></i></button></div></td>' +
                 '</tr>';
             }).join('');
         }
@@ -2228,7 +3192,11 @@
             let list = [...allProfiles];
             const search = ($('adminUsersSearch') || {}).value || '';
             const role = ($('adminUsersRoleFilter') || {}).value || '';
-            if (search) { const s = search.toLowerCase(); list = list.filter(p => (p.full_name||'').toLowerCase().includes(s) || (p.email||'').toLowerCase().includes(s)); }
+            // [U-04] Índice memoizado: ahora busca también teléfono y rol
+            if (search) {
+                const s = search.toLowerCase();
+                list = list.filter(p => buildUserSearchBlob(p).includes(s));
+            }
             if (role) list = list.filter(p => p.role === role);
             return list;
         }
@@ -2241,13 +3209,24 @@
             empty.style.display = 'none';
 
             body.innerHTML = list.map(p => {
-                const initials = getInitials(p.full_name || p.email);
+                // [F-3.1] XSS: escapar datos
+                const search = ($('adminUsersSearch') || {}).value || '';
+                // [U-04] Resaltar coincidencias de búsqueda
+                const safeName = highlightMatch(p.full_name || 'Sin nombre', search);
+                const safeEmail = highlightMatch(p.email || '', search);
+                const safePhone = highlightMatch(p.phone || '—', search);
+                const safeId = escapeHtml(p.id);
+                const safeRole = escapeHtml(p.role || 'owner');
+                const initials = escapeHtml(getInitials(p.full_name || p.email));
+                // Para el openEditRole y aria-label usamos el nombre escapado SIN <mark>
+                const safeNamePlain = escapeHtml(p.full_name || 'Sin nombre');
+                const safeNameForAttr = safeNamePlain.replace(/'/g, '&#39;');
                 return '<tr>' +
-                    '<td><div class="user-cell"><div class="user-mini-avatar">' + initials + '</div><div><div class="user-mini-name">' + (p.full_name || 'Sin nombre') + '</div><div class="user-mini-email">' + (p.email || '') + '</div></div></div></td>' +
-                    '<td style="color:var(--muted)">' + (p.phone || '—') + '</td>' +
-                    '<td>' + roleBadgeHTML(p.role) + '</td>' +
+                    '<td><div class="user-cell"><div class="user-mini-avatar">' + initials + '</div><div><div class="user-mini-name">' + safeName + '</div><div class="user-mini-email">' + safeEmail + '</div></div></div></td>' +
+                    '<td style="color:var(--muted)">' + safePhone + '</td>' +
+                    '<td>' + roleBadgeHTML(safeRole) + '</td>' +
                     '<td style="font-size:0.82rem;color:var(--muted)">' + formatDate(p.created_at) + '</td>' +
-                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" onclick="openEditRole(\'' + p.id + '\',\'' + (p.full_name||p.email) + '\',\'' + (p.role||'owner') + '\')"><i aria-hidden="true" class="fafa-user-shield"></i></button></div></td>' +
+                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Cambiar rol de ' + safeNameForAttr + '" onclick="openEditRole(\'' + safeId + '\',\'' + safeNameForAttr + '\',\'' + safeRole + '\')"><i aria-hidden="true" class="fafa-user-shield"></i></button></div></td>' +
                 '</tr>';
             }).join('');
         }
@@ -2262,14 +3241,32 @@
         };
 
         window.saveRoleEdit = async function() {
+            // [F-3.6] Verificar que el llamador sea admin antes de ejecutar UPDATE
+            if (!requireAdmin('saveRoleEdit')) return;
             const id = $('editRoleUserId').value;
             const role = $('editRoleValue').value;
-            const { error } = await sb.from('profiles').update({ role: role }).eq('id', id);
-            if (error) { showToast('Error: ' + error.message, true); return; }
-            showToast('Rol actualizado a ' + role);
-            closeModal('editRoleModal');
-            await loadAdminData();
-            renderAdminUsers();
+            // [F-3.1] Validar valor esperado (defense in depth)
+            if (!['admin', 'owner'].includes(role)) {
+                showToast('Rol inválido', true);
+                return;
+            }
+            try {
+                const { error } = await sb.from('profiles').update({ role: role }).eq('id', id);
+                if (error) {
+                    // [F-5.6] Si error de auth, intentar refresh + reintento
+                    const retried = await handleAuthError(error, async () => {
+                        const r = await sb.from('profiles').update({ role: role }).eq('id', id);
+                        return !r.error;
+                    });
+                    if (!retried) { showToast('Error: ' + error.message, true); return; }
+                }
+                showToast('Rol actualizado a ' + role);
+                closeModal('editRoleModal');
+                await loadAdminData();
+                renderAdminUsers();
+            } catch (err) {
+                showToast('Error inesperado: ' + (err.message || err), true);
+            }
         };
 
         /* ========================================
@@ -2282,20 +3279,22 @@
             empty.style.display = 'none';
 
             body.innerHTML = allLogs.map(log => {
+                // [F-3.1] XSS: escapar datos
                 const pr = allProfiles.find(p => p.id === log.user_id);
-                const name = pr ? (pr.full_name || pr.email || '?') : '?';
+                const name = pr ? escapeHtml(pr.full_name || pr.email || '?') : '?';
                 const actionLabels = {
                     created: 'Creada', upgraded: 'Upgrade', downgraded: 'Downgrade',
                     renewed: 'Renovada', cancelled: 'Cancelada', expired: 'Expirada', manual_change: 'Cambio manual'
                 };
+                const safeAction = escapeHtml(actionLabels[log.action] || log.action);
                 return '<tr>' +
                     '<td style="font-size:0.82rem;color:var(--muted)">' + formatDate(log.created_at) + '</td>' +
                     '<td>' + name + '</td>' +
-                    '<td><span style="font-weight:600">' + (actionLabels[log.action] || log.action) + '</span></td>' +
+                    '<td><span style="font-weight:600">' + safeAction + '</span></td>' +
                     '<td>' + planBadgeHTML(log.from_plan) + '</td>' +
                     '<td>' + planBadgeHTML(log.to_plan) + '</td>' +
-                    '<td>$' + (log.amount || 0) + '</td>' +
-                    '<td style="color:var(--muted)">' + (log.payment_method || '—') + '</td>' +
+                    '<td>$' + escapeHtml(log.amount || 0) + '</td>' +
+                    '<td style="color:var(--muted)">' + escapeHtml(log.payment_method || '—') + '</td>' +
                 '</tr>';
             }).join('');
         }
@@ -2333,17 +3332,25 @@
             empty.style.display = 'none';
 
             body.innerHTML = allCollections.map(c => {
+                // [F-3.1] XSS: escapar datos. Validar color hex para evitar CSS injection.
+                const hexColorRegex = /^#[0-9a-fA-F]{6}$/;
+                const safeColor = hexColorRegex.test(c.color || '') ? c.color : '#8b5cf6';
+                const safeIcon = /^[a-z0-9-]+$/i.test(c.icon || '') ? escapeHtml(c.icon) : 'fa-bookmark';
+                const safeTitle = escapeHtml(c.title || '');
+                const safeDesc = escapeHtml(c.description || '');
+                const safeId = escapeHtml(c.id);
+                const safeSort = escapeHtml(c.sort_order || 0);
                 const count = getCollectionPlaceCount(c.id);
                 return '<tr>' +
-                    '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:' + c.color + '22;color:' + c.color + ';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i aria-hidden="true" class="fa' + c.icon + '"></i></div><div><div style="font-weight:600">' + c.title + '</div><div style="font-size:0.72rem;color:var(--muted)">' + c.description + '</div></div></div></td>' +
-                    '<td><div style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;background:' + c.color + ';display:inline-block;box-shadow:0 0 8px ' + c.color + '66"></span><span style="font-size:0.78rem;color:var(--muted);font-family:monospace">' + c.color + '</span></div></td>' +
-                    '<td><span style="font-weight:600">' + count + '</span> <span style="color:var(--muted);font-size:0.78rem">lugares</span></td>' +
+                    '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:' + safeColor + '22;color:' + safeColor + ';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i aria-hidden="true" class="fa' + safeIcon + '"></i></div><div><div style="font-weight:600">' + safeTitle + '</div><div style="font-size:0.72rem;color:var(--muted)">' + safeDesc + '</div></div></div></td>' +
+                    '<td><div style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;background:' + safeColor + ';display:inline-block;box-shadow:0 0 8px ' + safeColor + '66"></span><span style="font-size:0.78rem;color:var(--muted);font-family:monospace">' + safeColor + '</span></div></td>' +
+                    '<td><span style="font-weight:600">' + escapeHtml(count) + '</span> <span style="color:var(--muted);font-size:0.78rem">lugares</span></td>' +
                     '<td>' + (c.is_active ? '<span class="status-badge status-published">Activa</span>' : '<span class="status-badge status-draft">Inactiva</span>') + '</td>' +
-                    '<td style="font-weight:600">' + c.sort_order + '</td>' +
+                    '<td style="font-weight:600">' + safeSort + '</td>' +
                     '<td><div class="actions-cell">' +
-                        '<button class="btn-admin btn-sm" onclick="openEditCollectionModal(\'' + c.id + '\')" title="Editar"><i aria-hidden="true" class="fafa-edit"></i></button>' +
-                        '<button class="btn-success btn-sm" onclick="openColPlacesModal(\'' + c.id + '\')" title="Gestionar lugares"><i aria-hidden="true" class="fafa-store"></i></button>' +
-                        '<button class="btn-danger btn-sm" onclick="deleteCollection(\'' + c.id + '\')" title="Eliminar"><i aria-hidden="true" class="fafa-trash"></i></button>' +
+                        '<button class="btn-admin btn-sm" aria-label="Editar colección ' + safeTitle + '" onclick="openEditCollectionModal(\'' + safeId + '\')" title="Editar"><i aria-hidden="true" class="fafa-edit"></i></button>' +
+                        '<button class="btn-success btn-sm" aria-label="Gestionar lugares de ' + safeTitle + '" onclick="openColPlacesModal(\'' + safeId + '\')" title="Gestionar lugares"><i aria-hidden="true" class="fafa-store"></i></button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar colección ' + safeTitle + '" onclick="deleteCollection(\'' + safeId + '\')" title="Eliminar"><i aria-hidden="true" class="fafa-trash"></i></button>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
@@ -2611,6 +3618,89 @@
             initTags();
             initImageGrid();
 
+            // [F-5.5] Listener de estado de conexión online/offline
+            function updateConnectionIndicator() {
+                const ind = $('connectionIndicator');
+                const lbl = $('connectionLabel');
+                if (!ind || !lbl) return;
+                if (navigator.onLine) {
+                    ind.style.background = 'rgba(34,197,94,0.12)';
+                    ind.style.borderColor = 'rgba(34,197,94,0.25)';
+                    ind.style.color = 'var(--green)';
+                    ind.querySelector('i').className = 'fafa-wifi';
+                    lbl.textContent = 'En línea';
+                } else {
+                    ind.style.background = 'rgba(245,158,11,0.12)';
+                    ind.style.borderColor = 'rgba(245,158,11,0.25)';
+                    ind.style.color = 'var(--amber)';
+                    ind.querySelector('i').className = 'fafa-wifi-slash';
+                    lbl.textContent = 'Sin conexión';
+                }
+            }
+            window.addEventListener('online', () => {
+                updateConnectionIndicator();
+                showToast('Conexión restaurada', false);
+                // [F-5.1+] Procesar cola de operaciones pendientes al volver la conexión
+                // Intentar Background Sync primero; si no está soportado, usar fallback en cliente
+                if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                    navigator.serviceWorker.ready.then(reg => {
+                        return reg.sync.register('sabormap-sync-queue');
+                    }).catch(() => {
+                        if (typeof processQueueNow === 'function') processQueueNow();
+                    });
+                } else if (typeof processQueueNow === 'function') {
+                    processQueueNow();
+                }
+                // Reintentar carga de datos si estamos en el dashboard
+                if ($('dashboardWrap').classList.contains('visible')) {
+                    loadMyPlaces().then(() => {
+                        renderOverview();
+                        if (isAdmin()) loadAdminData();
+                    });
+                }
+            });
+            window.addEventListener('offline', () => {
+                updateConnectionIndicator();
+                showToast('Sin conexión a internet. Las operaciones se guardarán localmente.', true);
+            });
+            updateConnectionIndicator();
+
+            // [F-5.2] Recuperar borrador al cargar el panel add-place
+            const checkDraftOnPanelSwitch = (panelId) => {
+                if (panelId === 'add-place' && !editingPlaceId) {
+                    loadPlaceDraft().then(draft => {
+                        if (draft && draft.savedAt) {
+                            const savedDate = new Date(draft.savedAt);
+                            const hoursAgo = ((Date.now() - savedDate.getTime()) / 3600000).toFixed(1);
+                            if (confirm('Tienes un borrador sin guardar de hace ' + hoursAgo + ' hora(s). ¿Quieres recuperarlo?')) {
+                                // Restaurar campos
+                                const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule'];
+                                fields.forEach(f => {
+                                    const el = $('f-' + f);
+                                    if (el && draft[f] !== undefined) el.value = draft[f];
+                                });
+                                placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
+                                placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
+                                placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
+                                renderTags();
+                                renderMenuEditor();
+                                renderLinksEditor();
+                                _hasUnsavedChanges = false;  // ya restaurado
+                                showToast('Borrador recuperado');
+                            } else {
+                                clearPlaceDraft();
+                            }
+                        }
+                    });
+                }
+            };
+            // Hook al switchPanel para detectar cuando se entra al add-place
+            const _origSwitchPanel = window.switchPanel;
+            window.switchPanel = function(panelId, linkEl) {
+                _origSwitchPanel(panelId, linkEl);
+                checkDraftOnPanelSwitch(panelId);
+            };
+
             // Verificar sesión
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
@@ -2625,8 +3715,161 @@
                     $('dashboardWrap').classList.remove('visible');
                     $('authScreen').style.display = 'flex';
                     showView('login');
+                } else if (event === 'TOKEN_REFRESHED') {
+                    // [F-5.6] Token refrescado exitosamente, no hacer nada
+                    console.log('Token refrescado');
+                } else if (event === 'INITIAL_SESSION') {
+                    // Sesión inicial ya manejada arriba
                 }
             });
+        })();
+
+        /* ═══════════════════════════════════════════════════
+           [F-5.1] SERVICE WORKER + OFFLINE
+           ───────────────────────────────────────────────────
+           Soporte offline del dashboard. En Cuba, donde los cortes de
+           internet y electricidad son frecuentes, esto permite que el
+           panel cargue (al menos el shell) sin conexión y que las
+           visitas recurrentes sean instantáneas.
+
+           [W-02] Sin recarga automática al actualizar el SW: solo se
+           avisa al usuario con un toast para que decida cuándo recargar.
+           ═══════════════════════════════════════════════════ */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw1.js', { scope: './' })
+                    .then(reg => {
+                        console.log('[SW] Registrado con scope:', reg.scope);
+                    })
+                    .catch(err => {
+                        console.error('[SW] Error al registrar:', err);
+                    });
+            });
+            // [W-02] Sin recarga automática (riesgo de bucle): se avisa al usuario
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (typeof showToast === 'function') {
+                    showToast('SaborMap se ha actualizado. Recarga para ver los cambios.');
+                }
+            });
+            // [F-5.1+] Listener de mensajes del SW para Background Sync
+            // El SW envía 'execute-op' cuando el navegador dispara sync;
+            // el cliente ejecuta la op contra Supabase y responde.
+            navigator.serviceWorker.addEventListener('message', async (event) => {
+                const data = event.data;
+                if (!data) return;
+                if (data.type === 'execute-op' && data.op) {
+                    try {
+                        const result = await executeOp(data.op);
+                        // Responder al SW
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'op-result',
+                                messageId: data.messageId,
+                                result: result
+                            });
+                        }
+                        // Si fue exitosa, recargar datos y actualizar badge
+                        if (result.ok) {
+                            showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
+                            await loadMyPlaces();
+                            renderOverview();
+                            if (isAdmin() && typeof loadAdminData === 'function') {
+                                await loadAdminData();
+                            }
+                            updatePendingBadge();
+                        }
+                    } catch (err) {
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'op-result',
+                                messageId: data.messageId,
+                                result: { ok: false, fatal: false, error: err.message || String(err) }
+                            });
+                        }
+                    }
+                } else if (data.type === 'queue-processed') {
+                    // El SW terminó de procesar la cola: actualizar badge
+                    updatePendingBadge();
+                }
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════
+           [PWA] BANNER DE INSTALACIÓN
+           ───────────────────────────────────────────────────
+           Detecta si ya está instalada (standalone) y recuerda si el
+           usuario lo cerró (localStorage, 7 días). Instalación nativa
+           1-clic en Android/Desktop; instrucciones manuales en iOS.
+           ═══════════════════════════════════════════════════ */
+        (function setupPwaBanner() {
+            let deferredPrompt = null;
+            const banner = document.createElement('div');
+            banner.id = 'pwaInstallBanner';
+            banner.setAttribute('inert', '');
+            banner.setAttribute('aria-hidden', 'true');
+            banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(150px);width:calc(100% - 48px);max-width:380px;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,0.4);z-index:60;opacity:0;transition:all 0.5s cubic-bezier(0.22,1,0.36,1);display:flex;align-items:center;gap:14px';
+            banner.innerHTML =
+                '<div style="width:40px;height:40px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;flex-shrink:0">' +
+                '<i aria-hidden="true" class="fafa-mobile-screen"></i></div>' +
+                '<div id="pwaBannerContent" style="flex:1;cursor:pointer">' +
+                '<p style="font-size:0.85rem;font-weight:700;color:var(--cream);margin-bottom:2px">Instala SaborMap</p>' +
+                '<p id="pwaBannerText" style="font-size:0.72rem;color:var(--muted);line-height:1.4">Toca aquí para instalar la app en tu dispositivo.</p>' +
+                '</div>' +
+                '<button id="pwaBannerCloseBtn" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px" aria-label="Cerrar banner">' +
+                '<i aria-hidden="true" class="fafa-times"></i></button>';
+            document.body.appendChild(banner);
+
+            const DISMISS_KEY = 'pwaDashboardBannerDismissedAt';
+            const DISMISS_DAYS = 7;
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) ||
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) || 0);
+            const dismissedRecent = dismissedAt && (Date.now() - dismissedAt) < DISMISS_DAYS * 864e5;
+
+            function showBanner() {
+                banner.style.opacity = '1';
+                banner.style.transform = 'translateX(-50%) translateY(0)';
+                banner.removeAttribute('inert');
+                banner.setAttribute('aria-hidden', 'false');
+            }
+            function closeBanner(saveDismissed) {
+                banner.style.opacity = '0';
+                banner.style.transform = 'translateX(-50%) translateY(150px)';
+                banner.setAttribute('inert', '');
+                banner.setAttribute('aria-hidden', 'true');
+                if (saveDismissed) localStorage.setItem(DISMISS_KEY, String(Date.now()));
+            }
+
+            if (!isStandalone && !dismissedRecent) {
+                const txt = document.getElementById('pwaBannerText');
+                if (isIOS && txt) txt.innerText = 'Toca el icono Compartir y elige "Agregar a pantalla de inicio".';
+                setTimeout(showBanner, 5000);
+            }
+
+            const content = document.getElementById('pwaBannerContent');
+            if (content) content.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') console.log('Usuario aceptó instalar la PWA');
+                    deferredPrompt = null;
+                    closeBanner(true);
+                } else if (typeof showToast === 'function') {
+                    showToast(isIOS ? 'Para instalar: Compartir → "Agregar a inicio"' : 'Instalación no disponible en este navegador');
+                }
+            });
+
+            const closeBtn = document.getElementById('pwaBannerCloseBtn');
+            if (closeBtn) closeBtn.addEventListener('click', () => closeBanner(true));
+
+            window.addEventListener('appinstalled', () => closeBanner(false));
         })();
 
     })();
