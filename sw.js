@@ -1,37 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.4 — FIX: places.js con estrategia network-first para que los
-    cambios (gelato nuevo, contador 257 vs 256) se vean de inmediato
-    en Firefox sin tener que bump VERSION cada vez.
-    Base v2.0.3: notas del editor clonadas vaciadas (C-22)]
+   [v2.0.6 — FIX DEFINITIVO del bug "256 vs 257 lugares":
+    places.js y app.js REMOVIDOS del PRECACHE. Antes, el precache guardaba
+    una versión vieja (con 256 lugares) y cuando la red fallaba o era
+    lenta (común en Cuba), networkFirst caía al caché y servía la versión
+    vieja. Ahora el único caché de places.js es RUNTIME_CACHE, que siempre
+    tiene la última versión fetched exitosamente.
+    Base v2.0.5: network-first para dashboard.html + todos los HTML]
 
    Estrategia:
-   · Precache tolerante del shell local (allSettled: un 404 no aborta el
-     SW) + CDNs críticos del primer render + woff2 de Google Fonts.
-   · Navegación: network-first con cadena de fallback y página offline.
-   · places.js → network-first ★ (FIX: antes era stale-while-revalidate
-     y Firefox servía la versión cacheada con 256 lugares durante días).
-   · Otros recursos propios y CDNs permitidos: stale-while-revalidate;
-     se aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
-     woff2 y los tiles del mapa nunca entraban en caché.
-   · API de Supabase y terceros desconocidos: PASSTHROUGH (nunca se
-     cachean → no hay datos stale ni respuestas de auth en caché).
-   · Leaflet NO va al precache: carga bajo demanda [U-01/P-03] y queda
-     en runtime la primera vez que se abre el mapa.
+   · Precache tolerante del shell local (allSettled) + CDNs + woff2.
+     ★ v2.0.6: places.js y app.js YA NO se precachean. Se cargan con
+       network-first y se cachean solo en RUNTIME_CACHE (versión fresca).
+   · Navegación: network-first con fallback y página offline.
+   · places.js/app.js/dashboard.html/index.html → network-first.
+   · Otros recursos propios y CDNs: stale-while-revalidate.
+   · API de Supabase y terceros desconocidos: PASSTHROUGH.
+   · Leaflet: carga bajo demanda [U-01/P-03].
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.4'; // ↑ súbelo en cada despliegue (o toca este archivo) — v2.0.4: network-first para places.js
+const VERSION = 'v2.0.6'; // ↑ súbelo en cada despliegue — v2.0.6: places.js/app.js fuera del precache (fix 256 vs 257)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
-    // Shell local
+    // Shell local (sin places.js ni app.js — se cargan con network-first)
     './',
     './index.html',
     './manifest.json',
-    './places.js',
-    './app.js',
     // Iconos — las 4 variantes declaradas en manifest.json
     './icon-192x192.png',
     './icon-512x512.png',
@@ -121,11 +118,15 @@ self.addEventListener('fetch', (event) => {
 
     // 3) Recursos propios (imágenes de locales, etc.)
     if (url.origin === self.location.origin) {
-        // ★ FIX [v2.0.4]: places.js siempre fresco cuando hay red.
-        //   Antes era stale-while-revalidate y servía la versión cacheada
-        //   (256 locales) aunque el archivo en el servidor tuviera 257/258.
-        //   Firefox es más conservador que Chrome con el SWR y no refrescaba.
-        if (url.pathname.endsWith('/places.js') || url.pathname.endsWith('/app.js')) {
+        // ★ FIX [v2.0.4]: places.js/app.js/dashboard.html siempre frescos cuando hay red.
+        //   Antes eran stale-while-revalidate y servían la versión cacheada.
+        //   Firefox es más conservador que Chrome con el SWR y no refrescaba,
+        //   por lo que los fixes de iconos y menú nunca llegaban al usuario.
+        if (url.pathname.endsWith('/places.js') ||
+            url.pathname.endsWith('/app.js') ||
+            url.pathname.endsWith('/dashboard.html') ||
+            url.pathname.endsWith('/index.html') ||
+            url.pathname === '/' || url.pathname === './') {
             event.respondWith(networkFirst(req));
             return;
         }
@@ -142,7 +143,11 @@ self.addEventListener('fetch', (event) => {
     // 5) Resto de terceros (analytics, etc.): passthrough, sin caché
 });
 
-/* Navegación: red primero; si falla, caché exacta → precache → offline */
+/* Navegación y JS críticos: red primero; si falla, SOLO caché runtime.
+   ★ FIX [v2.0.6]: ya NO se busca en caches.match(req) global, porque eso
+   incluía STATIC_CACHE (precache viejo) y servía la versión con 256
+   lugares. Ahora solo cae a RUNTIME_CACHE, que siempre tiene la última
+   versión buena que se fetched de la red. */
 async function networkFirst(req) {
     const cache = await caches.open(RUNTIME_CACHE);
     try {
@@ -152,11 +157,18 @@ async function networkFirst(req) {
         }
         return fresh;
     } catch (err) {
-        const cached = (await cache.match(req)) ||
-                       (await caches.match(req)) ||
-                       (await caches.match('./index.html')) ||
-                       (await caches.match('./'));
+        // ★ FIX: solo buscar en RUNTIME_CACHE (versión fresca), NO en
+        //   STATIC_CACHE (que podría tener una versión vieja precacheada).
+        //   Para navegación (index.html) sí permitimos fallback al
+        //   precache del shell, porque index.html cambia poco.
+        const cached = await cache.match(req);
         if (cached) return cached;
+        // Solo para navegación (no para JS): fallback al shell precacheado
+        if (req.mode === 'navigate') {
+            const shell = (await caches.match('./index.html')) ||
+                          (await caches.match('./'));
+            if (shell) return shell;
+        }
         return offlinePage();
     }
 }
