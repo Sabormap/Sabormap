@@ -26,11 +26,11 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <!-- [F-3.5] Tailwind CDN con SRI integrity -->
-    <script src="https://cdn.tailwindcss.com" integrity="sha384-0rxMjWzgB0FEdntgXyVMzMTBoNZvSgD3YWIqIqWCrz0MFgMzBR0nN5QYjhgVjg" crossorigin="anonymous"></script>
+    <!-- [F-3.5] Tailwind CDN: el play CDN no publica hash SRI estable, se carga sin integrity -->
+    <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    <!-- [F-3.5] Font Awesome con SRI integrity -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-ygb3L7C5z3Q0yL3Kz6Y2gWZ1y3K1y3z3Q0yL3Kz6Y2gWZ1y3K1y3z3Q0yL3Kz6" crossorigin="anonymous">
+    <!-- [F-3.5] Font Awesome 6.5.0 con SRI integrity VÁLIDO (mismo hash que index.html) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
     <style>
         :root {
             /* Superficies: paleta más profunda con tintes coherentes */
@@ -539,8 +539,8 @@
     <div class="auth-screen" id="authScreen">
         <!-- [T-THEME] Toggle de tema en login (esquina superior derecha) -->
         <button class="theme-toggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema" onclick="toggleDashboardTheme()" style="position:absolute;top:20px;right:20px;z-index:300;background:var(--card);border:1px solid var(--border)">
-            <i aria-hidden="true" class="fa fa-moon icon-moon"></i>
-            <i aria-hidden="true" class="fa fa-sun icon-sun"></i>
+            <i aria-hidden="true" class="fas fa-moon icon-moon"></i>
+            <i aria-hidden="true" class="fas fa-sun icon-sun"></i>
         </button>
         <div class="auth-container">
             <div class="auth-brand">
@@ -556,19 +556,19 @@
                     <p>Publica, edita y hazle seguimiento a tus restaurantes, bares y heladerias en La Habana.</p>
                     <div class="auth-brand-features">
                         <div class="auth-feature">
-                            <div class="auth-feature-icon" style="background:rgba(139,92,246,0.12);color:var(--accent);border:1px solid rgba(139,92,246,0.2)"><i aria-hidden="true" class="fa fa-chart-line"></i></div>
+                            <div class="auth-feature-icon" style="background:rgba(139,92,246,0.12);color:var(--accent);border:1px solid rgba(139,92,246,0.2)"><i aria-hidden="true" class="fas fa-chart-line"></i></div>
                             <span>Estadísticas en tiempo real</span>
                         </div>
                         <div class="auth-feature">
-                            <div class="auth-feature-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.2)"><i aria-hidden="true" class="fa fa-book-open"></i></div>
+                            <div class="auth-feature-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.2)"><i aria-hidden="true" class="fas fa-book-open"></i></div>
                             <span>Cartas y menús editables</span>
                         </div>
                         <div class="auth-feature">
-                            <div class="auth-feature-icon" style="background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.2)"><i aria-hidden="true" class="fa fa-crown"></i></div>
+                            <div class="auth-feature-icon" style="background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.2)"><i aria-hidden="true" class="fas fa-crown"></i></div>
                             <span>Planes de suscripción</span>
                         </div>
                         <div class="auth-feature">
-                            <div class="auth-feature-icon" style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)"><i aria-hidden="true" class="fa fa-images"></i></div>
+                            <div class="auth-feature-icon" style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)"><i aria-hidden="true" class="fas fa-images"></i></div>
                             <span>Galería de fotos con storage</span>
                         </div>
                     </div>
@@ -578,21 +578,21 @@
                 <div id="loginView" class="auth-form-inner">
                     <h3>Iniciar Sesión</h3>
                     <p class="subtitle">Accede al panel de gestion de tus locales</p>
-                    <div class="auth-message" id="loginMessage"><i aria-hidden="true" class="fa fa-info-circle"></i><span></span></div>
+                    <div class="auth-message" id="loginMessage"><i aria-hidden="true" class="fas fa-info-circle"></i><span></span></div>
                     <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
                         <div class="auth-input-group">
                             <label>Email <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="email" class="auth-input" id="loginEmail" placeholder="tu@email.com" required autocomplete="email">
-                                <i aria-hidden="true" class="fa fa-envelope field-icon"></i>
+                                <i aria-hidden="true" class="fas fa-envelope field-icon"></i>
                             </div>
                         </div>
                         <div class="auth-input-group">
                             <label>Contraseña <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="password" class="auth-input" id="loginPassword" placeholder="Tu contraseña" required autocomplete="current-password">
-                                <i aria-hidden="true" class="fa fa-lock field-icon"></i>
-                                <button type="button" class="toggle-password" onclick="togglePw('loginPassword',this)"><i aria-hidden="true" class="fa fa-eye"></i></button>
+                                <i aria-hidden="true" class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-password" onclick="togglePw('loginPassword',this)"><i aria-hidden="true" class="fas fa-eye"></i></button>
                             </div>
                         </div>
                         <div class="auth-forgot"><a href="#" onclick="handleForgotPassword(event)">Olvidé mi contraseña</a></div>
@@ -608,28 +608,28 @@
                 <div id="signupView" class="auth-form-inner" style="display:none">
                     <h3>Crear Cuenta</h3>
                     <p class="subtitle">Registra tu local en SaborMap — La Habana</p>
-                    <div class="auth-message" id="signupMessage"><i aria-hidden="true" class="fa fa-info-circle"></i><span></span></div>
+                    <div class="auth-message" id="signupMessage"><i aria-hidden="true" class="fas fa-info-circle"></i><span></span></div>
                     <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
                         <div class="auth-input-group">
                             <label>Nombre completo <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="text" class="auth-input" id="signupName" placeholder="Ej: Maria Campos" required autocomplete="name">
-                                <i aria-hidden="true" class="fa fa-user field-icon"></i>
+                                <i aria-hidden="true" class="fas fa-user field-icon"></i>
                             </div>
                         </div>
                         <div class="auth-input-group">
                             <label>Email <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="email" class="auth-input" id="signupEmail" placeholder="tu@email.com" required autocomplete="email">
-                                <i aria-hidden="true" class="fa fa-envelope field-icon"></i>
+                                <i aria-hidden="true" class="fas fa-envelope field-icon"></i>
                             </div>
                         </div>
                         <div class="auth-input-group">
                             <label>Contraseña <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="password" class="auth-input" id="signupPassword" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" oninput="checkPwStrength(this.value)">
-                                <i aria-hidden="true" class="fa fa-lock field-icon"></i>
-                                <button type="button" class="toggle-password" onclick="togglePw('signupPassword',this)"><i aria-hidden="true" class="fa fa-eye"></i></button>
+                                <i aria-hidden="true" class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-password" onclick="togglePw('signupPassword',this)"><i aria-hidden="true" class="fas fa-eye"></i></button>
                             </div>
                             <div class="pw-strength" id="pwStrength">
                                 <div class="pw-strength-bar" id="pwBar1"></div>
@@ -643,8 +643,8 @@
                             <label>Confirmar contraseña <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="password" class="auth-input" id="signupConfirm" placeholder="Repite tu contraseña" required autocomplete="new-password">
-                                <i aria-hidden="true" class="fa fa-lock field-icon"></i>
-                                <button type="button" class="toggle-password" onclick="togglePw('signupConfirm',this)"><i aria-hidden="true" class="fa fa-eye"></i></button>
+                                <i aria-hidden="true" class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-password" onclick="togglePw('signupConfirm',this)"><i aria-hidden="true" class="fas fa-eye"></i></button>
                             </div>
                         </div>
                         <button type="submit" class="auth-submit" id="signupBtn" style="margin-top:8px">
@@ -659,13 +659,13 @@
                 <div id="forgotView" class="auth-form-inner" style="display:none">
                     <h3>Recuperar Contraseña</h3>
                     <p class="subtitle">Te enviamos un link para resetear tu contraseña</p>
-                    <div class="auth-message" id="forgotMessage"><i aria-hidden="true" class="fa fa-info-circle"></i><span></span></div>
+                    <div class="auth-message" id="forgotMessage"><i aria-hidden="true" class="fas fa-info-circle"></i><span></span></div>
                     <form class="auth-form" id="forgotForm" onsubmit="handleForgotSubmit(event)">
                         <div class="auth-input-group">
                             <label>Email <span class="required">*</span></label>
                             <div class="auth-input-wrap">
                                 <input type="email" class="auth-input" id="forgotEmail" placeholder="tu@email.com" required autocomplete="email">
-                                <i aria-hidden="true" class="fa fa-envelope field-icon"></i>
+                                <i aria-hidden="true" class="fas fa-envelope field-icon"></i>
                             </div>
                         </div>
                         <button type="submit" class="auth-submit" id="forgotBtn">
@@ -674,7 +674,7 @@
                         </button>
                     </form>
                     <div class="auth-divider"><span>o</span></div>
-                    <p class="auth-switch"><a role="button" tabindex="0" onclick="showView('login')"><i aria-hidden="true" class="fa fa-arrow-left" style="margin-right:6px"></i>Volver a iniciar sesión</a></p>
+                    <p class="auth-switch"><a role="button" tabindex="0" onclick="showView('login')"><i aria-hidden="true" class="fas fa-arrow-left" style="margin-right:6px"></i>Volver a iniciar sesión</a></p>
                 </div>
             </div>
         </div>
@@ -694,41 +694,41 @@
             <nav class="sidebar-nav" id="sidebarNav" aria-label="Secciones del panel">
                 <div class="sidebar-section-label">Principal</div>
                 <a role="button" tabindex="0" class="sidebar-link active" data-panel="overview" onclick="switchPanel('overview',this)">
-                    <i aria-hidden="true" class="fa fa-chart-pie"></i> Resumen
+                    <i aria-hidden="true" class="fas fa-chart-pie"></i> Resumen
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link" data-panel="my-places" onclick="switchPanel('my-places',this)">
-                    <i aria-hidden="true" class="fa fa-store"></i> Mis Locales
+                    <i aria-hidden="true" class="fas fa-store"></i> Mis Locales
                     <span class="link-badge" id="placesCount">0</span>
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link" data-panel="add-place" onclick="switchPanel('add-place',this)">
-                    <i aria-hidden="true" class="fa fa-plus-circle"></i> Agregar Local
+                    <i aria-hidden="true" class="fas fa-plus-circle"></i> Agregar Local
                 </a>
 
                 <div class="sidebar-section-label admin-section" style="display:none">
-                    <i aria-hidden="true" class="fa fa-crown" style="color:var(--amber);margin-right:4px"></i> Administración
+                    <i aria-hidden="true" class="fas fa-crown" style="color:var(--amber);margin-right:4px"></i> Administración
                 </div>
                 <a role="button" tabindex="0" class="sidebar-link admin-link admin-section" data-panel="admin-places" onclick="switchPanel('admin-places',this)" style="display:none">
-                    <i aria-hidden="true" class="fa fa-globe"></i> Todos los Locales
+                    <i aria-hidden="true" class="fas fa-globe"></i> Todos los Locales
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link admin-link admin-section" data-panel="admin-subs" onclick="switchPanel('admin-subs',this)" style="display:none">
-                    <i aria-hidden="true" class="fa fa-credit-card"></i> Suscripciones
+                    <i aria-hidden="true" class="fas fa-credit-card"></i> Suscripciones
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link admin-link admin-section" data-panel="admin-users" onclick="switchPanel('admin-users',this)" style="display:none">
-                    <i aria-hidden="true" class="fa fa-users-cog"></i> Usuarios
+                    <i aria-hidden="true" class="fas fa-users-cog"></i> Usuarios
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link admin-link admin-section" data-panel="admin-log" onclick="switchPanel('admin-log',this)" style="display:none">
-                    <i aria-hidden="true" class="fa fa-receipt"></i> Historial Pagos
+                    <i aria-hidden="true" class="fas fa-receipt"></i> Historial Pagos
                 </a>
 
                                 <a role="button" tabindex="0" class="sidebar-link admin-link admin-section" data-panel="admin-collections" onclick="switchPanel('admin-collections',this)" style="display:none">
-                    <i aria-hidden="true" class="fa fa-layer-group"></i> Colecciones
+                    <i aria-hidden="true" class="fas fa-layer-group"></i> Colecciones
                 </a>
 <div class="sidebar-section-label">Cuenta</div>
                 <a role="button" tabindex="0" class="sidebar-link" data-panel="settings" onclick="switchPanel('settings',this)">
-                    <i aria-hidden="true" class="fa fa-cog"></i> Configuración
+                    <i aria-hidden="true" class="fas fa-cog"></i> Configuración
                 </a>
                 <a role="button" tabindex="0" class="sidebar-link" onclick="handleLogout()">
-                    <i aria-hidden="true" class="fa fa-sign-out-alt"></i> Cerrar sesión
+                    <i aria-hidden="true" class="fas fa-sign-out-alt"></i> Cerrar sesión
                 </a>
             </nav>
             <div class="sidebar-user">
@@ -743,23 +743,23 @@
         <div class="main-content" id="main-content" role="main">
             <div class="top-bar">
                 <div style="display:flex;align-items:center;gap:12px">
-                    <button class="mobile-menu-btn" aria-label="Abrir menú lateral" onclick="toggleSidebar()"><i aria-hidden="true" class="fa fa-bars"></i></button>
+                    <button class="mobile-menu-btn" aria-label="Abrir menú lateral" onclick="toggleSidebar()"><i aria-hidden="true" class="fas fa-bars"></i></button>
                     <h1 class="top-bar-title" id="panelTitle">Resumen</h1>
                 </div>
                 <div class="top-bar-actions">
                     <!-- [F-5.5] Indicador de estado de conexión -->
                     <span id="connectionIndicator" aria-live="polite" aria-atomic="true" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:var(--green);font-size:0.74rem;font-weight:600">
-                        <i aria-hidden="true" class="fa fa-wifi" style="font-size:0.7rem"></i>
+                        <i aria-hidden="true" class="fas fa-wifi" style="font-size:0.7rem"></i>
                         <span id="connectionLabel">En línea</span>
                     </span>
                     <!-- [T-THEME] Toggle de tema claro/oscuro -->
                     <button class="theme-toggle" id="themeToggleBtn" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema" onclick="toggleDashboardTheme()">
-                        <i aria-hidden="true" class="fa fa-moon icon-moon"></i>
-                        <i aria-hidden="true" class="fa fa-sun icon-sun"></i>
+                        <i aria-hidden="true" class="fas fa-moon icon-moon"></i>
+                        <i aria-hidden="true" class="fas fa-sun icon-sun"></i>
                     </button>
-                    <button class="btn-icon" style="position:relative" aria-label="Notificaciones (no hay nuevas)" onclick="showToast('No hay notificaciones nuevas')"><i aria-hidden="true" class="fa fa-bell"></i><span class="notif-dot"></span></button>
+                    <button class="btn-icon" style="position:relative" aria-label="Notificaciones (no hay nuevas)" onclick="showToast('No hay notificaciones nuevas')"><i aria-hidden="true" class="fas fa-bell"></i><span class="notif-dot"></span></button>
                     <button class="btn-primary btn-sm" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))">
-                        <i aria-hidden="true" class="fa fa-plus"></i> Nuevo Local
+                        <i aria-hidden="true" class="fas fa-plus"></i> Nuevo Local
                     </button>
                 </div>
             </div>
@@ -775,7 +775,7 @@
                     <div class="animated-line" style="margin-bottom:32px"></div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
                         <h3 style="font-size:1.15rem;font-weight:700">Tus Locales</h3>
-                        <button class="btn-secondary btn-sm" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Ver todos <i aria-hidden="true" class="fa fa-arrow-right" style="font-size:0.7rem"></i></button>
+                        <button class="btn-secondary btn-sm" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Ver todos <i aria-hidden="true" class="fas fa-arrow-right" style="font-size:0.7rem"></i></button>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px" id="overviewPlaces"></div>
                 </div>
@@ -789,14 +789,14 @@
                             <h2 style="font-size:1.5rem;font-weight:700">Mis Locales</h2>
                             <p style="color:var(--muted);font-size:0.88rem;margin-top:4px">Gestiona tus restaurantes, bares y heladerias</p>
                         </div>
-                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fa fa-plus"></i> Agregar Local</button>
+                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
                     </div>
                     <div id="myPlacesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px"></div>
                     <div class="empty-state" id="myPlacesEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-store-slash"></i>
+                        <i aria-hidden="true" class="fas fa-store-slash"></i>
                         <h3>Aún no tienes locales</h3>
                         <p>Comienza agregando tu primer restaurante, bar o heladeria.</p>
-                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fa fa-plus"></i> Agregar Local</button>
+                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
                     </div>
                 </div>
             </div>
@@ -811,7 +811,7 @@
                     <form id="placeForm" onsubmit="handlePlaceSubmit(event)">
                         <input type="hidden" id="editPlaceId" value="">
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
-                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-info-circle" style="color:var(--accent)"></i> Informacion Basica</h3>
+                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-info-circle" style="color:var(--accent)"></i> Informacion Basica</h3>
                             <div class="form-group">
                                 <label class="form-label">Nombre del local <span class="required">*</span></label>
                                 <input type="text" class="form-input" id="f-name" placeholder="Ej: El Floridita" required>
@@ -865,7 +865,7 @@
                         </div>
 
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
-                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-align-left" style="color:var(--secondary)"></i> Descripcion</h3>
+                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-align-left" style="color:var(--secondary)"></i> Descripcion</h3>
                             <div class="form-group">
                                 <label class="form-label">Descripción del local <span style="font-weight:400;color:var(--muted)">(min. 50, máx. 2000 caracteres)</span></label>
                                 <textarea class="form-textarea" id="f-description" placeholder="Cuenta qué hace especial a tu local..." rows="4" minlength="50" maxlength="2000"></textarea>
@@ -888,7 +888,7 @@
                         </div>
 
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
-                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-tags" style="color:var(--pink)"></i> Etiquetas</h3>
+                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-tags" style="color:var(--pink)"></i> Etiquetas</h3>
                             <div class="form-group">
                                 <label class="form-label">Tags <span style="font-weight:400;color:var(--muted)">(presiona Enter o coma para agregar)</span></label>
                                 <div class="tag-input-wrapper" id="tagWrapper" onclick="document.getElementById('tagInput').focus()">
@@ -901,8 +901,8 @@
                         <!-- ===== CARTA / MENU ===== -->
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-book-open" style="color:var(--secondary)"></i> Carta / Menu</h3>
-                                <button type="button" class="btn-secondary btn-sm" onclick="addMenuCategory()"><i aria-hidden="true" class="fa fa-plus"></i> Agregar categoria</button>
+                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-book-open" style="color:var(--secondary)"></i> Carta / Menu</h3>
+                                <button type="button" class="btn-secondary btn-sm" onclick="addMenuCategory()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar categoria</button>
                             </div>
                             <div id="menuContainer" style="display:flex;flex-direction:column;gap:16px"></div>
                             <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio.</div>
@@ -911,8 +911,8 @@
                         <!-- ===== DELIVERY / LINKS ===== -->
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-motorcycle" style="color:var(--amber)"></i> Delivery y Reservas</h3>
-                                <button type="button" class="btn-secondary btn-sm" onclick="addLink()"><i aria-hidden="true" class="fa fa-plus"></i> Agregar link</button>
+                                <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-motorcycle" style="color:var(--amber)"></i> Delivery y Reservas</h3>
+                                <button type="button" class="btn-secondary btn-sm" onclick="addLink()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar link</button>
                             </div>
                             <div id="linksContainer" style="display:flex;flex-direction:column;gap:12px"></div>
                             <div class="form-hint" style="margin-top:10px">Ej: PedidosYa, Rappi, Reservar Mesa. Deja el URL vacio si todavia no esta disponible.</div>
@@ -921,14 +921,14 @@
 
 
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:28px">
-                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fa fa-camera" style="color:var(--green)"></i> Imagenes</h3>
+                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-camera" style="color:var(--green)"></i> Imagenes</h3>
                             <div class="image-upload-grid" id="imageGrid"></div>
                             <div class="form-hint" style="margin-top:10px">Hasta 5 imagenes. Click en el slot para subir.</div>
                         </div>
 
                         <div style="display:flex;gap:12px;justify-content:flex-end">
                             <button type="button" class="btn-secondary" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Cancelar</button>
-                            <button type="submit" class="btn-primary" id="placeSubmitBtn"><i aria-hidden="true" class="fa fa-save"></i> <span id="placeSubmitText">Guardar Local</span></button>
+                            <button type="submit" class="btn-primary" id="placeSubmitBtn"><i aria-hidden="true" class="fas fa-save"></i> <span id="placeSubmitText">Guardar Local</span></button>
                         </div>
                     </form>
                 </div>
@@ -939,14 +939,14 @@
                 <div class="content-area" style="padding:32px">
                     <div class="admin-section-header">
                         <div>
-                            <h2><i aria-hidden="true" class="fa fa-globe" style="color:var(--amber);margin-right:8px"></i>Todos los Locales</h2>
+                            <h2><i aria-hidden="true" class="fas fa-globe" style="color:var(--amber);margin-right:8px"></i>Todos los Locales</h2>
                             <p>Administra todos los locales de la plataforma</p>
                         </div>
                     </div>
                     <div class="admin-quick-stats" id="adminPlacesStats"></div>
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
-                            <i aria-hidden="true" class="fa fa-search"></i>
+                            <i aria-hidden="true" class="fas fa-search"></i>
                             <input type="text" class="admin-search" id="adminPlacesSearch" placeholder="Buscar local..." aria-label="Buscar local por nombre o municipio" oninput="debounce(filterAdminPlaces, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminPlacesCatFilter" onchange="filterAdminPlaces()">
@@ -978,7 +978,7 @@
                         </table>
                     </div>
                     <div class="empty-state" id="adminPlacesEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-globe"></i>
+                        <i aria-hidden="true" class="fas fa-globe"></i>
                         <h3>No se encontraron locales</h3>
                         <p>Intenta cambiar los filtros de busqueda.</p>
                     </div>
@@ -990,14 +990,14 @@
                 <div class="content-area" style="padding:32px">
                     <div class="admin-section-header">
                         <div>
-                            <h2><i aria-hidden="true" class="fa fa-credit-card" style="color:var(--amber);margin-right:8px"></i>Suscripciones</h2>
+                            <h2><i aria-hidden="true" class="fas fa-credit-card" style="color:var(--amber);margin-right:8px"></i>Suscripciones</h2>
                             <p>Gestiona los planes de los usuarios</p>
                         </div>
                     </div>
                     <div class="admin-quick-stats" id="adminSubsStats"></div>
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
-                            <i aria-hidden="true" class="fa fa-search"></i>
+                            <i aria-hidden="true" class="fas fa-search"></i>
                             <input type="text" class="admin-search" id="adminSubsSearch" placeholder="Buscar usuario..." aria-label="Buscar suscripción por usuario" oninput="debounce(filterAdminSubs, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminSubsPlanFilter" onchange="filterAdminSubs()">
@@ -1031,7 +1031,7 @@
                         </table>
                     </div>
                     <div class="empty-state" id="adminSubsEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-credit-card"></i>
+                        <i aria-hidden="true" class="fas fa-credit-card"></i>
                         <h3>No se encontraron suscripciones</h3>
                     </div>
                 </div>
@@ -1042,13 +1042,13 @@
                 <div class="content-area" style="padding:32px">
                     <div class="admin-section-header">
                         <div>
-                            <h2><i aria-hidden="true" class="fa fa-users-cog" style="color:var(--amber);margin-right:8px"></i>Usuarios</h2>
+                            <h2><i aria-hidden="true" class="fas fa-users-cog" style="color:var(--amber);margin-right:8px"></i>Usuarios</h2>
                             <p>Lista de todos los usuarios registrados</p>
                         </div>
                     </div>
                     <div class="admin-filter-bar">
                         <div class="admin-search-wrap">
-                            <i aria-hidden="true" class="fa fa-search"></i>
+                            <i aria-hidden="true" class="fas fa-search"></i>
                             <input type="text" class="admin-search" id="adminUsersSearch" placeholder="Buscar usuario..." aria-label="Buscar usuario por nombre o email" oninput="debounce(filterAdminUsers, 250)()">
                         </div>
                         <select class="admin-filter-select" id="adminUsersRoleFilter" onchange="filterAdminUsers()">
@@ -1072,7 +1072,7 @@
                         </table>
                     </div>
                     <div class="empty-state" id="adminUsersEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-users"></i>
+                        <i aria-hidden="true" class="fas fa-users"></i>
                         <h3>No se encontraron usuarios</h3>
                     </div>
                 </div>
@@ -1083,7 +1083,7 @@
                 <div class="content-area" style="padding:32px">
                     <div class="admin-section-header">
                         <div>
-                            <h2><i aria-hidden="true" class="fa fa-receipt" style="color:var(--amber);margin-right:8px"></i>Historial de Pagos</h2>
+                            <h2><i aria-hidden="true" class="fas fa-receipt" style="color:var(--amber);margin-right:8px"></i>Historial de Pagos</h2>
                             <p>Registro de todos los cambios en suscripciones</p>
                         </div>
                     </div>
@@ -1104,7 +1104,7 @@
                         </table>
                     </div>
                     <div class="empty-state" id="adminLogEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-receipt"></i>
+                        <i aria-hidden="true" class="fas fa-receipt"></i>
                         <h3>No hay registros de pagos</h3>
                     </div>
                 </div>
@@ -1116,10 +1116,10 @@
                 <div class="content-area" style="padding:32px">
                     <div class="admin-section-header">
                         <div>
-                            <h2><i aria-hidden="true" class="fa fa-layer-group" style="color:var(--amber);margin-right:8px"></i>Colecciones</h2>
+                            <h2><i aria-hidden="true" class="fas fa-layer-group" style="color:var(--amber);margin-right:8px"></i>Colecciones</h2>
                             <p>Administra las colecciones que aparecen en la pagina principal</p>
                         </div>
-                        <button class="btn-primary" onclick="openNewCollectionModal()"><i aria-hidden="true" class="fa fa-plus"></i> Nueva Coleccion</button>
+                        <button class="btn-primary" onclick="openNewCollectionModal()"><i aria-hidden="true" class="fas fa-plus"></i> Nueva Coleccion</button>
                     </div>
                     <div class="admin-quick-stats" id="adminColStats"></div>
                     <div class="admin-table-wrap">
@@ -1138,7 +1138,7 @@
                         </table>
                     </div>
                     <div class="empty-state" id="adminColEmpty" style="display:none">
-                        <i aria-hidden="true" class="fa fa-layer-group"></i>
+                        <i aria-hidden="true" class="fas fa-layer-group"></i>
                         <h3>No hay colecciones</h3>
                         <p>Crea una coleccion para agrupar lugares en la pagina principal.</p>
                     </div>
@@ -1151,7 +1151,7 @@
                     <p style="color:var(--muted);font-size:0.88rem;margin-bottom:28px">Gestiona tu perfil y suscripción</p>
 
                     <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
-                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px"><i aria-hidden="true" class="fa fa-user" style="color:var(--accent);margin-right:8px"></i>Mi Perfil</h3>
+                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px"><i aria-hidden="true" class="fas fa-user" style="color:var(--accent);margin-right:8px"></i>Mi Perfil</h3>
                         <div class="form-group">
                             <label class="form-label">Nombre completo</label>
                             <input type="text" class="form-input" id="s-name" placeholder="Tu nombre">
@@ -1164,18 +1164,18 @@
                             <label class="form-label">Teléfono</label>
                             <input type="text" class="form-input" id="s-phone" placeholder="+53 5 1234567">
                         </div>
-                        <button class="btn-primary" onclick="saveProfile()"><i aria-hidden="true" class="fa fa-save"></i> Guardar Perfil</button>
+                        <button class="btn-primary" onclick="saveProfile()"><i aria-hidden="true" class="fas fa-save"></i> Guardar Perfil</button>
                     </div>
 
                     <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
-                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px"><i aria-hidden="true" class="fa fa-gem" style="color:var(--amber);margin-right:8px"></i>Mi Suscripción</h3>
+                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px"><i aria-hidden="true" class="fas fa-gem" style="color:var(--amber);margin-right:8px"></i>Mi Suscripción</h3>
                         <div id="settingsSubInfo"></div>
                     </div>
 
                     <div style="background:var(--card);border:1px solid rgba(239,68,68,0.2);border-radius:18px;padding:24px">
-                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:#f87171"><i aria-hidden="true" class="fa fa-exclamation-triangle" style="margin-right:8px"></i>Zona de peligro</h3>
+                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:#f87171"><i aria-hidden="true" class="fas fa-exclamation-triangle" style="margin-right:8px"></i>Zona de peligro</h3>
                         <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px">Cambiar la contraseña cierra todas las sesiones activas.</p>
-                        <button class="btn-danger" onclick="showChangePwModal()"><i aria-hidden="true" class="fa fa-key"></i> Cambiar Contraseña</button>
+                        <button class="btn-danger" onclick="showChangePwModal()"><i aria-hidden="true" class="fas fa-key"></i> Cambiar Contraseña</button>
                     </div>
                 </div>
             </div>
@@ -1196,7 +1196,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px">
                 <button class="btn-secondary" onclick="closeModal('changePwModal')">Cancelar</button>
-                <button class="btn-danger" onclick="changePassword()"><i aria-hidden="true" class="fa fa-key"></i> Cambiar</button>
+                <button class="btn-danger" onclick="changePassword()"><i aria-hidden="true" class="fas fa-key"></i> Cambiar</button>
             </div>
         </div>
     </div>
@@ -1239,7 +1239,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px">
                 <button class="btn-secondary" onclick="closeModal('editSubModal')">Cancelar</button>
-                <button class="btn-admin" onclick="saveSubEdit()"><i aria-hidden="true" class="fa fa-save"></i> Guardar Cambios</button>
+                <button class="btn-admin" onclick="saveSubEdit()"><i aria-hidden="true" class="fas fa-save"></i> Guardar Cambios</button>
             </div>
         </div>
     </div>
@@ -1259,7 +1259,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px">
                 <button class="btn-secondary" onclick="closeModal('editRoleModal')">Cancelar</button>
-                <button class="btn-admin" onclick="saveRoleEdit()"><i aria-hidden="true" class="fa fa-save"></i> Guardar</button>
+                <button class="btn-admin" onclick="saveRoleEdit()"><i aria-hidden="true" class="fas fa-save"></i> Guardar</button>
             </div>
         </div>
     </div>
@@ -1319,7 +1319,7 @@
             </div>
             <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end">
                 <button class="btn-secondary" onclick="closeModal('collectionModal')">Cancelar</button>
-                <button class="btn-primary" onclick="saveCollection()"><i aria-hidden="true" class="fa fa-save"></i> Guardar</button>
+                <button class="btn-primary" onclick="saveCollection()"><i aria-hidden="true" class="fas fa-save"></i> Guardar</button>
             </div>
         </div>
     </div>
@@ -1338,7 +1338,7 @@
                     <select class="form-select" id="colPlaceSelect" style="flex:1">
                         <option value="">Seleccionar un lugar...</option>
                     </select>
-                    <button class="btn-primary btn-sm" onclick="addPlaceToCollection()"><i aria-hidden="true" class="fa fa-plus"></i></button>
+                    <button class="btn-primary btn-sm" onclick="addPlaceToCollection()"><i aria-hidden="true" class="fas fa-plus"></i></button>
                 </div>
             </div>
 
@@ -1347,7 +1347,7 @@
                 <label class="form-label">Lugar estatico (ID numerico de places.js)</label>
                 <div style="display:flex;gap:8px">
                     <input type="number" class="form-input" id="colStaticId" placeholder="Ej: 15" min="1" max="300" style="flex:1">
-                    <button class="btn-secondary btn-sm" onclick="addStaticPlaceToCollection()"><i aria-hidden="true" class="fa fa-plus"></i></button>
+                    <button class="btn-secondary btn-sm" onclick="addStaticPlaceToCollection()"><i aria-hidden="true" class="fas fa-plus"></i></button>
                 </div>
             </div>
 
@@ -1365,13 +1365,13 @@
     <div class="modal-overlay" id="sessionExpiredModal" role="alertdialog" aria-modal="true" aria-labelledby="sessionExpiredTitle">
         <div class="modal-box" style="max-width:440px">
             <h3 id="sessionExpiredTitle" style="font-size:1.2rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px">
-                <i aria-hidden="true" class="fa fa-clock" style="color:var(--amber)"></i> Sesión expirada
+                <i aria-hidden="true" class="fas fa-clock" style="color:var(--amber)"></i> Sesión expirada
             </h3>
             <p style="color:var(--muted);font-size:0.9rem;line-height:1.5;margin-bottom:20px">
                 Tu sesión ha expirado por inactividad o por un corte de conexión. Si estabas completando un formulario, tu progreso se guardó automáticamente como borrador.
             </p>
             <div style="display:flex;gap:12px;justify-content:flex-end">
-                <button class="btn-primary" onclick="handleLogout()"><i aria-hidden="true" class="fa fa-sign-in-alt"></i> Volver a iniciar sesión</button>
+                <button class="btn-primary" onclick="handleLogout()"><i aria-hidden="true" class="fas fa-sign-in-alt"></i> Volver a iniciar sesión</button>
             </div>
         </div>
     </div>
@@ -1710,7 +1710,7 @@
                 badge.style.cssText = 'position:relative;border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.06)';
                 badge.title = 'Operaciones pendientes de sincronización';
                 badge.setAttribute('aria-label', 'Operaciones pendientes de sincronización');
-                badge.innerHTML = '<i aria-hidden="true" class="fa fa-cloud-arrow-up"></i><span class="pending-count" style="position:absolute;top:-4px;right:-4px;background:var(--amber);color:#000;font-size:0.65rem;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 4px"></span>';
+                badge.innerHTML = '<i aria-hidden="true" class="fas fa-cloud-arrow-up"></i><span class="pending-count" style="position:absolute;top:-4px;right:-4px;background:var(--amber);color:#000;font-size:0.65rem;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 4px"></span>';
                 badge.onclick = showPendingOpsModal;
                 actions.insertBefore(badge, actions.firstChild);
             }
@@ -1931,7 +1931,7 @@
         window.showToast = function(msg, isError) {
             const t = $('appToast');
             t.className = 'toast show' + (isError ? ' toast-error' : '');
-            t.innerHTML = '<i aria-hidden="true" class="fa fa-' + (isError ? 'exclamation-circle' : 'check-circle') + '" style="color:' + (isError ? 'var(--red)' : 'var(--accent)') + '"></i> ' + escapeHtml(msg);
+            t.innerHTML = '<i aria-hidden="true" class="fas fa-' + (isError ? 'exclamation-circle' : 'check-circle') + '" style="color:' + (isError ? 'var(--red)' : 'var(--accent)') + '"></i> ' + escapeHtml(msg);
             clearTimeout(t._t);
             t._t = setTimeout(() => t.classList.remove('show'), 3500);
         };
@@ -2201,7 +2201,7 @@
                 $('sidebarUserRole').textContent = 'Administrador';
                 $('sidebarUserRole').classList.add('admin-role');
                 avatar.classList.add('admin-avatar');
-                avatar.innerHTML = initials + '<div class="admin-crown"><i aria-hidden="true" class="fa fa-crown"></i></div>';
+                avatar.innerHTML = initials + '<div class="admin-crown"><i aria-hidden="true" class="fas fa-crown"></i></div>';
                 document.querySelectorAll('.admin-section').forEach(el => el.style.display = '');
             }
 
@@ -2272,7 +2272,7 @@
             const safeImg = escapeHtml(img);
             const imgHTML = img
                 ? '<img class="my-place-card-img" src="' + safeImg + '" alt="Imagen del local ' + safeName + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">'
-                : '<div class="my-place-card-img" style="background:var(--card-hover);display:flex;align-items:center;justify-content:center"><i aria-hidden="true" class="fa fa-image" style="font-size:2rem;color:var(--border)"></i></div>';
+                : '<div class="my-place-card-img" style="background:var(--card-hover);display:flex;align-items:center;justify-content:center"><i aria-hidden="true" class="fas fa-image" style="font-size:2rem;color:var(--border)"></i></div>';
             return '<div class="my-place-card">' +
                 imgHTML +
                 '<div class="my-place-card-body">' +
@@ -2283,11 +2283,11 @@
                     '</div>' +
                     '<h4 style="font-size:1.05rem;font-weight:700;margin-bottom:6px">' + safeName + '</h4>' +
                     '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:4px">' + safeNeighborhood + (safeAddress ? ' — ' + safeAddress : '') + '</p>' +
-                    (safePlusCode ? '<p style="font-size:0.78rem;color:var(--secondary);margin-bottom:14px;font-family:monospace;letter-spacing:0.03em"><i aria-hidden="true" class="fa fa-location-crosshairs" style="margin-right:4px;font-size:0.7rem"></i>' + safePlusCode + ' La Habana</p>' : '<div style="margin-bottom:14px"></div>') +
+                    (safePlusCode ? '<p style="font-size:0.78rem;color:var(--secondary);margin-bottom:14px;font-family:monospace;letter-spacing:0.03em"><i aria-hidden="true" class="fas fa-location-crosshairs" style="margin-right:4px;font-size:0.7rem"></i>' + safePlusCode + ' La Habana</p>' : '<div style="margin-bottom:14px"></div>') +
                     '<div style="display:flex;gap:8px">' +
-                        '<button class="btn-secondary btn-sm" aria-label="Editar local ' + safeName + '" onclick="editPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fa fa-edit"></i> Editar</button>' +
-                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeName + '" onclick="deletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fa fa-trash"></i></button>' +
-                        (p.status !== 'published' ? '<button class="btn-success btn-sm" aria-label="Publicar local ' + safeName + '" onclick="publishPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fa fa-eye"></i> Publicar</button>' : '') +
+                        '<button class="btn-secondary btn-sm" aria-label="Editar local ' + safeName + '" onclick="editPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fas fa-edit"></i> Editar</button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeName + '" onclick="deletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fas fa-trash"></i></button>' +
+                        (p.status !== 'published' ? '<button class="btn-success btn-sm" aria-label="Publicar local ' + safeName + '" onclick="publishPlace(\'' + safeId + '\')"><i aria-hidden="true" class="fas fa-eye"></i> Publicar</button>' : '') +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -2303,14 +2303,14 @@
             const draft = places.filter(p => p.status !== 'published').length;
 
             $('statsGrid').innerHTML =
-                '<div class="stat-card"><div class="stat-card-glow" style="background:var(--accent-glow)"></div><div class="stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fa fa-store"></i></div><div class="stat-value">' + places.length + '</div><div class="stat-label">Total Locales</div></div>' +
-                '<div class="stat-card"><div class="stat-card-glow" style="background:rgba(34,197,94,0.2)"></div><div class="stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fa fa-check-circle"></i></div><div class="stat-value">' + published + '</div><div class="stat-label">Publicados</div></div>' +
-                '<div class="stat-card"><div class="stat-card-glow" style="background:rgba(245,158,11,0.2)"></div><div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fa fa-pencil-alt"></i></div><div class="stat-value">' + draft + '</div><div class="stat-label">Borradores</div></div>' +
-                '<div class="stat-card"><div class="stat-card-glow" style="background:var(--secondary-glow)"></div><div class="stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fa fa-' + (userSubscription.plan === 'free' ? 'box-open' : 'gem') + '"></i></div><div class="stat-value" style="text-transform:capitalize;font-size:1.4rem">' + userSubscription.plan + '</div><div class="stat-label">Plan Actual</div></div>';
+                '<div class="stat-card"><div class="stat-card-glow" style="background:var(--accent-glow)"></div><div class="stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fas fa-store"></i></div><div class="stat-value">' + places.length + '</div><div class="stat-label">Total Locales</div></div>' +
+                '<div class="stat-card"><div class="stat-card-glow" style="background:rgba(34,197,94,0.2)"></div><div class="stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fas fa-check-circle"></i></div><div class="stat-value">' + published + '</div><div class="stat-label">Publicados</div></div>' +
+                '<div class="stat-card"><div class="stat-card-glow" style="background:rgba(245,158,11,0.2)"></div><div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fas fa-pencil-alt"></i></div><div class="stat-value">' + draft + '</div><div class="stat-label">Borradores</div></div>' +
+                '<div class="stat-card"><div class="stat-card-glow" style="background:var(--secondary-glow)"></div><div class="stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fas fa-' + (userSubscription.plan === 'free' ? 'box-open' : 'gem') + '"></i></div><div class="stat-value" style="text-transform:capitalize;font-size:1.4rem">' + userSubscription.plan + '</div><div class="stat-label">Plan Actual</div></div>';
 
             const container = $('overviewPlaces');
             if (places.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i aria-hidden="true" class="fa fa-store-slash"></i><h3>Sin locales aun</h3><p>Agrega tu primer local para comenzar.</p></div>';
+                container.innerHTML = '<div class="empty-state"><i aria-hidden="true" class="fas fa-store-slash"></i><h3>Sin locales aun</h3><p>Agrega tu primer local para comenzar.</p></div>';
             } else {
                 container.innerHTML = places.slice(0, 4).map(p => placeCardHTML(p)).join('');
             }
@@ -2443,9 +2443,9 @@
                 if (placeImages[i]) {
                     const url = typeof placeImages[i] === 'string' ? placeImages[i] : URL.createObjectURL(placeImages[i]);
                     slot.innerHTML = '<img src="' + url + '" alt="img">' +
-                        '<div class="img-overlay"><button class="img-delete" onclick="removeImage(' + i + ')"><i aria-hidden="true" class="fa fa-trash"></i></button></div>';
+                        '<div class="img-overlay"><button class="img-delete" onclick="removeImage(' + i + ')"><i aria-hidden="true" class="fas fa-trash"></i></button></div>';
                 } else {
-                    slot.innerHTML = '<i aria-hidden="true" class="fa fa-plus"></i><span>Subir</span>';
+                    slot.innerHTML = '<i aria-hidden="true" class="fas fa-plus"></i><span>Subir</span>';
                     slot.onclick = function() { $('hiddenImageInput').dataset.index = i; $('hiddenImageInput').click(); };
                 }
                 grid.appendChild(slot);
@@ -2487,7 +2487,7 @@
             const container = $('menuContainer');
             if (!container) return;
             if (!placeMenu.length) {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fa fa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste categorías a la carta.</div>';
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fas fa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste categorías a la carta.</div>';
                 return;
             }
             container.innerHTML = placeMenu.map((cat, ci) => {
@@ -2502,17 +2502,17 @@
                             <option value="USD" ${it.currency==='USD'?'selected':''}>USD</option>
                             <option value="EUR" ${it.currency==='EUR'?'selected':''}>EUR</option>
                         </select>
-                        <button type="button" class="btn-icon" aria-label="Eliminar plato" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fa fa-trash"></i></button>
+                        <button type="button" class="btn-icon" aria-label="Eliminar plato" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fas fa-trash"></i></button>
                     </div>
                 `).join('');
                 return `
                     <div class="menu-category">
                         <div class="menu-category-head">
                             <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
-                            <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fa fa-times"></i></button>
+                            <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
                         </div>
                         <div class="menu-items">${items}</div>
-                        <button type="button" class="menu-add-item-btn" onclick="addMenuItem(${ci})"><i aria-hidden="true" class="fa fa-plus" style="margin-right:4px"></i> Agregar plato</button>
+                        <button type="button" class="menu-add-item-btn" onclick="addMenuItem(${ci})"><i aria-hidden="true" class="fas fa-plus" style="margin-right:4px"></i> Agregar plato</button>
                     </div>
                 `;
             }).join('');
@@ -2565,7 +2565,7 @@
             const container = $('linksContainer');
             if (!container) return;
             if (!placeLinks.length) {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fa fa-motorcycle" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste links de delivery o reservas.</div>';
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fas fa-motorcycle" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste links de delivery o reservas.</div>';
                 return;
             }
             container.innerHTML = placeLinks.map((l, i) => {
@@ -2578,7 +2578,7 @@
                             ${['PedidosYa','Rappi','Reservar Mesa','WhatsApp','Otro'].map(p => `<option value="${p}" ${platform===p?'selected':''}>${p}</option>`).join('')}
                         </select>
                         <input type="url" class="form-input" placeholder="https://..." value="${escapeAttr(url)}" oninput="updateLink(${i},'url',this.value)">
-                        <button type="button" class="btn-icon" onclick="removeLink(${i})" title="Eliminar"><i aria-hidden="true" class="fa fa-trash"></i></button>
+                        <button type="button" class="btn-icon" onclick="removeLink(${i})" title="Eliminar"><i aria-hidden="true" class="fas fa-trash"></i></button>
                     </div>
                 `;
             }).join('');
@@ -3056,10 +3056,10 @@
             const drf = allPlaces.filter(p => p.status === 'draft').length;
             const pen = allPlaces.filter(p => p.status === 'pending').length;
             $('adminPlacesStats').innerHTML =
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fa fa-store"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fa fa-check"></i></div><div><div class="admin-quick-stat-value">' + pub + '</div><div class="admin-quick-stat-label">Publicados</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fa fa-pencil-alt"></i></div><div><div class="admin-quick-stat-value">' + drf + '</div><div class="admin-quick-stat-label">Borradores</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fa fa-clock"></i></div><div><div class="admin-quick-stat-value">' + pen + '</div><div class="admin-quick-stat-label">Pendientes</div></div></div>';
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fas fa-store"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fas fa-check"></i></div><div><div class="admin-quick-stat-value">' + pub + '</div><div class="admin-quick-stat-label">Publicados</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fas fa-pencil-alt"></i></div><div><div class="admin-quick-stat-value">' + drf + '</div><div class="admin-quick-stat-label">Borradores</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fas fa-clock"></i></div><div><div class="admin-quick-stat-value">' + pen + '</div><div class="admin-quick-stat-label">Pendientes</div></div></div>';
 
             const list = getFilteredPlaces();
             const body = $('adminPlacesBody');
@@ -3093,8 +3093,8 @@
                     '<td style="font-size:0.85rem">' + ownerName + '</td>' +
                     '<td>' + statusBadgeHTML(safeStatus) + '</td>' +
                     '<td><div class="actions-cell">' +
-                        '<button class="btn-success btn-sm" aria-label="Cambiar estado del local ' + safeNamePlain + '" onclick="adminTogglePlaceStatus(\'' + safeId + '\',\'' + safeStatus + '\')"><i aria-hidden="true" class="fa fa-eye"></i></button>' +
-                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeNamePlain + '" onclick="adminDeletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fa fa-trash"></i></button>' +
+                        '<button class="btn-success btn-sm" aria-label="Cambiar estado del local ' + safeNamePlain + '" onclick="adminTogglePlaceStatus(\'' + safeId + '\',\'' + safeStatus + '\')"><i aria-hidden="true" class="fas fa-eye"></i></button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeNamePlain + '" onclick="adminDeletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fas fa-trash"></i></button>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
@@ -3146,10 +3146,10 @@
             const free = allSubs.filter(s => s.plan === 'free').length;
             const paid = total - free;
             $('adminSubsStats').innerHTML =
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fa fa-credit-card"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fa fa-check-circle"></i></div><div><div class="admin-quick-stat-value">' + active + '</div><div class="admin-quick-stat-label">Activas</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(148,163,184,0.12);color:var(--muted)"><i aria-hidden="true" class="fa fa-box-open"></i></div><div><div class="admin-quick-stat-value">' + free + '</div><div class="admin-quick-stat-label">Free</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fa fa-gem"></i></div><div><div class="admin-quick-stat-value">' + paid + '</div><div class="admin-quick-stat-label">De pago</div></div></div>';
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fas fa-credit-card"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fas fa-check-circle"></i></div><div><div class="admin-quick-stat-value">' + active + '</div><div class="admin-quick-stat-label">Activas</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(148,163,184,0.12);color:var(--muted)"><i aria-hidden="true" class="fas fa-box-open"></i></div><div><div class="admin-quick-stat-value">' + free + '</div><div class="admin-quick-stat-label">Free</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fas fa-gem"></i></div><div><div class="admin-quick-stat-value">' + paid + '</div><div class="admin-quick-stat-label">De pago</div></div></div>';
 
             const list = getFilteredSubs();
             const body = $('adminSubsBody');
@@ -3170,7 +3170,7 @@
                     '<td>' + statusBadgeHTML(sub.status) + '</td>' +
                     '<td>' + escapeHtml(sub.max_places || 0) + '</td>' +
                     '<td style="font-size:0.82rem;color:var(--muted)">' + (sub.expires_at ? formatDate(sub.expires_at) : 'Sin limite') + '</td>' +
-                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Editar suscripción de ' + name + '" onclick="openEditSub(\'' + safeSubId + '\')"><i aria-hidden="true" class="fa fa-edit"></i></button></div></td>' +
+                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Editar suscripción de ' + name + '" onclick="openEditSub(\'' + safeSubId + '\')"><i aria-hidden="true" class="fas fa-edit"></i></button></div></td>' +
                 '</tr>';
             }).join('');
         }
@@ -3248,7 +3248,7 @@
                     '<td style="color:var(--muted)">' + safePhone + '</td>' +
                     '<td>' + roleBadgeHTML(safeRole) + '</td>' +
                     '<td style="font-size:0.82rem;color:var(--muted)">' + formatDate(p.created_at) + '</td>' +
-                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Cambiar rol de ' + safeNameForAttr + '" onclick="openEditRole(\'' + safeId + '\',\'' + safeNameForAttr + '\',\'' + safeRole + '\')"><i aria-hidden="true" class="fa fa-user-shield"></i></button></div></td>' +
+                    '<td><div class="actions-cell"><button class="btn-admin btn-sm" aria-label="Cambiar rol de ' + safeNameForAttr + '" onclick="openEditRole(\'' + safeId + '\',\'' + safeNameForAttr + '\',\'' + safeRole + '\')"><i aria-hidden="true" class="fas fa-user-shield"></i></button></div></td>' +
                 '</tr>';
             }).join('');
         }
@@ -3335,10 +3335,10 @@
             const totalPlaces = allCollectionPlaces.length;
 
             $('adminColStats').innerHTML =
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fa fa-layer-group"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fa fa-check"></i></div><div><div class="admin-quick-stat-value">' + active + '</div><div class="admin-quick-stat-label">Activas</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fa fa-store"></i></div><div><div class="admin-quick-stat-value">' + totalPlaces + '</div><div class="admin-quick-stat-label">Lugares vinculados</div></div></div>' +
-                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fa fa-palette"></i></div><div><div class="admin-quick-stat-value" style="display:flex;gap:4px;justify-content:center">' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent)"><i aria-hidden="true" class="fas fa-layer-group"></i></div><div><div class="admin-quick-stat-value">' + total + '</div><div class="admin-quick-stat-label">Total</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i aria-hidden="true" class="fas fa-check"></i></div><div><div class="admin-quick-stat-value">' + active + '</div><div class="admin-quick-stat-label">Activas</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary)"><i aria-hidden="true" class="fas fa-store"></i></div><div><div class="admin-quick-stat-value">' + totalPlaces + '</div><div class="admin-quick-stat-label">Lugares vinculados</div></div></div>' +
+                '<div class="admin-quick-stat"><div class="admin-quick-stat-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i aria-hidden="true" class="fas fa-palette"></i></div><div><div class="admin-quick-stat-value" style="display:flex;gap:4px;justify-content:center">' +
                     allCollections.filter(c => c.is_active).slice(0, 5).map(c => '<span style="width:16px;height:16px;border-radius:50%;background:' + c.color + ';display:inline-block"></span>').join('') +
                     (active > 5 ? '<span style="color:var(--muted);font-size:0.7rem">+' + (active-5) + '</span>' : '') +
                 '</div><div class="admin-quick-stat-label">Colores</div></div></div>';
@@ -3364,15 +3364,15 @@
                 const safeSort = escapeHtml(c.sort_order || 0);
                 const count = getCollectionPlaceCount(c.id);
                 return '<tr>' +
-                    '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:' + safeColor + '22;color:' + safeColor + ';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i aria-hidden="true" class="fa' + safeIcon + '"></i></div><div><div style="font-weight:600">' + safeTitle + '</div><div style="font-size:0.72rem;color:var(--muted)">' + safeDesc + '</div></div></div></td>' +
+                    '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:' + safeColor + '22;color:' + safeColor + ';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i aria-hidden="true" class="fas ' + safeIcon + '"></i></div><div><div style="font-weight:600">' + safeTitle + '</div><div style="font-size:0.72rem;color:var(--muted)">' + safeDesc + '</div></div></div></td>' +
                     '<td><div style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;background:' + safeColor + ';display:inline-block;box-shadow:0 0 8px ' + safeColor + '66"></span><span style="font-size:0.78rem;color:var(--muted);font-family:monospace">' + safeColor + '</span></div></td>' +
                     '<td><span style="font-weight:600">' + escapeHtml(count) + '</span> <span style="color:var(--muted);font-size:0.78rem">lugares</span></td>' +
                     '<td>' + (c.is_active ? '<span class="status-badge status-published">Activa</span>' : '<span class="status-badge status-draft">Inactiva</span>') + '</td>' +
                     '<td style="font-weight:600">' + safeSort + '</td>' +
                     '<td><div class="actions-cell">' +
-                        '<button class="btn-admin btn-sm" aria-label="Editar colección ' + safeTitle + '" onclick="openEditCollectionModal(\'' + safeId + '\')" title="Editar"><i aria-hidden="true" class="fa fa-edit"></i></button>' +
-                        '<button class="btn-success btn-sm" aria-label="Gestionar lugares de ' + safeTitle + '" onclick="openColPlacesModal(\'' + safeId + '\')" title="Gestionar lugares"><i aria-hidden="true" class="fa fa-store"></i></button>' +
-                        '<button class="btn-danger btn-sm" aria-label="Eliminar colección ' + safeTitle + '" onclick="deleteCollection(\'' + safeId + '\')" title="Eliminar"><i aria-hidden="true" class="fa fa-trash"></i></button>' +
+                        '<button class="btn-admin btn-sm" aria-label="Editar colección ' + safeTitle + '" onclick="openEditCollectionModal(\'' + safeId + '\')" title="Editar"><i aria-hidden="true" class="fas fa-edit"></i></button>' +
+                        '<button class="btn-success btn-sm" aria-label="Gestionar lugares de ' + safeTitle + '" onclick="openColPlacesModal(\'' + safeId + '\')" title="Gestionar lugares"><i aria-hidden="true" class="fas fa-store"></i></button>' +
+                        '<button class="btn-danger btn-sm" aria-label="Eliminar colección ' + safeTitle + '" onclick="deleteCollection(\'' + safeId + '\')" title="Eliminar"><i aria-hidden="true" class="fas fa-trash"></i></button>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
@@ -3530,7 +3530,7 @@
 
                 return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border-soft);border-radius:10px;margin-bottom:6px;background:var(--card)">' +
                     '<div style="flex:1;display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-size:0.88rem">' + name + '</span>' + typeLabel + '</div>' +
-                    '<button class="btn-danger btn-sm" onclick="' + removeFn + '" style="padding:4px 8px"><i aria-hidden="true" class="fa fa-times"></i></button>' +
+                    '<button class="btn-danger btn-sm" onclick="' + removeFn + '" style="padding:4px 8px"><i aria-hidden="true" class="fas fa-times"></i></button>' +
                 '</div>';
             }).join('');
         }
@@ -3649,13 +3649,13 @@
                     ind.style.background = 'rgba(34,197,94,0.12)';
                     ind.style.borderColor = 'rgba(34,197,94,0.25)';
                     ind.style.color = 'var(--green)';
-                    ind.querySelector('i').className = 'fa fa-wifi';
+                    ind.querySelector('i').className = 'fas fa-wifi';
                     lbl.textContent = 'En línea';
                 } else {
                     ind.style.background = 'rgba(245,158,11,0.12)';
                     ind.style.borderColor = 'rgba(245,158,11,0.25)';
                     ind.style.color = 'var(--amber)';
-                    ind.querySelector('i').className = 'fa fa-wifi-slash';
+                    ind.querySelector('i').className = 'fas fa-wifi-slash';
                     lbl.textContent = 'Sin conexión';
                 }
             }
@@ -3832,13 +3832,13 @@
             banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(150px);width:calc(100% - 48px);max-width:380px;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,0.4);z-index:60;opacity:0;transition:all 0.5s cubic-bezier(0.22,1,0.36,1);display:flex;align-items:center;gap:14px';
             banner.innerHTML =
                 '<div style="width:40px;height:40px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;flex-shrink:0">' +
-                '<i aria-hidden="true" class="fa fa-mobile-screen"></i></div>' +
+                '<i aria-hidden="true" class="fas fa-mobile-screen"></i></div>' +
                 '<div id="pwaBannerContent" style="flex:1;cursor:pointer">' +
                 '<p style="font-size:0.85rem;font-weight:700;color:var(--cream);margin-bottom:2px">Instala SaborMap</p>' +
                 '<p id="pwaBannerText" style="font-size:0.72rem;color:var(--muted);line-height:1.4">Toca aquí para instalar la app en tu dispositivo.</p>' +
                 '</div>' +
                 '<button id="pwaBannerCloseBtn" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px" aria-label="Cerrar banner">' +
-                '<i aria-hidden="true" class="fa fa-times"></i></button>';
+                '<i aria-hidden="true" class="fas fa-times"></i></button>';
             document.body.appendChild(banner);
 
             const DISMISS_KEY = 'pwaDashboardBannerDismissedAt';
