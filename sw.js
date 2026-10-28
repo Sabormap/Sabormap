@@ -1,14 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.1 — beta sin delivery/reservas (B-01). Base v2.0.0: fusión del SW
-   aportado (sabormap-v4) con las correcciones de la auditoría]
+   [v2.0.4 — FIX: places.js con estrategia network-first para que los
+    cambios (gelato nuevo, contador 257 vs 256) se vean de inmediato
+    en Firefox sin tener que bump VERSION cada vez.
+    Base v2.0.3: notas del editor clonadas vaciadas (C-22)]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled: un 404 no aborta el
      SW) + CDNs críticos del primer render + woff2 de Google Fonts.
    · Navegación: network-first con cadena de fallback y página offline.
-   · Recursos propios y CDNs permitidos: stale-while-revalidate; se
-     aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
+   · places.js → network-first ★ (FIX: antes era stale-while-revalidate
+     y Firefox servía la versión cacheada con 256 lugares durante días).
+   · Otros recursos propios y CDNs permitidos: stale-while-revalidate;
+     se aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
      woff2 y los tiles del mapa nunca entraban en caché.
    · API de Supabase y terceros desconocidos: PASSTHROUGH (nunca se
      cachean → no hay datos stale ni respuestas de auth en caché).
@@ -17,7 +21,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.1'; // ↑ súbelo en cada despliegue (o toca este archivo) — v2.0.1: beta sin delivery/reservas (B-01)
+const VERSION = 'v2.0.4'; // ↑ súbelo en cada despliegue (o toca este archivo) — v2.0.4: network-first para places.js
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
@@ -117,6 +121,14 @@ self.addEventListener('fetch', (event) => {
 
     // 3) Recursos propios (imágenes de locales, etc.)
     if (url.origin === self.location.origin) {
+        // ★ FIX [v2.0.4]: places.js siempre fresco cuando hay red.
+        //   Antes era stale-while-revalidate y servía la versión cacheada
+        //   (256 locales) aunque el archivo en el servidor tuviera 257/258.
+        //   Firefox es más conservador que Chrome con el SWR y no refrescaba.
+        if (url.pathname.endsWith('/places.js') || url.pathname.endsWith('/app.js')) {
+            event.respondWith(networkFirst(req));
+            return;
+        }
         event.respondWith(staleWhileRevalidate(req, false));
         return;
     }
@@ -135,7 +147,7 @@ async function networkFirst(req) {
     const cache = await caches.open(RUNTIME_CACHE);
     try {
         const fresh = await fetch(req);
-        if (fresh && fresh.status === 200) {
+        if (fresh && (fresh.status === 200 || fresh.type === 'opaque')) {
             cache.put(req, fresh.clone()).catch(() => {});
         }
         return fresh;
