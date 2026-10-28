@@ -7,7 +7,7 @@
     <meta name="description" content="Panel privado para dueños de locales: gestiona fichas, cartas, fotos y estadísticas en Sabormap.">
     <meta name="robots" content="noindex, nofollow">
     <!-- [F-3.4] Content Security Policy estricta: previene XSS y cargas no autorizadas -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co data: blob:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co wss://cfmqwnfimpfuivqmsxju.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co data: blob:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co wss://cfmqwnfimpfuivqmsxju.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
     <!-- [F-3.4] Otras cabeceras de seguridad via meta -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -26,8 +26,6 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <!-- [F-3.5] Tailwind CDN: el play CDN no publica hash SRI estable, se carga sin integrity -->
-    <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <!-- [F-3.5] Font Awesome 6.5.0 con SRI integrity VÁLIDO (mismo hash que index.html) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
@@ -473,6 +471,26 @@
         [data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--muted-2); }
         [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
+        /* ═══════════════════════════════════════════════════
+           [FIX-ICONS] Defensa anti-conflicto con cualquier framework CSS
+           (Tailwind, Bootstrap, etc.) que pueda overridear FA6.
+           Fuerza font-family y font-weight con !important para que
+           los iconos siempre se rendericen.
+           ═══════════════════════════════════════════════════ */
+        .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            -webkit-font-smoothing: antialiased !important;
+            display: inline-block !important;
+            font-style: normal !important;
+            font-variant: normal !important;
+            line-height: 1 !important;
+            text-rendering: auto !important;
+        }
+        .fab, .fa-brands { font-family: "Font Awesome 6 Brands" !important; }
+        .far, .fa-regular { font-family: "Font Awesome 6 Free" !important; font-weight: 400 !important; }
+
         /* [T-THEME] Botón toggle de tema */
         .theme-toggle {
             width: 38px;
@@ -867,9 +885,9 @@
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
                             <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-align-left" style="color:var(--secondary)"></i> Descripcion</h3>
                             <div class="form-group">
-                                <label class="form-label">Descripción del local <span style="font-weight:400;color:var(--muted)">(min. 50, máx. 2000 caracteres)</span></label>
-                                <textarea class="form-textarea" id="f-description" placeholder="Cuenta qué hace especial a tu local..." rows="4" minlength="50" maxlength="2000"></textarea>
-                                <div class="form-error">La descripción debe tener entre 50 y 2000 caracteres.</div>
+                                <label class="form-label">Descripción del local <span style="font-weight:400;color:var(--muted)">(min. 10, máx. 2000 caracteres)</span></label>
+                                <textarea class="form-textarea" id="f-description" placeholder="Cuenta qué hace especial a tu local..." rows="4" minlength="10" maxlength="2000"></textarea>
+                                <div class="form-error">La descripción debe tener entre 10 y 2000 caracteres.</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Horario</label>
@@ -2721,9 +2739,12 @@
             }
 
             // [F-1.2] Validación de longitud de descripción si no está vacía
+            // ★ FIX [v2.0.5]: bajado de 50 a 10 caracteres. Antes el save se bloqueaba
+            //   silenciosamente cuando el usuario ponía descripciones cortas (muy común
+            //   en borradores rápidos). 10 caracteres es suficiente para evitar spam.
             const description = (($('f-description') || {}).value || '').trim();
-            if (description && description.length < 50) {
-                showToast('La descripción debe tener al menos 50 caracteres o dejarla vacía', true);
+            if (description && description.length < 10) {
+                showToast('La descripción debe tener al menos 10 caracteres o dejarla vacía', true);
                 $('f-description').focus();
                 return;
             }
@@ -2852,6 +2873,18 @@
 
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
             btnText.textContent = 'Guardando local...';
+
+            // ★ FIX [v2.0.4]: helper con timeout para evitar que el save se cuelgue
+            // indefinidamente si Supabase no responde (común en conexiones cubanas inestables).
+            const withTimeout = (promise, ms, label) => Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(
+                    () => reject(new Error('Timeout (' + label + '): el servidor no respondió en ' + (ms/1000) + 's. Revisa tu conexión.')),
+                    ms
+                ))
+            ]);
+            const SAVE_TIMEOUT = 30000; // 30s
+
             try {
                 let opError = null;
                 if (editingPlaceId) {
@@ -2859,17 +2892,17 @@
                     const update = { ...data };
                     delete update.owner_id;
                     delete update.status;
-                    let r = await sb.from('places').update(update).eq('id', editingPlaceId);
+                    let r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE');
                     // [F-5.6] Si error de auth, refresh + reintento único
                     if (r.error && await handleAuthError(r.error)) {
-                        r = await sb.from('places').update(update).eq('id', editingPlaceId);
+                        r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE retry');
                     }
                     opError = r.error;
                     if (!opError) showToast('Local actualizado correctamente');
                 } else {
-                    let r = await sb.from('places').insert(data);
+                    let r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT');
                     if (r.error && await handleAuthError(r.error)) {
-                        r = await sb.from('places').insert(data);
+                        r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT retry');
                     }
                     opError = r.error;
                     if (!opError) showToast('Local creado correctamente');
@@ -2881,7 +2914,12 @@
                 // [F-5.2] Limpiar el borrador autoguardado tras guardar exitosamente
                 clearPlaceDraft();
                 _hasUnsavedChanges = false;
-                await loadMyPlaces();
+                // ★ FIX: cargar con timeout para no colgarse si la red falla post-save
+                try {
+                    await withTimeout(loadMyPlaces(), 15000, 'reload');
+                } catch (reloadErr) {
+                    console.warn('Recarga post-save falló (no crítico):', reloadErr);
+                }
                 renderOverview();
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
