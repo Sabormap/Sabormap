@@ -510,9 +510,41 @@ async function loadPlacesFromSupabase() {
         // Re-poblar el dropdown de barrios y volver a renderizar la grilla
         if (typeof populateBarrios === 'function') populateBarrios();
         if (typeof renderPlaces  === 'function') renderPlaces();
-        if (typeof animateStats === 'function') animateStats();
+        // ★ FIX [v2.0.7]: NO volver a llamar animateStats() aquí. Antes, esta
+        //   llamada recreaba el IntersectionObserver y re-animaba el contador
+        //   desde 0 hasta el nuevo total, provocando el salto visible
+        //   "256 → 257" cuando llegaba el local de Supabase. Ahora usamos
+        //   updateStatNumbers() que solo ajusta el valor final sin animar.
+        if (added > 0 && typeof updateStatNumbers === 'function') {
+            updateStatNumbers();
+        }
     } catch (err) {
         console.warn('Error cargando locales desde Supabase:', err);
+    }
+}
+
+/* ★ FIX [v2.0.7]: actualiza los contadores de stats SIN re-animar.
+   Se llama cuando loadPlacesFromSupabase() agrega locales nuevos,
+   para que el contador pase de 256 a 257 de forma suave (o sin moverse
+   si ya estaba en su valor final). */
+function updateStatNumbers() {
+    const totalLocales = staticPlaces.length;
+    const municipios = new Set(staticPlaces.map(p => p.neighborhood));
+    const totalMunicipios = municipios.size;
+
+    const statLocales = document.getElementById('statLocales');
+    const statMunicipios = document.getElementById('statMunicipios');
+    if (statLocales) {
+        statLocales.dataset.target = totalLocales;
+        // Solo actualizar textContent si la animación ya terminó o si el
+        // nuevo valor es mayor (evita retroceder el contador en carrera).
+        const current = parseInt(statLocales.textContent, 10) || 0;
+        if (current <= totalLocales) statLocales.textContent = totalLocales;
+    }
+    if (statMunicipios) {
+        statMunicipios.dataset.target = totalMunicipios;
+        const current = parseInt(statMunicipios.textContent, 10) || 0;
+        if (current <= totalMunicipios) statMunicipios.textContent = totalMunicipios;
     }
 }
 
@@ -1331,6 +1363,12 @@ function scrollToBottom() { document.getElementById('siteFooter').scrollIntoView
 /* ═══════════════════════════════════════════
    ANIMAR ESTADÍSTICAS
    ═══════════════════════════════════════════ */
+/* ★ FIX [v2.0.7]: _statsAnimated guarda si ya se configuró el observer
+   de animación. Así, aunque animateStats() se llame dos veces (p. ej.
+   desde DOMContentLoaded y desde loadPlacesFromSupabase), el contador
+   NO se re-anima desde 0 — solo se actualiza el data-target y el
+   textContent al nuevo total. Esto elimina el salto "256 → 257". */
+let _statsAnimated = false;
 function animateStats() {
     // Calcular valores reales desde los datos
     const totalLocales = staticPlaces.length;
@@ -1341,6 +1379,13 @@ function animateStats() {
     const statMunicipios = document.getElementById('statMunicipios');
     if (statLocales) statLocales.dataset.target = totalLocales;
     if (statMunicipios) statMunicipios.dataset.target = totalMunicipios;
+
+    // Si ya animamos antes, solo ajustar el valor final sin re-animar
+    if (_statsAnimated) {
+        if (statLocales) statLocales.textContent = totalLocales;
+        if (statMunicipios) statMunicipios.textContent = totalMunicipios;
+        return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(e => {
@@ -1359,6 +1404,7 @@ function animateStats() {
         });
     }, { threshold: 0.5 });
     document.querySelectorAll('.stat-number').forEach(el => observer.observe(el));
+    _statsAnimated = true;
 }
 
 /* Cerrar drawer con tecla Escape */
