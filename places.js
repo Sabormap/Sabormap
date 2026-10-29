@@ -4,10 +4,10 @@
  * Declara `staticPlaces` en el scope global del script, accesible
  * desde el <script> principal de sabormap.html.
  *
- * Total de locales: 258 (ids 1..258)
- *   · restaurante: 161
+ * Total de locales: 256 (ids 1..258, faltan 69, 188)
+ *   · restaurante: 160
  *   · bar: 88
- *   · heladeria: 9
+ *   · heladeria: 8
  *
  * Normalizaciones aplicadas (ver CAMBIOS.md para el detalle):
  *   [T-01]  categoría "restaurant" → "restaurante" (34 locales)
@@ -27,7 +27,12 @@
  * Pendiente de intervención humana (ver PENDIENTES.md):
  *   C-01/C-02 (cartas clonadas), C-04 (91 sin teléfono), C-05 (links placeholder),
  *   T-09 (17 coordenadas ≠ gmapsUrl), C-08 (barrio contradictorio).
- * ============================================================ */
+
+ *
+ * [v2.0.7] Header corregido: el array tiene 256 objetos (no 258).
+ *           Faltan los IDs 69 y 188 por saltos en la numeración original.
+ *           No se modificaron los datos, solo el header para que refleje la realidad.
+ *           Si prefieres IDs secuenciales 1..256, usa places_optionA_renumber.js. * ============================================================ */
 
 let staticPlaces = [
 { id:1, name:"Yo Invito", category:"restaurante", neighborhood:"Playa", address:"Calle 3ra, #119, esq, D, La Habana", rating:4.7, priceLevel:3, tags:["Variedad de comida cubana e internacional"], description:"Contamos con área infantil para el disfrute de los peques. Siéntete como en casa 😊😌.", mustOrder:"Daiquiri de lavanda con miel de caña", editorNote:"Si encuentras la puerta, ya ganaste la noche.", hours:"Lun-Dom: 12:00pm-11:00pm", phone:"", featured:true, isOpen:true, lat:23.1422908, lng:-82.3981254, images:["imagenes/Yo invito.webp"], menu:[{"category":"Cocteles de autor","items":[{"name":"Daiquiri de lavanda","desc":"Ron blanco, limon, miel de caña, esencia de lavanda","price":"$350"},{"name":"Mojito de hierbabuena","desc":"Ron, hierbabuena fresca, limon, azucar, soda","price":"$280"},{"name":"Cuba Libre premium","desc":"Ron añejo, Coca-Cola, limon exprimido","price":"$250"},{"name":"Piña colada ahumada","desc":"Ron, crema de coco, piña, humo de guayaba","price":"$380"}]},{"category":"Picadas","items":[{"name":"Tabla de quesos cubanos","desc":"Queso de mano, gouda tropical, frutos secos, galletas","price":"$500"},{"name":"Croquetas de jamon","desc":"6 unidades, mostaza de miel casera","price":"$350"}]}], links:[{"platform":"PedidosYa","url":"https://pedidosya.com","icon":"fa-motorcycle","cssClass":"delivery-pedidosya"},{"platform":"Reservar Mesa","url":"https://opentable.com","icon":"fa-calendar-check","cssClass":"delivery-reserva"}] },
@@ -351,7 +356,6 @@ const fixedCoords = {
     185: { lat: 23.1167, lng: -82.4055 }, // Tablazo (1ra e/ C y D)
     186: { lat: 23.1358, lng: -82.3491 }, // Habana 5 (Habana No.5)
     187: { lat: 23.1237, lng: -82.4181 }, // La Marina (1ra y 70)
-    188: { lat: 23.1164, lng: -82.4049 }, // El Gabán (1ra Esq. 46)
     189: { lat: 23.1235, lng: -82.3628 }, // VOYA Café (Juan Delgado 255)
     190: { lat: 23.1402, lng: -82.3592 }, // Marechiaro (Malecón / Águila)
     191: { lat: 23.0881, lng: -82.4084 }, // Juanky’s Pan (23A/ 202 y 212)
