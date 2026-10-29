@@ -414,10 +414,38 @@ function mapDbPlaceToPublic(p) {
     if (!p) return null;
     // price_range ('$', '$$', '$$$', '$$$$') → priceLevel (1-4)
     const priceLevel = ({ '$':1, '$$':2, '$$$':3, '$$$$':4 })[p.price_range] || 2;
-    // menu: jsonb ya viene como array de {category, items:[{name,desc,price}]}
-    const menu  = Array.isArray(p.menu)  ? p.menu  : [];
-    // links: jsonb ya viene como array de {platform, url, icon, cssClass}
-    const links = Array.isArray(p.links) ? p.links : [];
+    // ★ FIX: tolerar menu/links como string JSON.
+    // Supabase a veces devuelve columnas jsonb como string (según cómo se inserten
+    // desde el dashboard o según el driver). Sin este parseo defensivo, la carta
+    // del gelato creado desde dashboard.html llegaba como [] y nunca se mostraba
+    // el botón "Ver la carta completa".
+    let menu = p.menu;
+    if (typeof menu === 'string') {
+        try {
+            menu = JSON.parse(menu);
+            console.info('[Sabormap] menu parseado desde string para:', p.name);
+        } catch (e) {
+            console.warn('[Sabormap] menu inválido en', p.name, ':', e);
+            menu = [];
+        }
+    }
+    let links = p.links;
+    if (typeof links === 'string') {
+        try {
+            links = JSON.parse(links);
+        } catch (e) {
+            console.warn('[Sabormap] links inválido en', p.name, ':', e);
+            links = [];
+        }
+    }
+    let tags = p.tags;
+    if (typeof tags === 'string') {
+        try { tags = JSON.parse(tags); } catch (e) { tags = []; }
+    }
+    let images = p.images;
+    if (typeof images === 'string') {
+        try { images = JSON.parse(images); } catch (e) { images = []; }
+    }
     return {
         id:             p.id,                                   // uuid (string)
         name:           p.name || 'Sin nombre',
@@ -426,19 +454,24 @@ function mapDbPlaceToPublic(p) {
         address:        p.address || '',
         rating:         Number(p.rating) || 0,
         priceLevel:     priceLevel,
-        tags:           Array.isArray(p.tags) ? p.tags : [],
+        tags:           Array.isArray(tags) ? tags : [],
         description:    p.description || '',
-        mustOrder:      '',
-        editorNote:     '',
-        hours:          p.schedule || '',
+        // ★ FIX [v2.0.4]: columnas snake_case en DB → camelCase en frontend.
+        //   Antes leía p.mustOrder / p.editorNote (que siempre eran undefined),
+        //   por eso el gelato creado desde dashboard.html no mostraba el badge
+        //   "Lo que tienes que pedir" ni la nota del editor en la home.
+        mustOrder:      p.must_order || p.mustOrder || '',
+        editorNote:     p.editor_note || p.editorNote || '',
+        gmapsUrl:       p.gmaps_url || p.gmapsUrl || '',   // por si se agrega la columna después
+        hours:          p.schedule || p.hours || '',
         phone:          p.phone || '',
         featured:       !!p.featured,
-        isOpen:         true,
+        isOpen:         (typeof p.is_open === 'boolean') ? p.is_open : true,
         lat:            Number(p.lat) || null,
         lng:            Number(p.lng) || null,
-        images:         Array.isArray(p.images) ? p.images : [],
-        menu:           menu,
-        links:          links,
+        images:         Array.isArray(images) ? images : [],
+        menu:           Array.isArray(menu) ? menu : [],
+        links:          Array.isArray(links) ? links : [],
         is_pro:         !!p.is_pro, // ★ NUEVO: Para ocultar el banner en locales PRO ★
         _fromDb:        true   // flag por si querés diferenciar en el futuro
     };
@@ -1136,14 +1169,17 @@ function openMenuSubModal() {
     const p = currentModalPlace;
     if (!p || !p.menu) return;
     document.getElementById('menuSubTitle').textContent = `Carta — ${p.name}`;
-    // Agregar aviso de carta ejemplo
+    // ★ FIX [v2.0.6]: removido el aviso "Carta de ejemplo — la carta real
+    //   estará disponible próximamente" porque ya no aplica:
+    //   · Los lugares creados desde el dashboard tienen su carta real (la
+    //     ingresa el dueño desde el formulario).
+    //   · Los lugares estáticos con menu≠[] también tienen su carta real.
+    //   · Los lugares sin carta (menu=[]) ni siquiera muestran el botón
+    //     "Ver la carta completa" (ver openModal → if (p.menu && p.menu.length)).
+    //   Por lo tanto, cualquier local que llegue a esta función tiene una
+    //   carta propia y real — no necesita el aviso de "ejemplo".
     const existingNotice = document.getElementById('menuExampleNotice');
     if (existingNotice) existingNotice.remove();
-    const notice = document.createElement('div');
-    notice.id = 'menuExampleNotice';
-    notice.style.cssText = 'padding:12px 16px;margin:8px 16px 0;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:var(--amber);font-size:0.8rem;font-weight:500;display:flex;align-items:center;gap:8px;';
-    notice.innerHTML = '<i class="fas fa-info-circle"></i> Carta de ejemplo — la carta real estará disponible próximamente';
-    document.getElementById('menuSubBody').parentElement.insertBefore(notice, document.getElementById('menuSubBody'));
 
     let html = '';
     p.menu.forEach(section => {
