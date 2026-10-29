@@ -1003,9 +1003,14 @@
     <!-- [T-08] Supabase JS movido aquí desde el <head>: deja de bloquear el render -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
 
-    <script src="places.js"></script>
+    <!-- ★ FIX [v2.0.6]: cache-busting con query string ?v=...
+         Esto hace que el navegador trate places.js y app.js como recursos
+         nuevos cada vez que cambiás la versión. Combinado con el SW
+         network-first + no-store, garantiza que siempre se vea la última
+         versión. CAMBIA este número cada vez que edites places.js o app.js. -->
+    <script src="places.js?v=257"></script>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=20251028"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
