@@ -162,13 +162,146 @@
         .menu-modal-title { font-weight: 700; font-size: 1.1rem; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .menu-back-btn { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; color: var(--cream); font-family: inherit; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
         .menu-back-btn:hover { border-color: var(--accent); background: var(--card-hover); }
+
+        /* ═══════════════════════════════════════════════════
+           [v2.0.8] BARRA DE NAVEGACIÓN DE CATEGORÍAS DE LA CARTA
+           Chips pegajosos debajo del header para saltar entre
+           secciones sin tener que hacer scroll hasta el final.
+           Solo aparece si la carta tiene 2+ categorías.
+           ═══════════════════════════════════════════════════ */
+        .menu-cat-nav {
+            position: sticky; top: 57px; z-index: 9;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex; gap: 8px; align-items: center;
+            overflow-x: auto; overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .menu-cat-nav::-webkit-scrollbar { height: 3px; }
+        .menu-cat-nav::-webkit-scrollbar-track { background: transparent; }
+        .menu-cat-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .menu-cat-nav.hidden { display: none; }
+        .menu-cat-chip {
+            flex: 0 0 auto;
+            padding: 7px 14px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
+            /* [v2.0.11] --chip-color lo inyecta app.js por índice de sección */
+            --chip-color: var(--accent);
+            --chip-glow: var(--accent-glow);
+        }
+        .menu-cat-chip:hover {
+            color: var(--cream);
+            border-color: var(--chip-color);
+            background: var(--card-hover);
+        }
+        /* [v2.0.11] Estado activo: usa el color propio del chip (--chip-color),
+           no un violeta fijo. Así cada chip activo se distingue por su color. */
+        .menu-cat-chip.active {
+            color: #fff;
+            background: var(--chip-color);
+            border-color: var(--chip-color);
+            box-shadow: 0 2px 12px var(--chip-glow);
+        }
+        /* Barra inferior del chip activo para reforzar visualmente el color
+           (sutil, no sobrecarga). Se ve como un subrayado grueso. */
+        .menu-cat-chip.active::after {
+            content: '';
+            position: absolute;
+            left: 14px; right: 14px; bottom: 3px;
+            height: 2px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 2px;
+        }
+        .menu-cat-chip { position: relative; }
+        /* [v2.0.9] Contador "X / Y" discreto al final de la barra de chips */
+        .menu-cat-counter {
+            flex: 0 0 auto;
+            margin-left: auto;
+            padding-left: 12px;
+            border-left: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            opacity: 0.8;
+        }
+        .menu-cat-counter .num { color: var(--accent); font-weight: 700; }
+        /* Offset para que el scroll no tape el título de la sección bajo la barra pegajosa */
+        .menu-section { scroll-margin-top: 110px; }
+
+        /* [v2.0.9] Botón "Siguiente categoría →" al final de cada sección
+           [v2.0.10] Ahora toma el color de la categoría destino mediante
+           CSS custom properties (--next-color, --next-glow) que inyecta app.js.
+           Animación de entrada con fade-up cuando aparece en viewport. */
+        .menu-next-cat-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin: 24px auto 8px;
+            padding: 11px 20px;
+            border-radius: 12px;
+            border: 1px dashed var(--next-color, var(--accent));
+            background: color-mix(in srgb, var(--next-color, var(--accent)) 8%, transparent);
+            color: var(--next-color, var(--accent));
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            max-width: 90%;
+            transition: all 0.25s ease;
+            /* Animación de entrada: fade-up cuando entra en viewport.
+               El observer en app.js le añade .visible para dispararla. */
+            opacity: 0;
+            transform: translateY(8px);
+            animation: none;
+        }
+        .menu-next-cat-btn.visible {
+            animation: menuNextFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        @keyframes menuNextFadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .menu-next-cat-btn:hover {
+            background: linear-gradient(135deg,
+                var(--next-color, var(--accent)),
+                color-mix(in srgb, var(--next-color, var(--accent)) 70%, #000));
+            color: #fff;
+            border-style: solid;
+            border-color: var(--next-color, var(--accent));
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px var(--next-glow, var(--accent-glow));
+        }
+        .menu-next-cat-btn:active { transform: translateY(0); }
+        .menu-next-cat-btn i { font-size: 0.7rem; transition: transform 0.25s ease; }
+        .menu-next-cat-btn:hover i { transform: translateY(2px); }
+        /* Fallback para navegadores sin color-mix (Chrome <111, Safari <16.2):
+           usamos el accent por defecto y rgba hardcoded. */
+        @supports not (background: color-mix(in srgb, red, blue)) {
+            .menu-next-cat-btn {
+                background: rgba(139,92,246,0.06);
+                color: var(--accent);
+                border-color: var(--accent);
+            }
+        }
+
         .menu-body { padding: 28px; flex: 1; overflow-y: auto; overflow-x: hidden; }
         .menu-body::-webkit-scrollbar { width: 4px; }
         .menu-body::-webkit-scrollbar-track { background: transparent; }
         .menu-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
         .menu-section { margin-bottom: 32px; }
         .menu-section:last-child { margin-bottom: 0; }
-        .menu-section-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); display: inline-block; }
+        .menu-section-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--section-color, var(--accent)); display: inline-block; color: var(--section-color, var(--accent)); transition: color 0.3s ease, border-color 0.3s ease; }
         .menu-dish { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--menu-dish-border); transition: background 0.2s ease; }
         .menu-dish:last-child { border-bottom: none; }
         .menu-dish:hover { background: var(--menu-dish-hover-bg); padding-left: 8px; padding-right: 8px; margin: 0 -8px; border-radius: 8px; }
@@ -991,6 +1124,10 @@
                 <button class="menu-scroll-top-btn" id="menuScrollTopBtn" onclick="scrollMenuToTop()" title="Ir arriba" style="display:none;"><i class="fas fa-chevron-up"></i></button>
                 <div style="width:80px;"></div>
             </div>
+            <!-- [v2.0.8] Barra de navegación por categorías (chips pegajosos).
+                 Se puebla dinámicamente desde openMenuSubModal() en app.js.
+                 Si la carta tiene una sola categoría, se oculta. -->
+            <nav class="menu-cat-nav hidden" id="menuCatNav" aria-label="Categorías de la carta"></nav>
             <div class="menu-body" id="menuSubBody"></div>
         </div>
     </div>
