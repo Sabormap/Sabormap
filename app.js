@@ -1197,6 +1197,46 @@ function escAttr(s) {
 /* ═══════════════════════════════════════════
    SUB-MODAL DE MENÚ (dentro del drawer)
    ═══════════════════════════════════════════ */
+/* [v2.0.10] Devuelve el color y glow CSS asociados a cada categoría de local.
+   Se usa para que el botón "Siguiente categoría" tome el color del local actual
+   y armonice con el banner del drawer (que ya usa estos mismos colores).
+   · bar         → violeta (accent)
+   · restaurante → cyan (secondary)
+   · heladeria   → rosa (pink) */
+function getCatColorVars(category) {
+    switch (category) {
+        case 'restaurante':
+            return { color: 'var(--secondary)', glow: 'var(--secondary-glow, rgba(6,182,212,0.3))' };
+        case 'heladeria':
+            return { color: 'var(--pink)', glow: 'var(--pink-glow, rgba(236,72,153,0.3))' };
+        case 'bar':
+        default:
+            return { color: 'var(--accent)', glow: 'var(--accent-glow)' };
+    }
+}
+
+/* ★ [v2.0.11] Paleta cíclica de colores por ÍNDICE de sección de la carta.
+   Cada sección de la carta recibe un color distinto (no por tipo de local,
+   sino por posición: sección 0 → violeta, sección 1 → cian, sección 2 →
+   rosa, sección 3 → ámbar, etc.). Así:
+     · Los chips de la barra de navegación se distinguen visualmente.
+     · El botón "Siguiente: X" toma el color de la categoría DESTINO,
+       coincidiendo con el chip al que va a saltar.
+     · El botón "Volver al inicio" toma el color de la PRIMERA sección.
+   La paleta usa las CSS variables del tema activo, con fallbacks por si
+   alguna no está definida. */
+const MENU_SECTION_PALETTE = [
+    { color: 'var(--accent, #8b5cf6)',     glow: 'var(--accent-glow, rgba(139,92,246,0.3))'     }, // violeta
+    { color: 'var(--secondary, #06b6d4)',  glow: 'var(--secondary-glow, rgba(6,182,212,0.3))'   }, // cian
+    { color: 'var(--pink, #ec4899)',       glow: 'var(--pink-glow, rgba(236,72,153,0.3))'      }, // rosa
+    { color: 'var(--amber, #f59e0b)',      glow: 'var(--amber-glow, rgba(245,158,11,0.3))'     }, // ámbar
+    { color: 'var(--green, #22c55e)',      glow: 'var(--green-glow, rgba(34,197,94,0.3))'      }, // verde
+];
+function getSectionColorVars(sectionIndex) {
+    const idx = ((sectionIndex % MENU_SECTION_PALETTE.length) + MENU_SECTION_PALETTE.length) % MENU_SECTION_PALETTE.length;
+    return MENU_SECTION_PALETTE[idx];
+}
+
 function openMenuSubModal() {
     const p = currentModalPlace;
     if (!p || !p.menu) return;
@@ -1213,9 +1253,32 @@ function openMenuSubModal() {
     const existingNotice = document.getElementById('menuExampleNotice');
     if (existingNotice) existingNotice.remove();
 
+    // ★ [v2.0.8] Generar IDs estables para cada sección (para anclas de navegación).
+    //   Se usa un slug simple del nombre de la categoría + índice para evitar
+    //   colisiones si dos categorías se llaman igual.
+    const sections = p.menu.map((section, i) => {
+        const slug = String(section.category || 'seccion')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+        return {
+            ...section,
+            _id: `menu-sec-${i}-${slug}`,
+            _index: i
+        };
+    });
+
     let html = '';
-    p.menu.forEach(section => {
-        html += `<div class="menu-section">
+    sections.forEach((section, i) => {
+        const isLast = i === sections.length - 1;
+        const nextSection = !isLast ? sections[i + 1] : null;
+        // [v2.0.11] Inyectar el color de esta sección en el contenedor,
+        // para que el título (.menu-section-title) y el botón "siguiente"
+        // puedan referenciarlo vía var(--section-color).
+        const secColor = getSectionColorVars(i);
+        html += `<div class="menu-section" id="${section._id}"
+                    style="--section-color: ${secColor.color}; --section-glow: ${secColor.glow};">
             <h3 class="menu-section-title">${section.category}</h3>`;
         section.items.forEach(item => {
             html += `<div class="menu-dish">
@@ -1226,6 +1289,32 @@ function openMenuSubModal() {
                 <div class="menu-dish-price">${item.price}</div>
             </div>`;
         });
+        // [v2.0.9/2.0.10/2.0.11] Botón "Siguiente categoría →" al final de cada sección.
+        //   v2.0.11: ahora toma el color de la sección DESTINO (paleta cíclica por índice),
+        //   no del local. Así el botón coincide con el chip de la barra al que va a saltar.
+        //   En la última sección, un botón "Volver al inicio ↑" con color de la primera sección.
+        if (nextSection) {
+            const nextColorVars = getSectionColorVars(i + 1);
+            html += `<button type="button"
+                        class="menu-next-cat-btn"
+                        style="--next-color: ${nextColorVars.color}; --next-glow: ${nextColorVars.glow};"
+                        onclick="scrollToMenuCategory('${nextSection._id}', ${i + 1})"
+                        aria-label="Ir a la siguiente categoría: ${escAttr(nextSection.category)}">
+                    Siguiente: ${nextSection.category}
+                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                </button>`;
+        } else if (sections.length >= 2) {
+            // "Volver al inicio" toma el color de la primera sección (donde va a saltar)
+            const firstColorVars = getSectionColorVars(0);
+            html += `<button type="button"
+                        class="menu-next-cat-btn"
+                        style="--next-color: ${firstColorVars.color}; --next-glow: ${firstColorVars.glow};"
+                        onclick="scrollMenuToTop()"
+                        aria-label="Volver al inicio de la carta">
+                    Volver al inicio
+                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                </button>`;
+        }
         html += `</div>`;
     });
 
@@ -1242,12 +1331,137 @@ function openMenuSubModal() {
     }
 
     document.getElementById('menuSubBody').innerHTML = html;
+
+    // ★ [v2.0.8/2.0.9/2.0.11] Poblar la barra de navegación de categorías + contador.
+    //   v2.0.11: cada chip recibe --chip-color de la paleta cíclica por índice,
+    //   para que visualmente coincida con su botón "Siguiente: X" correspondiente.
+    //   Solo se muestra si hay 2+ categorías (con 1 no tiene sentido).
+    const nav = document.getElementById('menuCatNav');
+    if (nav && sections.length >= 2) {
+        const chipsHtml = sections.map((s, i) => {
+            const cv = getSectionColorVars(i);
+            return `
+            <button type="button"
+                    class="menu-cat-chip${i === 0 ? ' active' : ''}"
+                    style="--chip-color: ${cv.color}; --chip-glow: ${cv.glow};"
+                    data-target="${s._id}"
+                    data-index="${i}"
+                    onclick="scrollToMenuCategory('${s._id}', ${i})"
+                    aria-label="Ir a la categoría ${escAttr(s.category)}">
+                ${s.category}
+            </button>`;
+        }).join('');
+        // [v2.0.9] Contador "X / Y" discreto al final de la barra.
+        nav.innerHTML = chipsHtml +
+            `<span class="menu-cat-counter" aria-live="polite">
+                <span class="num" id="menuCatCurrent">1</span> / ${sections.length}
+            </span>`;
+        nav.classList.remove('hidden');
+        // Guardar el total para el updateCounter
+        nav.dataset.total = sections.length;
+        // Activar el observador que resalta el chip de la sección visible
+        setupMenuCatNavObserver();
+    } else if (nav) {
+        nav.innerHTML = '';
+        nav.classList.add('hidden');
+    }
+
     document.getElementById('menuSubModal').classList.add('open');
+
+    // [v2.0.10] Animación de entrada del botón "Siguiente categoría":
+    // disparamos la animación fade-up cuando el botón entra en el viewport
+    // del menu-body (no al abrir el modal, sino al hacer scroll hacia él).
+    setupNextCatBtnObserver();
+}
+
+/* [v2.0.10] IntersectionObserver que añade .visible a cada .menu-next-cat-btn
+   cuando entra en viewport, disparando la animación fadeUp definida en CSS.
+   Se desconecta al cerrar el sub-modal. */
+let _nextCatBtnObserver = null;
+function setupNextCatBtnObserver() {
+    if (_nextCatBtnObserver) { _nextCatBtnObserver.disconnect(); _nextCatBtnObserver = null; }
+    const btns = document.querySelectorAll('#menuSubBody .menu-next-cat-btn');
+    if (!btns.length) return;
+    // Si el navegador no soporta IntersectionObserver, mostrar todos de una.
+    if (!('IntersectionObserver' in window)) {
+        btns.forEach(b => b.classList.add('visible'));
+        return;
+    }
+    _nextCatBtnObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                _nextCatBtnObserver.unobserve(e.target);
+            }
+        });
+    }, {
+        root: document.getElementById('menuSubBody'),
+        rootMargin: '0px 0px -40px 0px', // dispara un poco antes de que entre del todo
+        threshold: 0.1
+    });
+    btns.forEach(b => _nextCatBtnObserver.observe(b));
+}
+
+/* ★ [v2.0.8] Salta a una categoría de la carta al hacer click en su chip.
+   Usa scrollIntoView con behavior:'smooth' y respeta el scroll-margin-top
+   definido en CSS para que el título no quede tapado por la barra pegajosa. */
+function scrollToMenuCategory(sectionId, index) {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Activar el chip clicado inmediatamente (el observer lo confirmará)
+    setActiveMenuChip(index);
+    // Llevar también el chip clicado al centro de la barra si está fuera de vista
+    const chip = document.querySelector(`.menu-cat-chip[data-index="${index}"]`);
+    if (chip && chip.scrollIntoView) {
+        chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
+window.scrollToMenuCategory = scrollToMenuCategory;
+
+function setActiveMenuChip(index) {
+    document.querySelectorAll('.menu-cat-chip').forEach(c => {
+        c.classList.toggle('active', parseInt(c.dataset.index, 10) === index);
+    });
+    // [v2.0.9] Actualizar también el contador "X / Y"
+    const counter = document.getElementById('menuCatCurrent');
+    if (counter) counter.textContent = index + 1;
+}
+
+/* ★ [v2.0.8] IntersectionObserver que resalta el chip de la categoría
+   actualmente visible mientras el usuario hace scroll por la carta. */
+let _menuCatObserver = null;
+function setupMenuCatNavObserver() {
+    // Limpiar observer anterior si existía
+    if (_menuCatObserver) { _menuCatObserver.disconnect(); _menuCatObserver = null; }
+    const sections = document.querySelectorAll('#menuSubBody .menu-section');
+    if (!sections.length) return;
+    _menuCatObserver = new IntersectionObserver((entries) => {
+        // Encontrar la entrada más alta que esté intersectando
+        const visible = entries
+            .filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length === 0) return;
+        const target = visible[0].target;
+        const idx = parseInt(target.id.match(/^menu-sec-(\d+)-/)[1], 10);
+        setActiveMenuChip(idx);
+    }, {
+        root: document.getElementById('menuSubBody'),
+        rootMargin: '-110px 0px -60% 0px', // el chip se activa cuando la sección pasa la barra pegajosa
+        threshold: 0
+    });
+    sections.forEach(s => _menuCatObserver.observe(s));
 }
 
 function closeMenuSubModal() {
     document.getElementById('menuSubModal').classList.remove('open');
     document.getElementById('menuScrollTopBtn').style.display = 'none';
+    // ★ [v2.0.8] Limpiar observer y chips al cerrar
+    if (_menuCatObserver) { _menuCatObserver.disconnect(); _menuCatObserver = null; }
+    // [v2.0.10] Limpiar observer de animación de botones "siguiente"
+    if (_nextCatBtnObserver) { _nextCatBtnObserver.disconnect(); _nextCatBtnObserver = null; }
+    const nav = document.getElementById('menuCatNav');
+    if (nav) { nav.innerHTML = ''; nav.classList.add('hidden'); }
 }
 
 // Scroll del menú: mostrar/ocultar botón "ir arriba"
