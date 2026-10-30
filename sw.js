@@ -20,7 +20,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.6'; // ↑ súbelo en cada despliegue — v2.0.6: places.js/app.js fuera del precache (fix 256 vs 257)
+const VERSION = 'v2.0.7'; // ↑ súbelo en cada despliegue — v2.0.7: places.js/app.js fuera del precache (fix 256 vs 257)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
