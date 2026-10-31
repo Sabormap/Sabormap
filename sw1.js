@@ -1,11 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.8 — Bump de VERSION para invalidar caches stale. Acompaña al
-    dashboard.html v2.0.8: nav pills para categorías de carta, soporte
-    offline reforzado (saveProfile encola), banner flotante de ops
-    pendientes, y hereda todos los fixes de v2.0.6/v2.0.7 (Background
-    Sync, polyfill Web Locks, createClient defensivo).
-    Base v1.0.0: soporte offline básico del panel + Background Sync]
+   [v2.0.10 — Bump de VERSION. Acompaña al dashboard.html v2.0.10:
+    parches P0 de seguridad: requireAdmin en todas las funciones admin
+    (saveSubEdit, saveCollection, deleteCollection, addPlaceToCollection,
+    addStaticPlaceToCollection, removePlaceFromCollection) + fixes de XSS
+    en renderTags, openColPlacesModal y renderColPlacesList + escapeAttr
+    completo + guard de currentUser en handler del SW.
+    Hereda todos los fixes anteriores.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled: un 404 no aborta el
@@ -27,7 +28,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.8'; // ↑ súbelo en cada despliegue — v2.0.8: nav pills + offline reforzado + banner pendientes
+const VERSION = 'v2.0.10'; // ↑ súbelo en cada despliegue — v2.0.10: parches P0 seguridad (requireAdmin + XSS)
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
