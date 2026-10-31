@@ -2415,12 +2415,81 @@
            AUTH: Logout
         ======================================== */
         window.handleLogout = async function() {
-            await sb.auth.signOut();
-            currentUser = null; userProfile = null; userSubscription = null;
-            myPlaces = []; allPlaces = []; allProfiles = []; allSubs = []; allLogs = [];
-            $('dashboardWrap').classList.remove('visible');
-            $('authScreen').style.display = 'flex';
-            showView('login');
+            // ★ FIX [v2.0.9] — Logout optimista e instantáneo.
+            //
+            // ANTES: `await sb.auth.signOut()` llamaba al servidor para
+            // revocar el JWT. En redes cubanas lentas, esto podía colgarse
+            // 30s+ o timeout. El usuario veía el dashboard congelado.
+            //
+            // AHORA: cerramos la UI al instante (optimistic) y luego:
+            //   1. Limpiamos la sesión LOCAL (sin red) → instantáneo.
+            //   2. Disparamos signOut global en background (con timeout 5s).
+            //   3. Detenemos el procesador de cola para que no intente
+            //      refrescar sesión de un usuario que ya se fue.
+            //   4. Ocultamos banner/badge de ops pendientes (se restauran
+            //      al volver a loguear, las ops se quedan en IndexedDB).
+
+            // 1) UI optimista: ocultar dashboard y mostrar login YA
+            const dashWrap = $('dashboardWrap');
+            const authScreen = $('authScreen');
+            if (dashWrap) dashWrap.classList.remove('visible');
+            if (authScreen) authScreen.style.display = 'flex';
+            try { showView('login'); } catch (e) {}
+
+            // 2) Limpiar estado en memoria inmediatamente
+            currentUser = null;
+            userProfile = null;
+            userSubscription = null;
+            myPlaces = [];
+            allPlaces = [];
+            allProfiles = [];
+            allSubs = [];
+            allLogs = [];
+
+            // 3) Ocultar badge y banner de ops pendientes (las ops se
+            //    conservan en IndexedDB para cuando el usuario vuelva).
+            const badge = $('pendingOpsBadge');
+            if (badge) badge.style.display = 'none';
+            const banner = $('pendingBanner');
+            if (banner) banner.style.display = 'none';
+
+            // 4) Detener el procesador de cola si estaba corriendo
+            //    (la flag _processingQueue se liberará sola en el finally,
+            //    pero marcamos para que no arranque de nuevo).
+            if (typeof _processingQueue !== 'undefined') {
+                _processingQueue = false;
+            }
+
+            // 5) Limpiar sesión LOCAL (sin network call) — instantáneo
+            try {
+                await sb.auth.signOut({ scope: 'local' });
+            } catch (e) {
+                console.warn('[Logout] signOut local falló (no crítico):', e);
+            }
+
+            // 6) Disparar signOut GLOBAL en background (no await).
+            //    Si la red está bien, el token se revoca en el servidor.
+            //    Si la red falla o tarda, no importa: el usuario ya está
+            //    logout localmente y verá el login. El token expirará solo.
+            (async () => {
+                try {
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('signOut timeout')), 5000)
+                    );
+                    await Promise.race([
+                        sb.auth.signOut({ scope: 'global' }),
+                        timeoutPromise
+                    ]);
+                    console.log('[Logout] Token revocado en servidor ✅');
+                } catch (err) {
+                    // No crítico: el token expirará solo, o se revocará
+                    // la próxima vez que el usuario cierre todas las sesiones.
+                    console.warn('[Logout] No se pudo revocar token en servidor (no crítico):', err.message || err);
+                }
+            })();
+
+            // 7) Mensaje al usuario
+            try { showToast('Sesión cerrada correctamente'); } catch (e) {}
         };
 
         /* ========================================
@@ -2691,7 +2760,15 @@
             placeTags.forEach((tag, i) => {
                 const chip = document.createElement('span');
                 chip.className = 'tag-chip';
-                chip.innerHTML = tag + ' <button type="button" onclick="removeTag(' + i + ')">&times;</button>';
+                // ★ FIX [v2.0.10] XSS: usar textContent para el tag (no innerHTML).
+                //   Antes, un tag con <script> o <img onerror=...> se ejecutaba.
+                chip.textContent = tag;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.innerHTML = '&times;';
+                btn.onclick = (function(idx) { return function() { removeTag(idx); }; })(i);
+                chip.appendChild(document.createTextNode(' '));
+                chip.appendChild(btn);
                 wrapper.insertBefore(chip, input);
             });
         }
@@ -2882,7 +2959,15 @@
             }, { passive: true });
         }
 
-        function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        // ★ FIX [v2.0.10] escapeAttr ahora también cubre & y ' (estaba incompleto)
+        function escapeAttr(s) {
+            return String(s==null?'':s)
+                .replace(/&/g,'&amp;')
+                .replace(/"/g,'&quot;')
+                .replace(/'/g,'&#39;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;');
+        }
 
         window.addMenuCategory = function() {
             placeMenu.push({ category: '', items: [] });
@@ -3685,6 +3770,8 @@
         };
 
         window.saveSubEdit = async function() {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('saveSubEdit')) return;
             const id = $('editSubId').value;
             const planMax = { free: 1, basic: 3, pro: 10, enterprise: 999 };
             const data = {
@@ -3918,6 +4005,8 @@
         }
 
         window.saveCollection = async function() {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('saveCollection')) return;
             const editId = $('colEditId').value;
             const newId = $('colId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
             const title = $('colTitle').value.trim();
@@ -3967,6 +4056,8 @@
         };
 
         window.deleteCollection = async function(id) {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('deleteCollection')) return;
             const c = allCollections.find(x => x.id === id);
             if (!c) return;
             if (!confirm('Eliminar la coleccion "' + c.title + '"? Esto tambien quitara todos los lugares vinculados.')) return;
@@ -3990,7 +4081,8 @@
             const sel = $('colPlaceSelect');
             sel.innerHTML = '<option value="">Seleccionar un lugar...</option>';
             allPlaces.forEach(p => {
-                sel.innerHTML += '<option value="' + p.id + '">' + p.name + ' (' + (p.category||'') + ')</option>';
+                // ★ FIX [v2.0.10] XSS: escapar p.name y p.category
+                sel.innerHTML += '<option value="' + escapeAttr(p.id) + '">' + escapeHtml(p.name) + ' (' + escapeHtml(p.category||'') + ')</option>';
             });
 
             $('colStaticId').value = '';
@@ -4014,7 +4106,8 @@
 
                 if (cp.place_id) {
                     const place = allPlaces.find(p => p.id === cp.place_id);
-                    name = place ? place.name : cp.place_id.substring(0, 8) + '...';
+                    // ★ FIX [v2.0.10] XSS: escapar name antes de concatenar al HTML
+                    name = escapeHtml(place ? place.name : cp.place_id.substring(0, 8) + '...');
                     typeLabel = '<span style="font-size:0.7rem;color:var(--secondary)">DB</span>';
                     removeFn = 'removePlaceFromCollection(\'db\',\'' + cp.id + '\')' ;
                 } else if (cp.static_place_id) {
@@ -4031,6 +4124,8 @@
         }
 
         window.addPlaceToCollection = async function() {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('addPlaceToCollection')) return;
             const colId = $('colPlacesEditId').value;
             const placeId = $('colPlaceSelect').value;
             if (!placeId) { showToast('Selecciona un lugar', true); return; }
@@ -4048,6 +4143,8 @@
         };
 
         window.addStaticPlaceToCollection = async function() {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('addStaticPlaceToCollection')) return;
             const colId = $('colPlacesEditId').value;
             const staticId = parseInt($('colStaticId').value);
             if (!staticId || staticId < 1) { showToast('Ingresa un ID valido (1-300)', true); return; }
@@ -4065,6 +4162,8 @@
         };
 
         window.removePlaceFromCollection = async function(type, id) {
+            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
+            if (!requireAdmin('removePlaceFromCollection')) return;
             if (!confirm('Quitar este lugar de la coleccion?')) return;
             const { error } = await sb.from('collection_places').delete().eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
@@ -4318,11 +4417,14 @@
                         }
                         // Si fue exitosa, recargar datos y actualizar badge
                         if (result.ok) {
-                            showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
-                            await loadMyPlaces();
-                            renderOverview();
-                            if (isAdmin() && typeof loadAdminData === 'function') {
-                                await loadAdminData();
+                            // ★ FIX [v2.0.10] no recargar datos si el usuario ya hizo logout
+                            if (currentUser) {
+                                showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
+                                await loadMyPlaces();
+                                renderOverview();
+                                if (isAdmin() && typeof loadAdminData === 'function') {
+                                    await loadAdminData();
+                                }
                             }
                             await updatePendingBadge();
                         }
