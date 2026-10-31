@@ -277,6 +277,83 @@
         .menu-add-item-btn{margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px 12px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.25s;width:100%;text-align:center}
         .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
 
+        /* ═══════════════════════════════════════════════════
+           [v2.0.8] NAV PILLS — Botones de navegación para categorías
+           de la carta. Aparecen arriba del contenedor, son sticky al
+           hacer scroll horizontal, y al hacer clic hacen scroll suave
+           a la categoría correspondiente. Cada pill muestra el nombre
+           de la categoría y un mini-contador de platos.
+           ═══════════════════════════════════════════════════ */
+        .menu-nav-pills{
+            display:flex;
+            gap:8px;
+            overflow-x:auto;
+            padding:8px 0 14px;
+            margin-bottom:6px;
+            scrollbar-width:thin;
+            position:sticky;
+            top:64px;
+            z-index:5;
+            background:var(--card);
+            border-bottom:1px solid var(--border-soft);
+        }
+        .menu-nav-pills::-webkit-scrollbar{height:5px}
+        .menu-nav-pills::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+        .menu-nav-pill{
+            flex-shrink:0;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:7px 14px;
+            border-radius:100px;
+            background:var(--card-2);
+            border:1px solid var(--border);
+            color:var(--cream);
+            font-size:0.8rem;
+            font-weight:600;
+            cursor:pointer;
+            transition:all 0.2s ease;
+            white-space:nowrap;
+            font-family:inherit;
+        }
+        .menu-nav-pill:hover{
+            border-color:var(--secondary);
+            color:var(--secondary);
+            background:rgba(6,182,212,0.06);
+            transform:translateY(-1px);
+        }
+        .menu-nav-pill.active{
+            background:linear-gradient(135deg,var(--secondary),#0891b2);
+            color:#fff;
+            border-color:transparent;
+            box-shadow:0 4px 14px var(--secondary-glow);
+        }
+        .menu-nav-pill-count{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            border-radius:100px;
+            background:rgba(255,255,255,0.18);
+            font-size:0.68rem;
+            font-weight:700;
+        }
+        .menu-nav-pill:not(.active) .menu-nav-pill-count{
+            background:rgba(148,163,184,0.18);
+            color:var(--muted);
+        }
+        .menu-nav-pills-empty{
+            font-size:0.78rem;
+            color:var(--muted-2);
+            padding:6px 0;
+            font-style:italic;
+        }
+        .menu-category{
+            scroll-margin-top:140px;  /* deja espacio para las pills sticky al saltar */
+        }
+
         /* Delivery / Links editor */
         .link-row{display:grid;grid-template-columns:160px 1fr 34px;gap:8px;align-items:center}
         .link-row input{padding:9px 12px;font-size:0.84rem}
@@ -980,8 +1057,10 @@
                                 <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-book-open" style="color:var(--secondary)"></i> Carta / Menu</h3>
                                 <button type="button" class="btn-secondary btn-sm" onclick="addMenuCategory()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar categoria</button>
                             </div>
+                            <!-- [v2.0.8] Pills de navegación rápida entre categorías -->
+                            <div id="menuNavPills" class="menu-nav-pills" aria-label="Navegación entre categorías de la carta"></div>
                             <div id="menuContainer" style="display:flex;flex-direction:column;gap:16px"></div>
-                            <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio.</div>
+                            <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio. Usa los botones de arriba para saltar entre categorías.</div>
                         </div>
 
                         <!-- ===== DELIVERY / LINKS ===== -->
@@ -1457,6 +1536,43 @@
     <div class="toast" id="appToast" role="alert" aria-live="polite"></div>
 
     <!-- ====== SUPABASE + JS (UNA SOLA VEZ) ====== -->
+    <!--
+      ★ FIX [v2.0.7] — Polyfill de Web Locks API para navegadores que no la
+      soportan (Firefox < 96, Safari < 15.4, WebViews antiguos, navegadores
+      in-app de Facebook/Instagram, modo privado en algunos browsers).
+      Supabase JS v2.49.4 usa navigator.locks para coordinar el refresh del
+      token entre pestañas. Sin esta API, lanza:
+        "Acquiring an exclusive Navigator LockManager lock ... immediately failed"
+      Este polyfill provee un lock en memoria (no coordina entre pestañas,
+      pero evita el crash). Debe cargarse ANTES que supabase-js.
+    -->
+    <script>
+    (function() {
+        if ('locks' in navigator && typeof navigator.locks.request === 'function') {
+            return;  // API nativa disponible, no hacer nada
+        }
+        console.warn('[Polyfill] Web Locks API no soportada. Activando fallback en memoria.');
+        var locks = {};
+        navigator.locks = navigator.locks || {};
+        navigator.locks.request = function(name, mode, callback) {
+            // Soportar overload (name, callback) sin modo
+            if (typeof mode === 'function') {
+                callback = mode;
+                mode = 'exclusive';
+            }
+            // Fallback simplificado: no bloquea de verdad, solo ejecuta el callback
+            // con un objeto lock falso. No hay coordinación entre pestañas pero
+            // evita el crash y permite que la app funcione.
+            return Promise.resolve(callback({
+                name: String(name),
+                mode: mode
+            }));
+        };
+        navigator.locks.query = function() {
+            return Promise.resolve({ held: [], pending: [] });
+        };
+    })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
     <script>
     (function() {
@@ -1514,9 +1630,20 @@
 
         /* ========================================
            INICIALIZACION — SIN redeclarar
+           ★ FIX [v2.0.7]: opciones explícitas de auth para reducir
+             errores de LockManager. detectSessionInUrl:false evita
+             que el cliente intente adquirir un lock al parsear la URL
+             en cada carga (causa común del error en pestañas múltiples).
         ======================================== */
         const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: false,  // evita locks innecesarios al cargar
+                flowType: 'pkce'            // PKCE es más robusto que implicit
+            }
+        });
 
         /* ========================================
            ESTADO GLOBAL
@@ -1799,6 +1926,34 @@
                 countEl.style.display = 'flex';
                 countEl.textContent = pending.length > 9 ? '9+' : pending.length;
                 badge.style.display = 'inline-flex';
+            }
+
+            // [v2.0.8] Banner flotante visible cuando hay ops pendientes.
+            // Le dice al usuario claramente: "tus cambios están guardados,
+            // esperando conexión". Esto da confianza para seguir trabajando
+            // sin conexión sin miedo a perder datos.
+            let banner = $('pendingBanner');
+            if (pending.length > 0) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'pendingBanner';
+                    banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);' +
+                        'background:linear-gradient(135deg,rgba(245,158,11,0.95),rgba(217,119,6,0.95));' +
+                        'color:#fff;padding:11px 18px;border-radius:100px;font-size:0.82rem;font-weight:600;' +
+                        'box-shadow:0 8px 24px rgba(245,158,11,0.4);z-index:90;display:flex;align-items:center;gap:10px;' +
+                        'max-width:calc(100% - 32px);cursor:pointer;font-family:inherit;border:none';
+                    banner.onclick = showPendingOpsModal;
+                    banner.innerHTML = '<i aria-hidden="true" class="fas fa-cloud-arrow-up"></i>' +
+                        '<span id="pendingBannerText"></span>' +
+                        '<i aria-hidden="true" class="fas fa-chevron-right" style="font-size:0.7rem;opacity:0.7"></i>';
+                    document.body.appendChild(banner);
+                }
+                const txt = $('pendingBannerText');
+                const word = pending.length === 1 ? 'cambio pendiente' : 'cambios pendientes';
+                if (txt) txt.textContent = pending.length + ' ' + word + ' — se guardará al reconectar';
+                banner.style.display = 'flex';
+            } else if (banner) {
+                banner.style.display = 'none';
             }
         }
 
@@ -2601,6 +2756,7 @@
         function renderMenuEditor() {
             const container = $('menuContainer');
             if (!container) return;
+            renderMenuNavPills();  // [v2.0.8] botones de navegación
             if (!placeMenu.length) {
                 container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fas fa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste categorías a la carta.</div>';
                 return;
@@ -2621,7 +2777,7 @@
                     </div>
                 `).join('');
                 return `
-                    <div class="menu-category">
+                    <div class="menu-category" data-cat-index="${ci}" id="menuCat-${ci}">
                         <div class="menu-category-head">
                             <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
                             <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
@@ -2631,6 +2787,99 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════
+           [v2.0.8] NAV PILLS — Render y navegación entre categorías
+           ═══════════════════════════════════════════════════ */
+        function renderMenuNavPills() {
+            const navEl = $('menuNavPills');
+            if (!navEl) return;
+
+            if (!placeMenu.length) {
+                navEl.innerHTML = '<span class="menu-nav-pills-empty">Crea una categoría para empezar.</span>';
+                return;
+            }
+
+            // Detectar cuál categoría está actualmente visible para marcarla activa
+            const activeIdx = getActiveMenuCatIndex();
+
+            navEl.innerHTML = placeMenu.map((cat, ci) => {
+                const name = (cat.category || '').trim() || 'Categoría ' + (ci + 1);
+                const count = (cat.items || []).length;
+                const isActive = ci === activeIdx;
+                return '<button type="button" class="menu-nav-pill' + (isActive ? ' active' : '') + '"' +
+                    ' onclick="scrollToMenuCat(' + ci + ')"' +
+                    ' aria-label="Ir a la categoría ' + escapeAttr(name) + '"' +
+                    ' title="' + escapeAttr(name) + '">' +
+                    escapeHtml(name) +
+                    '<span class="menu-nav-pill-count">' + count + '</span>' +
+                    '</button>';
+            }).join('');
+        }
+
+        /* Salta a una categoría con scroll suave y la marca activa */
+        window.scrollToMenuCat = function(ci) {
+            const target = document.getElementById('menuCat-' + ci);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Marcar como activa
+            document.querySelectorAll('.menu-nav-pill').forEach(p => p.classList.remove('active'));
+            const pills = document.querySelectorAll('.menu-nav-pill');
+            if (pills[ci]) {
+                pills[ci].classList.add('active');
+                // Auto-scroll horizontal para que la pill activa sea visible
+                pills[ci].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        };
+
+        /* Detecta qué categoría está más arriba en el viewport */
+        function getActiveMenuCatIndex() {
+            if (!placeMenu.length) return 0;
+            const cats = document.querySelectorAll('.menu-category');
+            if (!cats.length) return 0;
+            const scrollY = window.scrollY + 200;  // offset por top-bar + pills sticky
+            let activeIdx = 0;
+            for (let i = 0; i < cats.length; i++) {
+                if (cats[i].offsetTop <= scrollY) {
+                    activeIdx = i;
+                } else {
+                    break;
+                }
+            }
+            return activeIdx;
+        }
+
+        /* Actualiza el pill activo conforme se hace scroll dentro del form */
+        let _menuScrollTimer = null;
+        function setupMenuScrollSpy() {
+            const panel = $('panel-add-place');
+            if (!panel) return;
+            panel.addEventListener('scroll', () => {
+                if (_menuScrollTimer) return;
+                _menuScrollTimer = setTimeout(() => {
+                    const activeIdx = getActiveMenuCatIndex();
+                    document.querySelectorAll('.menu-nav-pill').forEach((p, i) => {
+                        p.classList.toggle('active', i === activeIdx);
+                    });
+                    _menuScrollTimer = null;
+                }, 80);
+            }, { passive: true });
+            // También escuchar scroll del window por si el form está en el body
+            window.addEventListener('scroll', () => {
+                if (_menuScrollTimer) return;
+                _menuScrollTimer = setTimeout(() => {
+                    if (!$('panel-add-place') || !$('panel-add-place').classList.contains('active')) {
+                        _menuScrollTimer = null;
+                        return;
+                    }
+                    const activeIdx = getActiveMenuCatIndex();
+                    document.querySelectorAll('.menu-nav-pill').forEach((p, i) => {
+                        p.classList.toggle('active', i === activeIdx);
+                    });
+                    _menuScrollTimer = null;
+                }, 80);
+            }, { passive: true });
         }
 
         function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -2646,12 +2895,32 @@
         window.updateMenuCategory = function(ci, val) {
             if (!placeMenu[ci]) return;
             placeMenu[ci].category = val;
+            // [v2.0.8] actualizar solo el texto de la pill sin re-render completo
+            // (evita perder el foco del input mientras se escribe)
+            const pill = document.querySelectorAll('.menu-nav-pill')[ci];
+            if (pill) {
+                const name = val.trim() || 'Categoría ' + (ci + 1);
+                // Conservar el badge de count al reemplazar texto
+                const count = (placeMenu[ci].items || []).length;
+                pill.innerHTML = escapeHtml(name) + '<span class="menu-nav-pill-count">' + count + '</span>';
+                pill.setAttribute('aria-label', 'Ir a la categoría ' + val);
+                pill.setAttribute('title', val);
+            }
         };
         window.addMenuItem = function(ci) {
             if (!placeMenu[ci]) return;
             if (!placeMenu[ci].items) placeMenu[ci].items = [];
             placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP' });
             renderMenuEditor();
+            // [v2.0.8] scroll al nuevo plato y enfocar su primer input
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('#menuCat-' + ci + ' .menu-item-row input');
+                if (inputs.length) {
+                    const last = inputs[inputs.length - 1];
+                    last.focus();
+                    last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
         };
         window.updateMenuItem = function(ci, ii, field, val) {
             const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
@@ -3828,17 +4097,28 @@
         }
 
         window.saveProfile = async function() {
-            const { error } = await sb.from('profiles').update({
-                full_name: $('s-name').value.trim(),
-                phone: $('s-phone').value.trim()
-            }).eq('id', currentUser.id);
-            if (error) { showToast('Error: ' + error.message, true); return; }
-            userProfile.full_name = $('s-name').value.trim();
-            userProfile.phone = $('s-phone').value.trim();
+            const fullName = $('s-name').value.trim();
+            const phone = $('s-phone').value.trim();
+            // [v2.0.8] Usar encolador: si no hay conexión, el cambio de perfil
+            // se guarda en la cola y se aplica cuando vuelva internet.
+            const result = await runOrQueue('profile_update',
+                { id: currentUser.id, data: { full_name: fullName, phone: phone } },
+                { placeName: 'Perfil de ' + (fullName || currentUser.email) }
+            );
+            if (result.queued) {
+                showToast('Sin conexión. Cambios de perfil encolados — se aplicarán cuando vuelva el internet');
+            } else if (result.ok) {
+                showToast('Perfil guardado correctamente');
+            } else {
+                showToast('Error al guardar perfil: ' + (result.error || 'desconocido'), true);
+                return;
+            }
+            // Optimistic UI: actualizar el estado local aunque esté encolado
+            userProfile.full_name = fullName;
+            userProfile.phone = phone;
             $('sidebarUserName').textContent = userProfile.full_name || currentUser.email;
             const avatar = $('sidebarAvatar');
             if (userProfile.role !== 'admin') avatar.textContent = getInitials(userProfile.full_name);
-            showToast('Perfil guardado correctamente');
         };
 
         window.showChangePwModal = function() {
@@ -3865,6 +4145,8 @@
             // Iniciar tags e imagenes
             initTags();
             initImageGrid();
+            // [v2.0.8] Scroll spy para pills de navegación de categorías
+            setupMenuScrollSpy();
 
             // [F-5.5] Listener de estado de conexión online/offline
             function updateConnectionIndicator() {
