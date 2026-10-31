@@ -278,6 +278,78 @@
         .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
 
         /* ═══════════════════════════════════════════════════
+           [v2.0.11] PLATOS AGOTADOS — Toggle de disponibilidad
+           Permite marcar un plato como "agotado" sin borrarlo.
+           Se ve tachado y atenuado, y se guarda como available:false
+           en el jsonb del menú. En la home se puede mostrar como
+           "Agotado" en vez de eliminarlo.
+           ═══════════════════════════════════════════════════ */
+        .menu-item-row.unavailable{
+            opacity:0.55;
+            background:rgba(239,68,68,0.04);
+            border-radius:10px;
+            padding:4px;
+        }
+        .menu-item-row.unavailable input{
+            text-decoration:line-through;
+            text-decoration-color:rgba(239,68,68,0.6);
+            text-decoration-thickness:1.5px;
+        }
+        .menu-availability-btn{
+            width:34px;
+            height:34px;
+            border-radius:9px;
+            border:1px solid var(--border);
+            background:var(--card);
+            color:var(--green);
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:0.78rem;
+            transition:all 0.2s ease;
+            flex-shrink:0;
+        }
+        .menu-availability-btn:hover{
+            border-color:var(--green);
+            box-shadow:0 0 0 3px rgba(34,197,94,0.12);
+        }
+        .menu-availability-btn.is-unavailable{
+            color:var(--red);
+            border-color:rgba(239,68,68,0.4);
+            background:rgba(239,68,68,0.08);
+        }
+        .menu-availability-btn.is-unavailable:hover{
+            border-color:var(--red);
+            box-shadow:0 0 0 3px rgba(239,68,68,0.12);
+        }
+        .menu-availability-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+            font-size:0.65rem;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:0.05em;
+            padding:2px 7px;
+            border-radius:100px;
+            margin-left:6px;
+            vertical-align:middle;
+        }
+        .menu-availability-badge.available{
+            background:rgba(34,197,94,0.12);
+            color:var(--green);
+        }
+        .menu-availability-badge.unavailable{
+            background:rgba(239,68,68,0.12);
+            color:var(--red);
+        }
+        /* En móvil, el botón de disponibilidad va al final */
+        @media(max-width:640px){
+            .menu-item-row .menu-availability-btn{grid-column:1/3;justify-self:end}
+        }
+
+        /* ═══════════════════════════════════════════════════
            [v2.0.8] NAV PILLS — Botones de navegación para categorías
            de la carta. Aparecen arriba del contenedor, son sticky al
            hacer scroll horizontal, y al hacer clic hacen scroll suave
@@ -2839,8 +2911,16 @@
                 return;
             }
             container.innerHTML = placeMenu.map((cat, ci) => {
-                const items = (cat.items || []).map((it, ii) => `
-                    <div class="menu-item-row" style="grid-template-columns:1fr 2fr 90px 110px 34px">
+                const items = (cat.items || []).map((it, ii) => {
+                    // [v2.0.11] available default true si no está definido
+                    const isAvailable = it.available !== false;
+                    const rowClass = isAvailable ? '' : ' unavailable';
+                    const btnClass = isAvailable ? '' : ' is-unavailable';
+                    const btnIcon = isAvailable ? 'fa-check' : 'fa-ban';
+                    const btnTitle = isAvailable ? 'Disponible (clic para marcar agotado)' : 'Agotado (clic para marcar disponible)';
+                    const btnLabel = isAvailable ? 'Marcar como agotado' : 'Marcar como disponible';
+                    return `
+                    <div class="menu-item-row${rowClass}" style="grid-template-columns:1fr 2fr 90px 110px 34px 34px">
                         <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)">
                         <input type="text" class="form-input" placeholder="Descripción" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
                         <input type="text" class="form-input" placeholder="350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
@@ -2850,13 +2930,22 @@
                             <option value="USD" ${it.currency==='USD'?'selected':''}>USD</option>
                             <option value="EUR" ${it.currency==='EUR'?'selected':''}>EUR</option>
                         </select>
+                        <button type="button" class="menu-availability-btn${btnClass}" aria-label="${btnLabel}" onclick="toggleMenuItemAvailability(${ci},${ii})" title="${btnTitle}"><i aria-hidden="true" class="fas ${btnIcon}"></i></button>
                         <button type="button" class="btn-icon" aria-label="Eliminar plato" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fas fa-trash"></i></button>
                     </div>
-                `).join('');
+                    `;
+                }).join('');
+                // [v2.0.11] contador de agotados para mostrar en el header de la categoría
+                const totalItems = (cat.items || []).length;
+                const unavailableCount = (cat.items || []).filter(it => it.available === false).length;
+                const catBadge = unavailableCount > 0
+                    ? '<span class="menu-availability-badge unavailable" title="Platos agotados en esta categoría"><i aria-hidden="true" class="fas fa-ban" style="font-size:0.6rem"></i> ' + unavailableCount + ' agotado' + (unavailableCount > 1 ? 's' : '') + '</span>'
+                    : '';
                 return `
                     <div class="menu-category" data-cat-index="${ci}" id="menuCat-${ci}">
                         <div class="menu-category-head">
                             <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
+                            ${catBadge}
                             <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
                         </div>
                         <div class="menu-items">${items}</div>
@@ -2995,7 +3084,8 @@
         window.addMenuItem = function(ci) {
             if (!placeMenu[ci]) return;
             if (!placeMenu[ci].items) placeMenu[ci].items = [];
-            placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP' });
+            // [v2.0.11] available: true por defecto en platos nuevos
+            placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP', available:true });
             renderMenuEditor();
             // [v2.0.8] scroll al nuevo plato y enfocar su primer input
             setTimeout(() => {
@@ -3010,6 +3100,24 @@
         window.updateMenuItem = function(ci, ii, field, val) {
             const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
             cat.items[ii][field] = val;
+        };
+        /* [v2.0.11] Toggle de disponibilidad: marca el plato como
+           agotado (available:false) sin tener que borrarlo. Visualmente
+           se tacha y atenua; al guardar se persiste en el jsonb. */
+        window.toggleMenuItemAvailability = function(ci, ii) {
+            const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
+            const item = cat.items[ii];
+            const wasAvailable = item.available !== false;
+            item.available = !wasAvailable;
+            // Feedback inmediato al usuario
+            const itemName = (item.name || '').trim() || 'este plato';
+            showToast(wasAvailable
+                ? '🔴 "' + itemName + '" marcado como agotado'
+                : '🟢 "' + itemName + '" disponible nuevamente');
+            renderMenuEditor();
+            // Actualizar también el badge de la pill (contador de platos no cambia,
+            // pero el nombre de la categoría sí puede afectar)
+            renderMenuNavPills();
         };
         window.removeMenuItem = function(ci, ii) {
             const cat = placeMenu[ci]; if (!cat) return;
@@ -3222,7 +3330,9 @@
                             name:  (it.name || '').trim(),
                             desc:  (it.desc || '').trim(),
                             price: (it.price || '').trim(),
-                            currency: ['CUP','MLC','USD','EUR'].includes(it.currency) ? it.currency : 'CUP'
+                            currency: ['CUP','MLC','USD','EUR'].includes(it.currency) ? it.currency : 'CUP',
+                            // [v2.0.11] persistir available (default true si no estaba definido)
+                            available: it.available !== false
                         }))
                         .filter(it => it.name)   // solo items con nombre
                 }))
