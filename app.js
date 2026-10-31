@@ -563,14 +563,30 @@ async function loadPlacesFromSupabase() {
     }
 }
 
-/* ★ FIX [v2.0.7]: actualiza los contadores de stats SIN re-animar.
+/* ★ FIX [v2.0.12]: actualiza los contadores de stats SIN re-animar.
    Se llama cuando loadPlacesFromSupabase() agrega locales nuevos,
    para que el contador pase de 256 a 257 de forma suave (o sin moverse
-   si ya estaba en su valor final). */
+   si ya estaba en su valor final).
+   ★ FIX [v2.0.12bis — BUG REAL 256 vs 257]: antes, si Supabase
+   respondía a MITAD de la animación del contador, updateStatNumbers
+   ponía textContent=257 pero el setInterval de la animación seguía
+   corriendo con su target capturado (256) y sobreescribía textContent
+   de vuelta a 256. Resultado: el contador se quedaba en 256 aunque
+   staticPlaces tuviera 257. Ahora cancelamos cualquier intervalo
+   activo antes de snappear al nuevo valor. */
+const _activeStatIntervals = new Set();
+function _clearAllStatIntervals() {
+    _activeStatIntervals.forEach(id => clearInterval(id));
+    _activeStatIntervals.clear();
+}
 function updateStatNumbers() {
     const totalLocales = staticPlaces.length;
     const municipios = new Set(staticPlaces.map(p => p.neighborhood));
     const totalMunicipios = municipios.size;
+
+    // ★ FIX: cancelar cualquier animación en curso para que no
+    // sobreescriba el textContent que vamos a setear aquí.
+    _clearAllStatIntervals();
 
     const statLocales = document.getElementById('statLocales');
     const statMunicipios = document.getElementById('statMunicipios');
@@ -1658,7 +1674,10 @@ function scrollToBottom() { document.getElementById('siteFooter').scrollIntoView
    de animación. Así, aunque animateStats() se llame dos veces (p. ej.
    desde DOMContentLoaded y desde loadPlacesFromSupabase), el contador
    NO se re-anima desde 0 — solo se actualiza el data-target y el
-   textContent al nuevo total. Esto elimina el salto "256 → 257". */
+   textContent al nuevo total. Esto elimina el salto "256 → 257".
+   ★ FIX [v2.0.12bis]: cada setInterval se registra en
+   _activeStatIntervals para que updateStatNumbers pueda cancelarlos
+   si llega una actualización de Supabase a mitad de animación. */
 let _statsAnimated = false;
 function animateStats() {
     // Calcular valores reales desde los datos
@@ -1682,14 +1701,29 @@ function animateStats() {
         entries.forEach(e => {
             if (e.isIntersecting) {
                 const el = e.target;
-                const target = parseInt(el.dataset.target);
-                let current = 0;
-                const step = Math.max(1, Math.ceil(target / 50));
-                const interval = setInterval(() => {
+                // ★ FIX [v2.0.12bis]: releer dataset.target EN CADA TICK
+                //   del intervalo, no solo al inicio. Así, si
+                //   updateStatNumbers actualiza dataset.target a 257
+                //   mientras la animación va por 200, el siguiente tick
+                //   ve el nuevo target y cuenta hasta 257 en lugar de
+                //   quedarse en 256.
+                let current = parseInt(el.textContent, 10) || 0;
+                const tick = () => {
+                    const target = parseInt(el.dataset.target, 10) || 0;
+                    if (target <= 0) { current = 0; el.textContent = '0'; return; }
+                    const step = Math.max(1, Math.ceil(target / 50));
                     current += step;
-                    if (current >= target) { current = target; clearInterval(interval); }
+                    if (current >= target) {
+                        current = target;
+                        el.textContent = current;
+                        clearInterval(intervalId);
+                        _activeStatIntervals.delete(intervalId);
+                        return;
+                    }
                     el.textContent = current;
-                }, 30);
+                };
+                const intervalId = setInterval(tick, 30);
+                _activeStatIntervals.add(intervalId);
                 observer.unobserve(el);
             }
         });
