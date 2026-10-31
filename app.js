@@ -34,6 +34,42 @@
    ═══════════════════════════════════════════════════════════════════ */
 const DELIVERY_BETA_OFF = true;
 
+/* ═══════════════════════════════════════════════════════════════════
+   [v2.0.12 → v2.0.13] LISTA BLANCA DE LOCALES CON DELIVERY HABILITADO
+   ───────────────────────────────────────────────────────────────────
+   Aunque DELIVERY_BETA_OFF esté en true, los locales marcados como
+   "delivery habilitado" mostrarán sus botones de delivery/reserva
+   ACTIVOS (como enlaces reales <a href="...">), siempre y cuando
+   tengan links válidos (no placeholders) en su campo `links`.
+
+   [v2.0.13] Ahora la fuente de verdad es la COLUMNA `delivery_enabled`
+   de la tabla `places` en Supabase. El admin la toggle desde el
+   dashboard (panel "Todos los Locales"). Esto reemplaza la lista
+   hardcoded anterior (DELIVERY_ENABLED_PLACE_IDS).
+
+   Mantenemos DELIVERY_ENABLED_PLACE_IDS como FALLBACK para los locales
+   estáticos de places.js (que no tienen columna en Supabase) y por si
+   la columna no existe aún en algún entorno. Si un local tiene
+   `deliveryEnabled === true` (vino de Supabase con ese flag) O está
+   en el Set hardcoded, se considera habilitado.
+   ═══════════════════════════════════════════════════════════════════ */
+const DELIVERY_ENABLED_PLACE_IDS = new Set([
+    // Vacío por defecto: la gestión se hace desde el dashboard.
+    // Agrega aquí IDs estáticos de places.js si quieres habilitar
+    // delivery para locales que NO están en Supabase. Los locales
+    // de Supabase se gestionan con la columna delivery_enabled.
+]);
+
+/* Helper: ¿este local tiene delivery habilitado individualmente?
+   Dos fuentes, con OR:
+     · p.deliveryEnabled === true (vino de Supabase con delivery_enabled=true)
+     · String(p.id) está en DELIVERY_ENABLED_PLACE_IDS (lista estática) */
+function isDeliveryEnabledFor(p) {
+    if (!p || !p.id) return false;
+    if (p.deliveryEnabled === true) return true;
+    return DELIVERY_ENABLED_PLACE_IDS.has(String(p.id));
+}
+
 function toggleTheme() {
     const html = document.documentElement;
     const current = html.getAttribute('data-theme');
@@ -473,6 +509,10 @@ function mapDbPlaceToPublic(p) {
         menu:           Array.isArray(menu) ? menu : [],
         links:          Array.isArray(links) ? links : [],
         is_pro:         !!p.is_pro, // ★ NUEVO: Para ocultar el banner en locales PRO ★
+        // [v2.0.13] delivery_enabled: si true, los botones de delivery/reserva
+        //   se muestran activos en la home aunque DELIVERY_BETA_OFF = true.
+        //   Lo gestiona el admin desde el dashboard (panel de locales).
+        deliveryEnabled: !!p.delivery_enabled,
         _fromDb:        true   // flag por si querés diferenciar en el futuro
     };
 }
@@ -1085,9 +1125,28 @@ function openModal(id) {
     const isPlaceholder = p.links && p.links.length > 0 && p.links.every(l =>
         placeholderDomains.some(d => l.url.includes(d))
     );
+    // [v2.0.12] ¿Este local tiene delivery habilitado individualmente?
+    // Si está en la lista blanca Y sus links no son placeholders, se muestran
+    // los botones activos (como enlaces reales), sin importar DELIVERY_BETA_OFF.
+    const deliveryEnabled = isDeliveryEnabledFor(p) && p.links && p.links.length && !isPlaceholder;
+
     // [B-01] Beta: los botones (PedidosYa, Rappi, Reservar Mesa) se muestran
-    // deshabilitados con el aviso "No disponible por ahora" (ver DELIVERY_BETA_OFF)
-    if (DELIVERY_BETA_OFF && p.links && p.links.length) {
+    // deshabilitados con el aviso "No disponible por ahora" (ver DELIVERY_BETA_OFF).
+    // [v2.0.12] Excepción: si el local está en DELIVERY_ENABLED_PLACE_IDS,
+    // se muestran activos aunque el beta siga apagado.
+    if (deliveryEnabled) {
+        html += `
+        <div class="drawer-section" style="animation-delay:0.35s;">
+            <div class="drawer-section-label">Delivery y reservas</div>
+            <div class="drawer-delivery">
+                ${p.links.map(l => `
+                    <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
+                        <i class="fas ${l.icon}"></i> ${l.platform}
+                    </a>
+                `).join('')}
+            </div>
+        </div>`;
+    } else if (DELIVERY_BETA_OFF && p.links && p.links.length) {
         html += `
         <div class="drawer-section" style="animation-delay:0.35s;">
             <div class="drawer-section-label">Delivery y reservas</div>
@@ -1319,15 +1378,33 @@ function openMenuSubModal() {
     });
 
     if (p.links && p.links.length) {
-        // [B-01] Beta: mismos botones en modo "No disponible por ahora"
-        html += `<div class="delivery-section">${p.links.map(l => `
-            <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
-                <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
-            </span>
-        `).join('')}</div>
-        <div class="delivery-off-note">
-            <i class="fas fa-clock" aria-hidden="true"></i> Delivery y reservas no disponibles por ahora.
-        </div>`;
+        // [v2.0.12] Si el local está en la lista blanca y sus links no son
+        // placeholders, mostrar los botones ACTIVOS en la carta también.
+        // Si no, mantener el modo "No disponible por ahora" del beta.
+        const placeholderDomainsMenu = ['pedidosya.com/', 'rappi.com/', 'opentable.com/'];
+        const isPlaceholderMenu = p.links.every(l =>
+            placeholderDomainsMenu.some(d => l.url.includes(d))
+        );
+        const deliveryEnabledMenu = isDeliveryEnabledFor(p) && !isPlaceholderMenu;
+
+        if (deliveryEnabledMenu) {
+            // Botones activos: enlaces reales <a href>
+            html += `<div class="delivery-section">${p.links.map(l => `
+                <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
+                    <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                </a>
+            `).join('')}</div>`;
+        } else {
+            // [B-01] Beta: botones deshabilitados con aviso
+            html += `<div class="delivery-section">${p.links.map(l => `
+                <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
+                    <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                </span>
+            `).join('')}</div>
+            <div class="delivery-off-note">
+                <i class="fas fa-clock" aria-hidden="true"></i> Delivery y reservas no disponibles por ahora.
+            </div>`;
+        }
     }
 
     document.getElementById('menuSubBody').innerHTML = html;
