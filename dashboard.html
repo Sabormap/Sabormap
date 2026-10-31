@@ -371,6 +371,64 @@
         .role-admin{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
         .role-owner{background:rgba(139,92,246,0.1);color:var(--accent-2);border:1px solid rgba(139,92,246,0.2)}
 
+        /* ═══════════════════════════════════════════════════
+           [v2.0.13] TOGGLE SWITCH para "Delivery habilitado"
+           Switch accesible (role=switch, aria-checked) que el admin
+           usa en la tabla de Todos los Locales para activar/desactivar
+           los botones de delivery/reserva de cada local en la home.
+           ═══════════════════════════════════════════════════ */
+        .delivery-toggle {
+            position: relative;
+            display: inline-block;
+            width: 38px; height: 22px;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        .delivery-toggle input {
+            position: absolute; opacity: 0;
+            width: 100%; height: 100%;
+            margin: 0; cursor: pointer;
+        }
+        .delivery-toggle-slider {
+            position: absolute; inset: 0;
+            background: var(--border);
+            border-radius: 22px;
+            transition: background 0.25s ease;
+            pointer-events: none;
+        }
+        .delivery-toggle-slider::before {
+            content: '';
+            position: absolute;
+            left: 3px; top: 3px;
+            width: 16px; height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .delivery-toggle input:checked + .delivery-toggle-slider {
+            background: linear-gradient(135deg, var(--green), #16a34a);
+        }
+        .delivery-toggle input:checked + .delivery-toggle-slider::before {
+            transform: translateX(16px);
+        }
+        .delivery-toggle input:focus-visible + .delivery-toggle-slider {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .delivery-toggle.loading { opacity: 0.5; pointer-events: none; }
+        .delivery-status-text {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        .delivery-status-text.on { color: var(--green); }
+        .delivery-toggle-cell {
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 2px;
+        }
+
         @media(max-width:1024px){
             .sidebar{transform:translateX(-100%)}
             .sidebar.open{transform:translateX(0);box-shadow:30px 0 80px rgba(0,0,0,0.6)}
@@ -989,6 +1047,7 @@
                                     <th>Municipio</th>
                                     <th>Dueño</th>
                                     <th>Estado</th>
+                                    <th>Delivery</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -3124,12 +3183,27 @@
                 const safeStatus = escapeHtml(p.status || '');
                 // Para los aria-label usamos el nombre SIN <mark> para no romper el HTML
                 const safeNamePlain = escapeHtml(p.name || 'Sin nombre');
+                const safeNameForToggle = safeNamePlain.replace(/'/g, '&#39;');
+                // [v2.0.13] delivery_enabled: puede ser true/false/null/undefined.
+                // null/undefined → tratamos como false (no habilitado).
+                const deliveryOn = !!(p && p.delivery_enabled);
+                const deliveryLabel = deliveryOn ? 'Activo' : 'Inactivo';
                 return '<tr>' +
                     '<td><div style="font-weight:600">' + safeName + '</div><div style="font-size:0.75rem;color:var(--secondary);font-family:monospace">' + safePlusCode + '</div></td>' +
                     '<td><span class="cat-indicator ' + safeCategory + '" style="margin-right:6px"></span><span style="text-transform:capitalize">' + safeCategory + '</span></td>' +
                     '<td>' + safeNeighborhood + '</td>' +
                     '<td style="font-size:0.85rem">' + ownerName + '</td>' +
                     '<td>' + statusBadgeHTML(safeStatus) + '</td>' +
+                    '<td><div class="delivery-toggle-cell">' +
+                        '<label class="delivery-toggle">' +
+                            '<input type="checkbox" ' + (deliveryOn ? 'checked' : '') +
+                                ' onchange="adminToggleDelivery(\'' + safeId + '\', this.checked, this)"' +
+                                ' aria-label="Habilitar delivery para ' + safeNameForToggle + '"' +
+                                ' role="switch" aria-checked="' + (deliveryOn ? 'true' : 'false') + '">' +
+                            '<span class="delivery-toggle-slider"></span>' +
+                        '</label>' +
+                        '<span class="delivery-status-text ' + (deliveryOn ? 'on' : '') + '">' + deliveryLabel + '</span>' +
+                    '</div></td>' +
                     '<td><div class="actions-cell">' +
                         '<button class="btn-success btn-sm" aria-label="Cambiar estado del local ' + safeNamePlain + '" onclick="adminTogglePlaceStatus(\'' + safeId + '\',\'' + safeStatus + '\')"><i aria-hidden="true" class="fas fa-eye"></i></button>' +
                         '<button class="btn-danger btn-sm" aria-label="Eliminar local ' + safeNamePlain + '" onclick="adminDeletePlace(\'' + safeId + '\')"><i aria-hidden="true" class="fas fa-trash"></i></button>' +
@@ -3137,6 +3211,62 @@
                 '</tr>';
             }).join('');
         }
+
+        /* [v2.0.13] Toggle del flag `delivery_enabled` de un local.
+           - Llama a Supabase para actualizar la columna.
+           - Muestra feedback visual mientras guarda (clase .loading).
+           - Si falla, revierte el checkbox y avisa al admin.
+           - Tras éxito, recarga los datos del admin para que la tabla
+             refleje el nuevo estado. */
+        window.adminToggleDelivery = async function(id, newValue, checkboxEl) {
+            if (!requireAdmin('adminToggleDelivery')) {
+                // Revertir si no es admin (defensa en profundidad)
+                if (checkboxEl) checkboxEl.checked = !newValue;
+                return;
+            }
+            const toggleWrap = checkboxEl ? checkboxEl.closest('.delivery-toggle') : null;
+            if (toggleWrap) toggleWrap.classList.add('loading');
+            try {
+                const { error } = await sb.from('places')
+                    .update({ delivery_enabled: !!newValue })
+                    .eq('id', id);
+                if (error) {
+                    if (checkboxEl) checkboxEl.checked = !newValue;
+                    // [F-5.6] Si error de auth, intentar refresh + reintento único
+                    const retried = await handleAuthError(error, async () => {
+                        const r = await sb.from('places')
+                            .update({ delivery_enabled: !!newValue })
+                            .eq('id', id);
+                        return !r.error;
+                    });
+                    if (!retried) {
+                        showToast('Error al actualizar delivery: ' + error.message, true);
+                        return;
+                    }
+                }
+                showToast(newValue ? 'Delivery habilitado' : 'Delivery deshabilitado');
+                // Actualizar el aria-checked y el texto del estado en vivo
+                if (checkboxEl) {
+                    checkboxEl.setAttribute('aria-checked', newValue ? 'true' : 'false');
+                    const textEl = toggleWrap ? toggleWrap.parentElement.querySelector('.delivery-status-text') : null;
+                    if (textEl) {
+                        textEl.textContent = newValue ? 'Activo' : 'Inactivo';
+                        textEl.classList.toggle('on', !!newValue);
+                    }
+                }
+                // Recargar datos del admin (en background, sin bloquear UI)
+                await loadAdminData();
+                // No re-renderizamos la tabla completa para no perder el foco del toggle,
+                // pero sí actualizamos el estado interno del objeto en allPlaces
+                const place = allPlaces.find(p => String(p.id) === String(id));
+                if (place) place.delivery_enabled = !!newValue;
+            } catch (err) {
+                if (checkboxEl) checkboxEl.checked = !newValue;
+                showToast('Error inesperado: ' + (err.message || err), true);
+            } finally {
+                if (toggleWrap) toggleWrap.classList.remove('loading');
+            }
+        };
 
         window.filterAdminPlaces = renderAdminPlaces;
 
