@@ -1,9 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.5 — FIX: dashboard.html/app.js/places.js con estrategia
-    network-first para que los cambios (iconos, fixes de menú,
-    nuevos campos) se vean de inmediato en Firefox sin tener que
-    bump VERSION cada vez.
+   [v2.0.6 — Mismo comportamiento que v2.0.5 pero VERSION bump para
+    invalidar caches stale en Firefox/Chrome. Acompaña al dashboard.html
+    parcheado (fixes de Background Sync + executeOp + requireAdmin).
     Base v1.0.0: soporte offline básico del panel + Background Sync]
 
    Estrategia:
@@ -26,7 +25,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.5'; // ↑ súbelo en cada despliegue — v2.0.5: network-first para dashboard.html + todos los HTML/JS
+const VERSION = 'v2.0.6'; // ↑ súbelo en cada despliegue — v2.0.6: bump para invalidar caches stale
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
@@ -92,6 +91,9 @@ self.addEventListener('activate', (event) => {
             keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))
         );
         await self.clients.claim();
+        // Avisar a los clientes que hay una nueva versión disponible
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        clients.forEach(c => c.postMessage({ type: 'sw-updated', version: VERSION }));
     })());
 });
 
@@ -116,9 +118,6 @@ self.addEventListener('fetch', (event) => {
     // 3) Recursos propios
     if (url.origin === self.location.origin) {
         // ★ FIX [v2.0.5]: dashboard.html, app.js, places.js siempre frescos cuando hay red.
-        //   Antes eran stale-while-revalidate y servían la versión cacheada
-        //   con el bug de los iconos `fafa-` y sin el fix del timeout en el save.
-        //   Firefox es más conservador que Chrome con el SWR y no refrescaba.
         if (url.pathname.endsWith('/dashboard.html') ||
             url.pathname.endsWith('/app.js') ||
             url.pathname.endsWith('/places.js') ||
@@ -207,16 +206,6 @@ self.addEventListener('message', (event) => {
 
 /* ═══════════════════════════════════════════════════════════════════
    [F-5.1+] BACKGROUND SYNC — Procesar cola de operaciones offline
-   ───────────────────────────────────────────────────────────────────
-   Cuando el navegador detecta que hay conexión estable, dispara el
-   evento 'sync' con el tag que registramos desde el cliente. El SW
-   entonces abre IndexedDB 'sabormap_pending_ops' y procesa cada op.
-
-   IMPORTANTE: el SW no tiene acceso al cliente Supabase (sb) ni al
-   token de sesión. Por eso enviamos las operaciones al cliente via
-   postMessage y esperamos confirmación. Si el cliente responde 'ok',
-   eliminamos la op de la cola; si responde 'fatal', la marcamos como
-   'failed'; si no responde, dejamos en 'pending' para el próximo sync.
    ═══════════════════════════════════════════════════════════════════ */
 const SYNC_TAG = 'sabormap-sync-queue';
 const SYNC_OP_TIMEOUT = 30000; // 30s por operación
