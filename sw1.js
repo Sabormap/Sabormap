@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.11 — Bump de VERSION. Acompaña al dashboard.html v2.0.11:
-    toggle de disponibilidad por plato (agotado/disponible) sin borrar.
-    Persiste como available:false en el jsonb del menú. Hereda todos
-    los fixes de v2.0.6 → v2.0.10.]
+   [v2.0.14 — FIX REAL responsive: el style="grid-template-columns:..."
+    inline en el .menu-item-row sobreescribía la media query y por eso
+    en móvil los 6 campos se colapsaban. Removido el inline + !important
+    en las media queries como doble defensa. Hereda v2.0.6 → v2.0.13.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled: un 404 no aborta el
@@ -25,7 +25,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.11'; // ↑ súbelo en cada despliegue — v2.0.11: toggle de platos agotados
+const VERSION = 'v2.0.14'; // ↑ súbelo en cada despliegue — v2.0.14: fix real responsive (removido inline style que sobreescribía media query)
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
