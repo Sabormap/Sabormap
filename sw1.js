@@ -1,12 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.10 — Bump de VERSION. Acompaña al dashboard.html v2.0.10:
-    parches P0 de seguridad: requireAdmin en todas las funciones admin
-    (saveSubEdit, saveCollection, deleteCollection, addPlaceToCollection,
-    addStaticPlaceToCollection, removePlaceFromCollection) + fixes de XSS
-    en renderTags, openColPlacesModal y renderColPlacesList + escapeAttr
-    completo + guard de currentUser en handler del SW.
-    Hereda todos los fixes anteriores.]
+   [v2.0.11 — Bump de VERSION. Acompaña al dashboard.html v2.0.11:
+    toggle de disponibilidad por plato (agotado/disponible) sin borrar.
+    Persiste como available:false en el jsonb del menú. Hereda todos
+    los fixes de v2.0.6 → v2.0.10.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled: un 404 no aborta el
@@ -28,7 +25,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.10'; // ↑ súbelo en cada despliegue — v2.0.10: parches P0 seguridad (requireAdmin + XSS)
+const VERSION = 'v2.0.11'; // ↑ súbelo en cada despliegue — v2.0.11: toggle de platos agotados
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
