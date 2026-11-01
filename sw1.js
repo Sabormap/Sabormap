@@ -1,31 +1,30 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.20 — bump de versión para forzar la descarga del dashboard.html
-    actualizado con:
-      · Botón "Guardar Borrador" separado del botón "Publicar Local"
-        (handlePlaceDraft guarda solo en localStorage/IndexedDB sin
-        llamar al servidor — útil para ediciones largas sin conexión).
-      · Botón "Instalar App" visible en el top-bar cuando el navegador
-        dispara beforeinstallprompt (Chrome/Edge Android/Desktop).
-      · manifest1.json con shortcuts a Mis Locales, Agregar Local y
-        Resumen (long-press al icono de la app instalada).
-      · SQL v2: GRANT EXECUTE en is_admin(), columnas must_order /
-        editor_note / delivery_enabled / tags / menu / links / images,
-        policy places_select_public_published para que la home page
-        muestre locales publicados sin login.
-    Hereda todos los fixes v2.0.6 → v2.0.19.]
+   [v2.0.21 — bump de versión para forzar la descarga del dashboard.html
+    actualizado con sincronización de cache público compartido con la
+    home (index.html):
+      · Cuando el dashboard publica/edita/elimina un local, ahora también
+        actualiza el cache localStorage 'sabormap_published_places_cache'
+        que la home lee para mostrar locales offline.
+      · La home (app.js v2.0.21) hace cache-first: primero carga el cache
+        local, luego refresca desde Supabase si hay conexión.
+      · Resultado: el contador de locales es el mismo offline y online
+        (ya no aparece 256 vs 257).
+    Hereda todos los fixes v2.0.6 → v2.0.20.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs críticos.
    · Navegación: network-first con cadena de fallback y página offline.
    · dashboard.html → network-first (siempre fresco cuando hay red).
    · Otros recursos propios y CDNs: stale-while-revalidate.
-   · API de Supabase: PASSTHROUGH (nunca se cachea).
+   · API de Supabase: PASSTHROUGH (nunca se cachea → no hay datos stale
+     ni respuestas de auth en caché). El cache de locales publicados se
+     maneja en localStorage, no en el SW.
 
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.20';
+const VERSION = 'v2.0.21';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
