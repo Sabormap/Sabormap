@@ -1,57 +1,55 @@
 /* ═══════════════════════════════════════════════════════════════════
-   sw.js — Service Worker de Sabormap
-   [v2.0.6 — FIX DEFINITIVO del bug "256 vs 257 lugares":
-    places.js y app.js REMOVIDOS del PRECACHE. Antes, el precache guardaba
-    una versión vieja (con 256 lugares) y cuando la red fallaba o era
-    lenta (común en Cuba), networkFirst caía al caché y servía la versión
-    vieja. Ahora el único caché de places.js es RUNTIME_CACHE, que siempre
-    tiene la última versión fetched exitosamente.
-    Base v2.0.5: network-first para dashboard.html + todos los HTML]
+   sw1.js — Service Worker del Dashboard SaborMap
+   [v2.0.17 — FIX "dice que se guardó pero no se guardó": añadido
+    .select() al UPDATE/INSERT para detectar RLS silent denial. Antes,
+    un UPDATE bloqueado por RLS devolvía {error:null, data:null, count:0}
+    y el código mostraba "Guardado ✓" aunque 0 filas fueron tocadas.
+    Ahora verificamos que data tenga filas; si no, mostramos error claro.
+    Hereda v2.0.6 → v2.0.16.]
 
    Estrategia:
-   · Precache tolerante del shell local (allSettled) + CDNs + woff2.
-     ★ v2.0.6: places.js y app.js YA NO se precachean. Se cargan con
-       network-first y se cachean solo en RUNTIME_CACHE (versión fresca).
-   · Navegación: network-first con fallback y página offline.
-   · places.js/app.js/dashboard.html/index.html → network-first.
-   · Otros recursos propios y CDNs: stale-while-revalidate.
-   · API de Supabase y terceros desconocidos: PASSTHROUGH.
-   · Leaflet: carga bajo demanda [U-01/P-03].
+   · Precache tolerante del shell local (allSettled: un 404 no aborta el
+     SW) + CDNs críticos del primer render (Supabase, Fonts, FA6).
+   · Navegación: network-first con cadena de fallback y página offline.
+   · dashboard.html, app.js, places.js → network-first ★ (FIX: antes
+     eran stale-while-revalidate y Firefox servía la versión cacheada
+     con el bug de los iconos `fafa-` durante días).
+   · Otros recursos propios y CDNs permitidos: stale-while-revalidate;
+     se aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
+     woff2 y los tiles del mapa nunca entrarían en caché.
+   · API de Supabase: PASSTHROUGH (nunca se cachea → no hay datos stale
+     ni respuestas de auth en caché). Esto es crítico para que el
+     dashboard refresque perfiles/suscripciones/locales siempre desde
+     el servidor cuando haya conexión.
+   · Tailwind eliminado del precache y de CDN_HOSTS: ya no se usa en
+     el dashboard (conflictuaba con Font Awesome 6).
+
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.12'; // ↑ súbelo en cada despliegue — v2.0.12: fix bug 256 vs 257 en app.js (animación del contador)
-const STATIC_CACHE = `sabormap-static-${VERSION}`;
-const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
+const VERSION = 'v2.0.17'; // ↑ súbelo en cada despliegue — v2.0.17: fix "dice guardado pero no se guardó" (RLS silent denial detection con .select())
+const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
+const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
-    // Shell local (sin places.js ni app.js — se cargan con network-first)
+    // Shell local
     './',
-    './index.html',
+    './dashboard.html',
     './manifest.json',
-    // Iconos — las 4 variantes declaradas en manifest.json
-    './icon-192x192.png',
-    './icon-512x512.png',
-    './icon-192x192-maskable.png',
-    './icon-512x512-maskable.png',
-    // CDNs críticos del primer render — URLs EXACTAS de sabormap.html [T-10]
+    // CDNs críticos del primer render — URLs EXACTAS del HTML
     'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/swiper@11.1.5/swiper-bundle.min.css',
-    'https://cdn.jsdelivr.net/npm/swiper@11.1.5/swiper-bundle.min.js',
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4'
 ];
 
 /* Orígenes de terceros cuyas respuestas SÍ se cachean en runtime (SWR).
    OJO: supabase.co queda FUERA a propósito [R-03]: es la API de datos.
-   La comparación es exacta o por subdominio del host listado [R-05]. */
+   Tailwind removido: ya no se carga en el dashboard. */
 const CDN_HOSTS = [
     'fonts.googleapis.com',
     'fonts.gstatic.com',
     'cdnjs.cloudflare.com',
-    'unpkg.com',             // Leaflet 1.9.4 (cuando cargue bajo demanda)
-    'cdn.jsdelivr.net',
-    'basemaps.cartocdn.com'  // tiles del mapa (a/b/c/d.basemaps…)
+    'cdn.jsdelivr.net'
 ];
 
 /* ---------- INSTALL: precache tolerante + fuentes woff2 best-effort ---------- */
@@ -91,11 +89,13 @@ self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
         const keep = new Set([STATIC_CACHE, RUNTIME_CACHE]);
         const keys = await caches.keys();
-        // Borra también 'sabormap-v4' y 'sabormap-static-v1.0.0' (previas)
         await Promise.all(
             keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))
         );
         await self.clients.claim();
+        // Avisar a los clientes que hay una nueva versión disponible
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        clients.forEach(c => c.postMessage({ type: 'sw-updated', version: VERSION }));
     })());
 });
 
@@ -112,19 +112,17 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 2) API de datos: NUNCA desde caché [R-03]. Sin conexión, app.js cae
-    //    por diseño a staticPlaces (los 258 locales de places.js).
+    // 2) API de datos de Supabase: NUNCA desde caché [R-03].
+    //    Sin conexión, el dashboard mostrará datos en memoria (si los hay)
+    //    o un toast "Sin conexión" pero no datos stale del servidor.
     if (url.hostname.includes('supabase.co')) return;
 
-    // 3) Recursos propios (imágenes de locales, etc.)
+    // 3) Recursos propios
     if (url.origin === self.location.origin) {
-        // ★ FIX [v2.0.4]: places.js/app.js/dashboard.html siempre frescos cuando hay red.
-        //   Antes eran stale-while-revalidate y servían la versión cacheada.
-        //   Firefox es más conservador que Chrome con el SWR y no refrescaba,
-        //   por lo que los fixes de iconos y menú nunca llegaban al usuario.
-        if (url.pathname.endsWith('/places.js') ||
+        // ★ FIX [v2.0.5]: dashboard.html, app.js, places.js siempre frescos cuando hay red.
+        if (url.pathname.endsWith('/dashboard.html') ||
             url.pathname.endsWith('/app.js') ||
-            url.pathname.endsWith('/dashboard.html') ||
+            url.pathname.endsWith('/places.js') ||
             url.pathname.endsWith('/index.html') ||
             url.pathname === '/' || url.pathname === './') {
             event.respondWith(networkFirst(req));
@@ -134,20 +132,16 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 4) CDNs permitidos — incluidos los tiles CARTO del mapa [R-04]
+    // 4) CDNs permitidos
     if (CDN_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith('.' + h))) {
         event.respondWith(staleWhileRevalidate(req, true)); // acepta opacas
         return;
     }
 
-    // 5) Resto de terceros (analytics, etc.): passthrough, sin caché
+    // 5) Resto de terceros: passthrough, sin caché
 });
 
-/* Navegación y JS críticos: red primero; si falla, SOLO caché runtime.
-   ★ FIX [v2.0.6]: ya NO se busca en caches.match(req) global, porque eso
-   incluía STATIC_CACHE (precache viejo) y servía la versión con 256
-   lugares. Ahora solo cae a RUNTIME_CACHE, que siempre tiene la última
-   versión buena que se fetched de la red. */
+/* Navegación: red primero; si falla, caché exacta → precache → offline */
 async function networkFirst(req) {
     const cache = await caches.open(RUNTIME_CACHE);
     try {
@@ -157,18 +151,11 @@ async function networkFirst(req) {
         }
         return fresh;
     } catch (err) {
-        // ★ FIX: solo buscar en RUNTIME_CACHE (versión fresca), NO en
-        //   STATIC_CACHE (que podría tener una versión vieja precacheada).
-        //   Para navegación (index.html) sí permitimos fallback al
-        //   precache del shell, porque index.html cambia poco.
-        const cached = await cache.match(req);
+        const cached = (await cache.match(req)) ||
+                       (await caches.match(req)) ||
+                       (await caches.match('./dashboard.html')) ||
+                       (await caches.match('./'));
         if (cached) return cached;
-        // Solo para navegación (no para JS): fallback al shell precacheado
-        if (req.mode === 'navigate') {
-            const shell = (await caches.match('./index.html')) ||
-                          (await caches.match('./'));
-            if (shell) return shell;
-        }
         return offlinePage();
     }
 }
@@ -176,7 +163,6 @@ async function networkFirst(req) {
 /* Estáticos: respuesta instantánea desde caché + refresco en segundo plano */
 async function staleWhileRevalidate(req, acceptOpaque) {
     const cache = await caches.open(RUNTIME_CACHE);
-    // Busca en runtime y también en el precache estático
     const cached = (await cache.match(req)) || (await caches.match(req));
     const network = fetch(req)
         .then((res) => {
@@ -191,20 +177,158 @@ async function staleWhileRevalidate(req, acceptOpaque) {
     return fresh || new Response('', { status: 504, statusText: 'Offline' });
 }
 
-/* Página offline mínima (UTF-8) para navegaciones sin red y sin caché.
-   Sustituye al texto plano sin acentos de la versión aportada [R-06]. */
+/* Página offline mínima (UTF-8) para navegaciones sin red y sin caché. */
 function offlinePage() {
     return new Response(
         '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-        '<title>Sin conexión — Sabormap</title></head>' +
+        '<title>Sin conexión — SaborMap Dashboard</title></head>' +
         '<body style="margin:0;height:100vh;display:grid;place-items:center;' +
-        'background:#0b0e17;color:#e5e7eb;font-family:system-ui,sans-serif;' +
+        'background:#070912;color:#f1f5f9;font-family:system-ui,sans-serif;' +
         'text-align:center;padding:1rem">' +
-        '<div><h1 style="font-size:1.5rem;margin:0 0 .5rem">Sin conexi&oacute;n</h1>' +
-        '<p style="opacity:.7;margin:0">Sabormap necesita internet la primera vez.<br>' +
-        'Vuelve a intentarlo cuando tengas datos m&oacute;viles o WiFi.</p></div>' +
-        '</body></html>',
+        '<div style="max-width:400px">' +
+        '<div style="font-size:3rem;margin-bottom:16px">📡</div>' +
+        '<h1 style="font-size:1.5rem;margin:0 0 .5rem;color:#fbbf24">Sin conexión</h1>' +
+        '<p style="opacity:.7;margin:0 0 20px;line-height:1.6">El panel necesita internet la primera vez que se carga. ' +
+        'Si estabas editando un formulario, tu progreso se guardó automáticamente como borrador local.</p>' +
+        '<button onclick="location.reload()" style="padding:12px 24px;border:none;border-radius:10px;' +
+        'background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-weight:600;cursor:pointer;' +
+        'font-size:0.9rem">Reintentar conexión</button>' +
+        '</div></body></html>',
         { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     );
+}
+
+/* ---------- MESSAGE: hook para forzar activación inmediata si se requiere ---------- */
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   [F-5.1+] BACKGROUND SYNC — Procesar cola de operaciones offline
+   ═══════════════════════════════════════════════════════════════════ */
+const SYNC_TAG = 'sabormap-sync-queue';
+const SYNC_OP_TIMEOUT = 30000; // 30s por operación
+
+self.addEventListener('sync', (event) => {
+    if (event.tag === SYNC_TAG) {
+        event.waitUntil(processQueueInSW());
+    }
+});
+
+async function processQueueInSW() {
+    const db = await openSWOpsDB();
+    if (!db) return;
+
+    const ops = await new Promise((resolve) => {
+        const tx = db.transaction('ops', 'readonly');
+        const req = tx.objectStore('ops').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+    });
+
+    const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+    if (pending.length === 0) return;
+
+    // Necesitamos al menos un cliente visible para ejecutar las ops
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (clients.length === 0) {
+        console.log('[SW] No hay clientes activos para procesar cola de', pending.length, 'ops');
+        return;
+    }
+    const client = clients[0];
+
+    for (const op of pending) {
+        try {
+            const result = await sendOpToClient(client, op);
+            if (result && result.ok) {
+                await swDeleteOp(db, op.id);
+            } else if (result && result.fatal) {
+                await swUpdateOpStatus(db, op.id, 'failed', result.error);
+            } else {
+                await swUpdateOpStatus(db, op.id, 'retry', (result && result.error) || 'unknown');
+            }
+        } catch (err) {
+            console.warn('[SW] Op', op.id, 'no procesada:', err);
+            await swUpdateOpStatus(db, op.id, 'retry', err.message || String(err));
+        }
+    }
+
+    client.postMessage({ type: 'queue-processed' });
+}
+
+function sendOpToClient(client, op) {
+    return new Promise((resolve) => {
+        const messageId = 'op-' + op.id + '-' + Date.now();
+        let settled = false;
+
+        const timeout = setTimeout(() => {
+            if (!settled) {
+                settled = true;
+                resolve({ ok: false, fatal: false, error: 'timeout' });
+            }
+        }, SYNC_OP_TIMEOUT);
+
+        const handler = (event) => {
+            if (!event.data || event.data.type !== 'op-result' || event.data.messageId !== messageId) return;
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            self.removeEventListener('message', handler);
+            resolve(event.data.result);
+        };
+        self.addEventListener('message', handler);
+
+        client.postMessage({
+            type: 'execute-op',
+            messageId: messageId,
+            op: op
+        });
+    });
+}
+
+function openSWOpsDB() {
+    return new Promise((resolve) => {
+        const req = indexedDB.open('sabormap_pending_ops', 1);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('ops')) {
+                const store = db.createObjectStore('ops', { keyPath: 'id', autoIncrement: true });
+                store.createIndex('status', 'status', { unique: false });
+                store.createIndex('type', 'type', { unique: false });
+            }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+    });
+}
+
+function swDeleteOp(db, id) {
+    return new Promise((resolve) => {
+        const tx = db.transaction('ops', 'readwrite');
+        tx.objectStore('ops').delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+    });
+}
+
+function swUpdateOpStatus(db, id, status, errorMsg) {
+    return new Promise((resolve) => {
+        const tx = db.transaction('ops', 'readwrite');
+        const store = tx.objectStore('ops');
+        const getReq = store.get(id);
+        getReq.onsuccess = () => {
+            const op = getReq.result;
+            if (!op) return resolve();
+            op.status = status;
+            op.attempts = (op.attempts || 0) + 1;
+            op.last_error = errorMsg || op.last_error;
+            op.last_attempt_at = new Date().toISOString();
+            store.put(op);
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+    });
 }
