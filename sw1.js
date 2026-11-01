@@ -1,48 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.14 — FIX REAL responsive: el style="grid-template-columns:..."
-    inline en el .menu-item-row sobreescribía la media query y por eso
-    en móvil los 6 campos se colapsaban. Removido el inline + !important
-    en las media queries como doble defensa. Hereda v2.0.6 → v2.0.13.]
+   [v2.0.18 — timeout 15s + siempre encolar en local tras fallo +
+    pre-refresh del token + .select() para detectar RLS silent denial +
+    polyfill Web Locks + logout optimista. Hereda todos los fixes
+    v2.0.6 → v2.0.17.]
 
    Estrategia:
-   · Precache tolerante del shell local (allSettled: un 404 no aborta el
-     SW) + CDNs críticos del primer render (Supabase, Fonts, FA6).
+   · Precache tolerante del shell local (allSettled) + CDNs críticos.
    · Navegación: network-first con cadena de fallback y página offline.
-   · dashboard.html, app.js, places.js → network-first ★ (FIX: antes
-     eran stale-while-revalidate y Firefox servía la versión cacheada
-     con el bug de los iconos `fafa-` durante días).
-   · Otros recursos propios y CDNs permitidos: stale-while-revalidate;
-     se aceptan respuestas opacas (type 'opaque') — sin esto, las fuentes
-     woff2 y los tiles del mapa nunca entrarían en caché.
-   · API de Supabase: PASSTHROUGH (nunca se cachea → no hay datos stale
-     ni respuestas de auth en caché). Esto es crítico para que el
-     dashboard refresque perfiles/suscripciones/locales siempre desde
-     el servidor cuando haya conexión.
-   · Tailwind eliminado del precache y de CDN_HOSTS: ya no se usa en
-     el dashboard (conflictuaba con Font Awesome 6).
+   · dashboard.html → network-first (siempre fresco cuando hay red).
+   · Otros recursos propios y CDNs: stale-while-revalidate.
+   · API de Supabase: PASSTHROUGH (nunca se cachea).
 
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.14'; // ↑ súbelo en cada despliegue — v2.0.14: fix real responsive (removido inline style que sobreescribía media query)
+const VERSION = 'v2.0.18';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
-    // Shell local
     './',
     './dashboard.html',
     './manifest.json',
-    // CDNs críticos del primer render — URLs EXACTAS del HTML
     'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4'
 ];
 
-/* Orígenes de terceros cuyas respuestas SÍ se cachean en runtime (SWR).
-   OJO: supabase.co queda FUERA a propósito [R-03]: es la API de datos.
-   Tailwind removido: ya no se carga en el dashboard. */
 const CDN_HOSTS = [
     'fonts.googleapis.com',
     'fonts.gstatic.com',
@@ -50,7 +35,6 @@ const CDN_HOSTS = [
     'cdn.jsdelivr.net'
 ];
 
-/* ---------- INSTALL: precache tolerante + fuentes woff2 best-effort ---------- */
 self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
         const cache = await caches.open(STATIC_CACHE);
@@ -64,9 +48,6 @@ self.addEventListener('install', (event) => {
     })());
 });
 
-/* El CSS de Google Fonts lista los .woff2 en URLs que el navegador pide
-   aparte; sin este paso, la primera sesión offline mostraría tipografías
-   de sistema [R-07]. Best-effort: si falla, no rompe la instalación. */
 async function precacheFontFiles(cache) {
     try {
         const cssUrl = PRECACHE_URLS.find((u) => u.includes('fonts.googleapis.com'));
@@ -82,7 +63,6 @@ async function precacheFontFiles(cache) {
     }
 }
 
-/* ---------- ACTIVATE: limpieza por VERSION + reclamar clientes ---------- */
 self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
         const keep = new Set([STATIC_CACHE, RUNTIME_CACHE]);
@@ -91,33 +71,25 @@ self.addEventListener('activate', (event) => {
             keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))
         );
         await self.clients.claim();
-        // Avisar a los clientes que hay una nueva versión disponible
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
         clients.forEach(c => c.postMessage({ type: 'sw-updated', version: VERSION }));
     })());
 });
 
-/* ---------- FETCH ---------- */
 self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
 
     const url = new URL(req.url);
 
-    // 1) Navegación: network-first con cadena de fallback + página offline
     if (req.mode === 'navigate') {
         event.respondWith(networkFirst(req));
         return;
     }
 
-    // 2) API de datos de Supabase: NUNCA desde caché [R-03].
-    //    Sin conexión, el dashboard mostrará datos en memoria (si los hay)
-    //    o un toast "Sin conexión" pero no datos stale del servidor.
     if (url.hostname.includes('supabase.co')) return;
 
-    // 3) Recursos propios
     if (url.origin === self.location.origin) {
-        // ★ FIX [v2.0.5]: dashboard.html, app.js, places.js siempre frescos cuando hay red.
         if (url.pathname.endsWith('/dashboard.html') ||
             url.pathname.endsWith('/app.js') ||
             url.pathname.endsWith('/places.js') ||
@@ -130,16 +102,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 4) CDNs permitidos
     if (CDN_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith('.' + h))) {
-        event.respondWith(staleWhileRevalidate(req, true)); // acepta opacas
+        event.respondWith(staleWhileRevalidate(req, true));
         return;
     }
-
-    // 5) Resto de terceros: passthrough, sin caché
 });
 
-/* Navegación: red primero; si falla, caché exacta → precache → offline */
 async function networkFirst(req) {
     const cache = await caches.open(RUNTIME_CACHE);
     try {
@@ -158,7 +126,6 @@ async function networkFirst(req) {
     }
 }
 
-/* Estáticos: respuesta instantánea desde caché + refresco en segundo plano */
 async function staleWhileRevalidate(req, acceptOpaque) {
     const cache = await caches.open(RUNTIME_CACHE);
     const cached = (await cache.match(req)) || (await caches.match(req));
@@ -175,7 +142,6 @@ async function staleWhileRevalidate(req, acceptOpaque) {
     return fresh || new Response('', { status: 504, statusText: 'Offline' });
 }
 
-/* Página offline mínima (UTF-8) para navegaciones sin red y sin caché. */
 function offlinePage() {
     return new Response(
         '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
@@ -187,8 +153,7 @@ function offlinePage() {
         '<div style="max-width:400px">' +
         '<div style="font-size:3rem;margin-bottom:16px">📡</div>' +
         '<h1 style="font-size:1.5rem;margin:0 0 .5rem;color:#fbbf24">Sin conexión</h1>' +
-        '<p style="opacity:.7;margin:0 0 20px;line-height:1.6">El panel necesita internet la primera vez que se carga. ' +
-        'Si estabas editando un formulario, tu progreso se guardó automáticamente como borrador local.</p>' +
+        '<p style="opacity:.7;margin:0 0 20px;line-height:1.6">El panel necesita internet la primera vez que se carga.</p>' +
         '<button onclick="location.reload()" style="padding:12px 24px;border:none;border-radius:10px;' +
         'background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-weight:600;cursor:pointer;' +
         'font-size:0.9rem">Reintentar conexión</button>' +
@@ -197,18 +162,15 @@ function offlinePage() {
     );
 }
 
-/* ---------- MESSAGE: hook para forzar activación inmediata si se requiere ---------- */
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
     }
 });
 
-/* ═══════════════════════════════════════════════════════════════════
-   [F-5.1+] BACKGROUND SYNC — Procesar cola de operaciones offline
-   ═══════════════════════════════════════════════════════════════════ */
+/* BACKGROUND SYNC */
 const SYNC_TAG = 'sabormap-sync-queue';
-const SYNC_OP_TIMEOUT = 30000; // 30s por operación
+const SYNC_OP_TIMEOUT = 30000;
 
 self.addEventListener('sync', (event) => {
     if (event.tag === SYNC_TAG) {
@@ -230,7 +192,6 @@ async function processQueueInSW() {
     const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
     if (pending.length === 0) return;
 
-    // Necesitamos al menos un cliente visible para ejecutar las ops
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (clients.length === 0) {
         console.log('[SW] No hay clientes activos para procesar cola de', pending.length, 'ops');
