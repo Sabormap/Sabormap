@@ -277,83 +277,6 @@
         .menu-add-item-btn{margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px 12px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.25s;width:100%;text-align:center}
         .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
 
-        /* ═══════════════════════════════════════════════════
-           [v2.0.8] NAV PILLS — Botones de navegación para categorías
-           de la carta. Aparecen arriba del contenedor, son sticky al
-           hacer scroll horizontal, y al hacer clic hacen scroll suave
-           a la categoría correspondiente. Cada pill muestra el nombre
-           de la categoría y un mini-contador de platos.
-           ═══════════════════════════════════════════════════ */
-        .menu-nav-pills{
-            display:flex;
-            gap:8px;
-            overflow-x:auto;
-            padding:8px 0 14px;
-            margin-bottom:6px;
-            scrollbar-width:thin;
-            position:sticky;
-            top:64px;
-            z-index:5;
-            background:var(--card);
-            border-bottom:1px solid var(--border-soft);
-        }
-        .menu-nav-pills::-webkit-scrollbar{height:5px}
-        .menu-nav-pills::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
-        .menu-nav-pill{
-            flex-shrink:0;
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            padding:7px 14px;
-            border-radius:100px;
-            background:var(--card-2);
-            border:1px solid var(--border);
-            color:var(--cream);
-            font-size:0.8rem;
-            font-weight:600;
-            cursor:pointer;
-            transition:all 0.2s ease;
-            white-space:nowrap;
-            font-family:inherit;
-        }
-        .menu-nav-pill:hover{
-            border-color:var(--secondary);
-            color:var(--secondary);
-            background:rgba(6,182,212,0.06);
-            transform:translateY(-1px);
-        }
-        .menu-nav-pill.active{
-            background:linear-gradient(135deg,var(--secondary),#0891b2);
-            color:#fff;
-            border-color:transparent;
-            box-shadow:0 4px 14px var(--secondary-glow);
-        }
-        .menu-nav-pill-count{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            min-width:18px;
-            height:18px;
-            padding:0 5px;
-            border-radius:100px;
-            background:rgba(255,255,255,0.18);
-            font-size:0.68rem;
-            font-weight:700;
-        }
-        .menu-nav-pill:not(.active) .menu-nav-pill-count{
-            background:rgba(148,163,184,0.18);
-            color:var(--muted);
-        }
-        .menu-nav-pills-empty{
-            font-size:0.78rem;
-            color:var(--muted-2);
-            padding:6px 0;
-            font-style:italic;
-        }
-        .menu-category{
-            scroll-margin-top:140px;  /* deja espacio para las pills sticky al saltar */
-        }
-
         /* Delivery / Links editor */
         .link-row{display:grid;grid-template-columns:160px 1fr 34px;gap:8px;align-items:center}
         .link-row input{padding:9px 12px;font-size:0.84rem}
@@ -1057,10 +980,8 @@
                                 <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-book-open" style="color:var(--secondary)"></i> Carta / Menu</h3>
                                 <button type="button" class="btn-secondary btn-sm" onclick="addMenuCategory()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar categoria</button>
                             </div>
-                            <!-- [v2.0.8] Pills de navegación rápida entre categorías -->
-                            <div id="menuNavPills" class="menu-nav-pills" aria-label="Navegación entre categorías de la carta"></div>
                             <div id="menuContainer" style="display:flex;flex-direction:column;gap:16px"></div>
-                            <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio. Usa los botones de arriba para saltar entre categorías.</div>
+                            <div class="form-hint" style="margin-top:10px">Agrega categorias (ej: Entradas, Principales) y dentro de cada una los platos con nombre, descripcion y precio.</div>
                         </div>
 
                         <!-- ===== DELIVERY / LINKS ===== -->
@@ -1536,41 +1457,17 @@
     <div class="toast" id="appToast" role="alert" aria-live="polite"></div>
 
     <!-- ====== SUPABASE + JS (UNA SOLA VEZ) ====== -->
-    <!--
-      ★ FIX [v2.0.7] — Polyfill de Web Locks API para navegadores que no la
-      soportan (Firefox < 96, Safari < 15.4, WebViews antiguos, navegadores
-      in-app de Facebook/Instagram, modo privado en algunos browsers).
-      Supabase JS v2.49.4 usa navigator.locks para coordinar el refresh del
-      token entre pestañas. Sin esta API, lanza:
-        "Acquiring an exclusive Navigator LockManager lock ... immediately failed"
-      Este polyfill provee un lock en memoria (no coordina entre pestañas,
-      pero evita el crash). Debe cargarse ANTES que supabase-js.
-    -->
+    <!-- ★ FIX [v2.0.7] Polyfill Web Locks API -->
     <script>
     (function() {
-        if ('locks' in navigator && typeof navigator.locks.request === 'function') {
-            return;  // API nativa disponible, no hacer nada
-        }
-        console.warn('[Polyfill] Web Locks API no soportada. Activando fallback en memoria.');
-        var locks = {};
+        if ('locks' in navigator && typeof navigator.locks.request === 'function') return;
+        console.warn('[Polyfill] Web Locks API no soportada. Activando fallback.');
         navigator.locks = navigator.locks || {};
         navigator.locks.request = function(name, mode, callback) {
-            // Soportar overload (name, callback) sin modo
-            if (typeof mode === 'function') {
-                callback = mode;
-                mode = 'exclusive';
-            }
-            // Fallback simplificado: no bloquea de verdad, solo ejecuta el callback
-            // con un objeto lock falso. No hay coordinación entre pestañas pero
-            // evita el crash y permite que la app funcione.
-            return Promise.resolve(callback({
-                name: String(name),
-                mode: mode
-            }));
+            if (typeof mode === 'function') { callback = mode; mode = 'exclusive'; }
+            return Promise.resolve(callback({ name: String(name), mode: mode }));
         };
-        navigator.locks.query = function() {
-            return Promise.resolve({ held: [], pending: [] });
-        };
+        navigator.locks.query = function() { return Promise.resolve({ held: [], pending: [] }); };
     })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
@@ -1630,18 +1527,14 @@
 
         /* ========================================
            INICIALIZACION — SIN redeclarar
-           ★ FIX [v2.0.7]: opciones explícitas de auth para reducir
-             errores de LockManager. detectSessionInUrl:false evita
-             que el cliente intente adquirir un lock al parsear la URL
-             en cada carga (causa común del error en pestañas múltiples).
         ======================================== */
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
-                detectSessionInUrl: false,  // evita locks innecesarios al cargar
-                flowType: 'pkce'            // PKCE es más robusto que implicit
+                detectSessionInUrl: false,
+                flowType: 'pkce'
             }
         });
 
@@ -1927,34 +1820,6 @@
                 countEl.textContent = pending.length > 9 ? '9+' : pending.length;
                 badge.style.display = 'inline-flex';
             }
-
-            // [v2.0.8] Banner flotante visible cuando hay ops pendientes.
-            // Le dice al usuario claramente: "tus cambios están guardados,
-            // esperando conexión". Esto da confianza para seguir trabajando
-            // sin conexión sin miedo a perder datos.
-            let banner = $('pendingBanner');
-            if (pending.length > 0) {
-                if (!banner) {
-                    banner = document.createElement('div');
-                    banner.id = 'pendingBanner';
-                    banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);' +
-                        'background:linear-gradient(135deg,rgba(245,158,11,0.95),rgba(217,119,6,0.95));' +
-                        'color:#fff;padding:11px 18px;border-radius:100px;font-size:0.82rem;font-weight:600;' +
-                        'box-shadow:0 8px 24px rgba(245,158,11,0.4);z-index:90;display:flex;align-items:center;gap:10px;' +
-                        'max-width:calc(100% - 32px);cursor:pointer;font-family:inherit;border:none';
-                    banner.onclick = showPendingOpsModal;
-                    banner.innerHTML = '<i aria-hidden="true" class="fas fa-cloud-arrow-up"></i>' +
-                        '<span id="pendingBannerText"></span>' +
-                        '<i aria-hidden="true" class="fas fa-chevron-right" style="font-size:0.7rem;opacity:0.7"></i>';
-                    document.body.appendChild(banner);
-                }
-                const txt = $('pendingBannerText');
-                const word = pending.length === 1 ? 'cambio pendiente' : 'cambios pendientes';
-                if (txt) txt.textContent = pending.length + ' ' + word + ' — se guardará al reconectar';
-                banner.style.display = 'flex';
-            } else if (banner) {
-                banner.style.display = 'none';
-            }
         }
 
         function showPendingOpsModal() {
@@ -1986,66 +1851,41 @@
         /* Procesar la cola de operaciones (en cliente o en SW)
            Esta función es referenciada por el SW vía importScripts-like pattern:
            el SW ejecuta su propia versión (ver sw1.js). Esta versión de cliente
-           se usa como fallback cuando Background Sync no está soportado.
-           ★ FIX [v2.0.6]: flag _processingQueue evita que el cliente y el SW
-           procesen la misma op simultáneamente (lo que producía INSERTs
-           duplicados en Supabase cuando volvía la conexión). */
-        let _processingQueue = false;
+           se usa como fallback cuando Background Sync no está soportado. */
         async function processQueueNow() {
-            if (_processingQueue) {
-                console.log('[Queue] Ya está procesando, salgo para evitar duplicados');
-                return;
-            }
-            _processingQueue = true;
-            try {
-                const ops = await getPendingOps();
-                const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
-                if (pending.length === 0) return;
+            const ops = await getPendingOps();
+            const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+            if (pending.length === 0) return;
 
-                for (const op of pending) {
-                    if (!navigator.onLine) break;  // sin conexión, esperar
-                    try {
-                        const result = await executeOp(op);
-                        if (result.ok) {
-                            await deleteOp(op.id);
-                        } else if (result.fatal) {
-                            // Error no recuperable: marcar como failed y avisar al usuario
-                            await updateOpStatus(op.id, 'failed', result.error);
-                            showToast('Operación "' + op.type + '" falló permanentemente: ' + result.error, true);
-                        } else {
-                            // Error recuperable: marcar para reintento
-                            await updateOpStatus(op.id, 'retry', result.error);
-                        }
-                    } catch (err) {
-                        await updateOpStatus(op.id, 'retry', err.message || String(err));
+            for (const op of pending) {
+                if (!navigator.onLine) break;  // sin conexión, esperar
+                try {
+                    const result = await executeOp(op);
+                    if (result.ok) {
+                        await deleteOp(op.id);
+                    } else if (result.fatal) {
+                        // Error no recuperable: marcar como failed y avisar al usuario
+                        await updateOpStatus(op.id, 'failed', result.error);
+                        showToast('Operación "' + op.type + '" falló permanentemente: ' + result.error, true);
+                    } else {
+                        // Error recuperable: marcar para reintento
+                        await updateOpStatus(op.id, 'retry', result.error);
                     }
+                } catch (err) {
+                    await updateOpStatus(op.id, 'retry', err.message || String(err));
                 }
-                await updatePendingBadge();
-            } finally {
-                _processingQueue = false;
             }
+            updatePendingBadge();
         }
         window.processQueueNow = processQueueNow;
 
-        /* Ejecutar una operación individual contra Supabase.
-           ★ FIX [v2.0.6]: ya no marca 'fatal' en error de auth. Si la
-           sesión expira, intenta refreshSession() y deja la op en 'retry'
-           para que se reprocese cuando el usuario vuelva a loguearse.
-           Antes, una sesión expirada convertía la op en 'failed'
-           permanente → pérdida silenciosa de datos. */
+        /* Ejecutar una operación individual contra Supabase */
         async function executeOp(op) {
             const { type, payload } = op;
-
-            // 1) Asegurar sesión válida, intentando refresh si hace falta
-            let { data: { session } } = await sb.auth.getSession();
+            // Necesitamos una sesión válida
+            const { data: { session } } = await sb.auth.getSession();
             if (!session) {
-                const { data: rData, error: rErr } = await sb.auth.refreshSession();
-                if (rErr || !rData.session) {
-                    // No fatal: la op queda en 'retry' para cuando el usuario
-                    // vuelva a loguearse. NO la perdemos.
-                    return { ok: false, fatal: false, error: 'Sesión expirada, esperando re-login' };
-                }
-                session = rData.session;
+                return { ok: false, fatal: true, error: 'Sesión expirada' };
             }
 
             try {
@@ -2073,21 +1913,15 @@
                         return { ok: false, fatal: true, error: 'Tipo de operación desconocido: ' + type };
                 }
                 if (result.error) {
+                    // Errores de auth → reintentar; errores de validación → fatal
                     const msg = String(result.error.message || '');
                     const isAuth = msg.includes('JWT') || msg.includes('jwt') || msg.includes('401') ||
                                    msg.includes('expired') || msg.includes('not authenticated');
-                    if (isAuth) {
-                        // Intentar refresh y dejar en 'retry' (no fatal)
-                        const { error: rErr } = await sb.auth.refreshSession();
-                        if (rErr) return { ok: false, fatal: false, error: 'auth refresh falló' };
-                        return { ok: false, fatal: false, error: 'token refrescado, reintentar' };
-                    }
-                    // Error de validación / RLS / constraint → sí fatal, no tiene sentido reintentar
-                    return { ok: false, fatal: true, error: msg };
+                    return { ok: false, fatal: !isAuth, error: msg };
                 }
                 return { ok: true };
             } catch (err) {
-                // Error de red → reintentar
+                // Errores de red → reintentar
                 return { ok: false, fatal: false, error: err.message || String(err) };
             }
         }
@@ -2415,12 +2249,27 @@
            AUTH: Logout
         ======================================== */
         window.handleLogout = async function() {
-            await sb.auth.signOut();
+            // ★ FIX [v2.0.9] — Logout optimista e instantáneo.
+            const dashWrap = $('dashboardWrap');
+            const authScreen = $('authScreen');
+            if (dashWrap) dashWrap.classList.remove('visible');
+            if (authScreen) authScreen.style.display = 'flex';
+            try { showView('login'); } catch (e) {}
             currentUser = null; userProfile = null; userSubscription = null;
             myPlaces = []; allPlaces = []; allProfiles = []; allSubs = []; allLogs = [];
-            $('dashboardWrap').classList.remove('visible');
-            $('authScreen').style.display = 'flex';
-            showView('login');
+            const badge = $('pendingOpsBadge');
+            if (badge) badge.style.display = 'none';
+            const banner = $('pendingBanner');
+            if (banner) banner.style.display = 'none';
+            if (typeof _processingQueue !== 'undefined') _processingQueue = false;
+            try { await sb.auth.signOut({ scope: 'local' }); } catch (e) {}
+            (async () => {
+                try {
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('signOut timeout')), 5000));
+                    await Promise.race([sb.auth.signOut({ scope: 'global' }), timeoutPromise]);
+                } catch (err) { console.warn('[Logout] No se pudo revocar token (no crítico):', err.message || err); }
+            })();
+            try { showToast('Sesión cerrada correctamente'); } catch (e) {}
         };
 
         /* ========================================
@@ -2626,13 +2475,6 @@
 
             if (panelId === 'my-places') renderMyPlaces();
             if (panelId === 'overview') renderOverview();
-            // ★ FIX [v2.0.6]: si salimos de 'add-place' hacia otro panel sin
-            //   guardar, reseteamos editingPlaceId para que el próximo "Agregar
-            //   Local" empiece limpio. Si estábamos editando y cancelamos,
-            //   también se limpia.
-            if (panelId !== 'add-place' && editingPlaceId) {
-                editingPlaceId = null;
-            }
             if (panelId === 'add-place' && !editingPlaceId) resetPlaceForm();
             if (panelId === 'admin-places') renderAdminPlaces();
             if (panelId === 'admin-subs') renderAdminSubs();
@@ -2756,7 +2598,6 @@
         function renderMenuEditor() {
             const container = $('menuContainer');
             if (!container) return;
-            renderMenuNavPills();  // [v2.0.8] botones de navegación
             if (!placeMenu.length) {
                 container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem"><i aria-hidden="true" class="fas fa-book-open" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.4"></i>Aún no agregaste categorías a la carta.</div>';
                 return;
@@ -2777,7 +2618,7 @@
                     </div>
                 `).join('');
                 return `
-                    <div class="menu-category" data-cat-index="${ci}" id="menuCat-${ci}">
+                    <div class="menu-category">
                         <div class="menu-category-head">
                             <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
                             <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
@@ -2787,99 +2628,6 @@
                     </div>
                 `;
             }).join('');
-        }
-
-        /* ═══════════════════════════════════════════════════
-           [v2.0.8] NAV PILLS — Render y navegación entre categorías
-           ═══════════════════════════════════════════════════ */
-        function renderMenuNavPills() {
-            const navEl = $('menuNavPills');
-            if (!navEl) return;
-
-            if (!placeMenu.length) {
-                navEl.innerHTML = '<span class="menu-nav-pills-empty">Crea una categoría para empezar.</span>';
-                return;
-            }
-
-            // Detectar cuál categoría está actualmente visible para marcarla activa
-            const activeIdx = getActiveMenuCatIndex();
-
-            navEl.innerHTML = placeMenu.map((cat, ci) => {
-                const name = (cat.category || '').trim() || 'Categoría ' + (ci + 1);
-                const count = (cat.items || []).length;
-                const isActive = ci === activeIdx;
-                return '<button type="button" class="menu-nav-pill' + (isActive ? ' active' : '') + '"' +
-                    ' onclick="scrollToMenuCat(' + ci + ')"' +
-                    ' aria-label="Ir a la categoría ' + escapeAttr(name) + '"' +
-                    ' title="' + escapeAttr(name) + '">' +
-                    escapeHtml(name) +
-                    '<span class="menu-nav-pill-count">' + count + '</span>' +
-                    '</button>';
-            }).join('');
-        }
-
-        /* Salta a una categoría con scroll suave y la marca activa */
-        window.scrollToMenuCat = function(ci) {
-            const target = document.getElementById('menuCat-' + ci);
-            if (!target) return;
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Marcar como activa
-            document.querySelectorAll('.menu-nav-pill').forEach(p => p.classList.remove('active'));
-            const pills = document.querySelectorAll('.menu-nav-pill');
-            if (pills[ci]) {
-                pills[ci].classList.add('active');
-                // Auto-scroll horizontal para que la pill activa sea visible
-                pills[ci].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-        };
-
-        /* Detecta qué categoría está más arriba en el viewport */
-        function getActiveMenuCatIndex() {
-            if (!placeMenu.length) return 0;
-            const cats = document.querySelectorAll('.menu-category');
-            if (!cats.length) return 0;
-            const scrollY = window.scrollY + 200;  // offset por top-bar + pills sticky
-            let activeIdx = 0;
-            for (let i = 0; i < cats.length; i++) {
-                if (cats[i].offsetTop <= scrollY) {
-                    activeIdx = i;
-                } else {
-                    break;
-                }
-            }
-            return activeIdx;
-        }
-
-        /* Actualiza el pill activo conforme se hace scroll dentro del form */
-        let _menuScrollTimer = null;
-        function setupMenuScrollSpy() {
-            const panel = $('panel-add-place');
-            if (!panel) return;
-            panel.addEventListener('scroll', () => {
-                if (_menuScrollTimer) return;
-                _menuScrollTimer = setTimeout(() => {
-                    const activeIdx = getActiveMenuCatIndex();
-                    document.querySelectorAll('.menu-nav-pill').forEach((p, i) => {
-                        p.classList.toggle('active', i === activeIdx);
-                    });
-                    _menuScrollTimer = null;
-                }, 80);
-            }, { passive: true });
-            // También escuchar scroll del window por si el form está en el body
-            window.addEventListener('scroll', () => {
-                if (_menuScrollTimer) return;
-                _menuScrollTimer = setTimeout(() => {
-                    if (!$('panel-add-place') || !$('panel-add-place').classList.contains('active')) {
-                        _menuScrollTimer = null;
-                        return;
-                    }
-                    const activeIdx = getActiveMenuCatIndex();
-                    document.querySelectorAll('.menu-nav-pill').forEach((p, i) => {
-                        p.classList.toggle('active', i === activeIdx);
-                    });
-                    _menuScrollTimer = null;
-                }, 80);
-            }, { passive: true });
         }
 
         function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -2895,32 +2643,12 @@
         window.updateMenuCategory = function(ci, val) {
             if (!placeMenu[ci]) return;
             placeMenu[ci].category = val;
-            // [v2.0.8] actualizar solo el texto de la pill sin re-render completo
-            // (evita perder el foco del input mientras se escribe)
-            const pill = document.querySelectorAll('.menu-nav-pill')[ci];
-            if (pill) {
-                const name = val.trim() || 'Categoría ' + (ci + 1);
-                // Conservar el badge de count al reemplazar texto
-                const count = (placeMenu[ci].items || []).length;
-                pill.innerHTML = escapeHtml(name) + '<span class="menu-nav-pill-count">' + count + '</span>';
-                pill.setAttribute('aria-label', 'Ir a la categoría ' + val);
-                pill.setAttribute('title', val);
-            }
         };
         window.addMenuItem = function(ci) {
             if (!placeMenu[ci]) return;
             if (!placeMenu[ci].items) placeMenu[ci].items = [];
             placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP' });
             renderMenuEditor();
-            // [v2.0.8] scroll al nuevo plato y enfocar su primer input
-            setTimeout(() => {
-                const inputs = document.querySelectorAll('#menuCat-' + ci + ' .menu-item-row input');
-                if (inputs.length) {
-                    const last = inputs[inputs.length - 1];
-                    last.focus();
-                    last.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 50);
         };
         window.updateMenuItem = function(ci, ii, field, val) {
             const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
@@ -3240,9 +2968,24 @@
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
             btnText.textContent = 'Guardando local...';
 
-            // ★ FIX [v2.0.6]: helper con timeout. Ya NO encolamos automáticamente
-            //   al vencer — el INSERT original puede seguir en vuelo y completarse
-            //   en el servidor, lo que crearía un duplicado al reintentar.
+            // ★ FIX [v2.0.16] PRE-REFRESH del token antes de guardar.
+            //   Síntoma: "tengo que recargar la página para que guarde".
+            //   El JWT casi expirado hace que el gateway de Supabase se
+            //   cuelgue sin responder. Forzar refresh elimina ese cuelgue.
+            try {
+                btnText.textContent = 'Verificando sesión...';
+                const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
+                if (refreshErr) {
+                    console.warn('[Save] refreshSession previo falló (no bloqueante):', refreshErr.message);
+                } else if (refreshData?.session) {
+                    console.log('[Save] Token refrescado antes de guardar.');
+                }
+            } catch (e) {
+                console.warn('[Save] Excepción en refreshSession previo (no bloqueante):', e);
+            }
+            btnText.textContent = 'Guardando local...';
+
+            // ★ FIX [v2.0.18]: timeout 15s + 1 solo intento + SIEMPRE encolar tras fallo.
             const withTimeout = (promise, ms, label) => Promise.race([
                 promise,
                 new Promise((_, reject) => setTimeout(
@@ -3250,41 +2993,54 @@
                     ms
                 ))
             ]);
-            const SAVE_TIMEOUT = 15000; // ★ 15s (antes 30s)
+            const SAVE_TIMEOUT = 15000; // 15s
 
             try {
                 let opError = null;
+                let saveResult = null;
                 if (editingPlaceId) {
-                    // UPDATE: el owner_id y status no se tocan al editar
                     const update = { ...data };
                     delete update.owner_id;
                     delete update.status;
-                    let r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE');
-                    // [F-5.6] Si error de auth, refresh + reintento único
-                    if (r.error && await handleAuthError(r.error)) {
-                        r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE retry');
+                    // ★ FIX [v2.0.17]: .select() para detectar RLS silent denial
+                    saveResult = await withTimeout(
+                        sb.from('places').update(update).eq('id', editingPlaceId).select(),
+                        SAVE_TIMEOUT, 'UPDATE'
+                    );
+                    opError = saveResult.error;
+                    if (!opError) {
+                        const updatedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
+                        if (updatedRows === 0) {
+                            console.error('[Save] UPDATE devolvió 0 filas. editingPlaceId:', editingPlaceId, 'currentUser.id:', currentUser?.id);
+                            opError = { message: 'No se pudo actualizar: el local no te pertenece o la sesión cambió. Recarga e inténtalo de nuevo.' };
+                        } else {
+                            console.log('[Save] UPDATE exitoso. Filas:', updatedRows);
+                            showToast('Local actualizado correctamente');
+                        }
                     }
-                    opError = r.error;
-                    if (!opError) showToast('Local actualizado correctamente');
                 } else {
-                    let r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT');
-                    if (r.error && await handleAuthError(r.error)) {
-                        r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT retry');
+                    saveResult = await withTimeout(
+                        sb.from('places').insert(data).select(),
+                        SAVE_TIMEOUT, 'INSERT'
+                    );
+                    opError = saveResult.error;
+                    if (!opError) {
+                        const insertedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
+                        if (insertedRows === 0) {
+                            console.error('[Save] INSERT devolvió 0 filas. Posible RLS denial.');
+                            opError = { message: 'No se pudo crear el local: permisos insuficientes (RLS).' };
+                        } else {
+                            console.log('[Save] INSERT exitoso. Nuevo ID:', saveResult.data[0]?.id);
+                            showToast('Local creado correctamente');
+                        }
                     }
-                    opError = r.error;
-                    if (!opError) showToast('Local creado correctamente');
                 }
                 if (opError) throw opError;
 
                 editingPlaceId = null;
                 resetPlaceForm();
-                // [F-5.2] Limpiar el borrador autoguardado tras guardar exitosamente.
-                // ★ FIX [v2.0.6]: await obligatorio — si no, checkDraftOnPanelSwitch
-                //   puede leer el draft aún presente al navegar a 'add-place' y
-                //   ofrecer recuperarlo, creando un duplicado del local recién guardado.
                 await clearPlaceDraft();
                 _hasUnsavedChanges = false;
-                // ★ FIX: cargar con timeout para no colgarse si la red falla post-save
                 try {
                     await withTimeout(loadMyPlaces(), 15000, 'reload');
                 } catch (reloadErr) {
@@ -3294,56 +3050,49 @@
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
                 console.error('Places insert/update error:', err);
-                // [F-5.1+] Si el error es de red, encolar la operación para Background Sync
                 const rawMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Error desconocido');
-                // ★ FIX [v2.0.6]: distinguimos offline real (sin request en vuelo,
-                //   seguro encolar) de timeout (ambiguo, el request puede haber
-                //   completado en el servidor → no encolar para no duplicar).
-                const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
-                                        rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch');
                 const isTimeout = rawMsg.includes('Timeout');
-                const isOffline = !navigator.onLine;
+                const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
+                                        rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch') ||
+                                        !navigator.onLine;
 
-                if (isOffline && !editingPlaceId) {
-                    // INSERT estando offline: encolar es seguro (no hay request en vuelo)
-                    const opId = await enqueueOperation('place_insert', data, { placeName: name });
+                // ★ FIX [v2.0.18]: SIEMPRE encolar tras timeout o error de red.
+                //   No más reintentos inútiles en foreground. El usuario ya esperó 15s.
+                //   Background Sync + interval 30s seguirán probando hasta que el servidor responda.
+                if (isTimeout || isNetworkError) {
+                    let opId = null;
+                    if (editingPlaceId) {
+                        const updatePayload = { ...data };
+                        delete updatePayload.owner_id;
+                        delete updatePayload.status;
+                        opId = await enqueueOperation('place_update',
+                            { id: editingPlaceId, data: updatePayload },
+                            { placeName: name }
+                        );
+                        console.log('[Save] UPDATE encolado en IndexedDB. opId:', opId, '| placeId:', editingPlaceId);
+                    } else {
+                        opId = await enqueueOperation('place_insert', data, { placeName: name });
+                        console.log('[Save] INSERT encolado en IndexedDB. opId:', opId, '| placeName:', name);
+                    }
                     if (opId) {
-                        showToast('Sin conexión. Local encolado — se guardará cuando vuelva el internet');
+                        showToast('Cambios guardados localmente. Se sincronizarán automáticamente cuando el servidor responda.');
                         editingPlaceId = null;
                         resetPlaceForm();
                         await clearPlaceDraft();
                         _hasUnsavedChanges = false;
+                        // Forzar procesamiento inmediato de la cola
+                        if (typeof processQueueNow === 'function') {
+                            setTimeout(() => processQueueNow(), 2000);
+                        }
                         switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
                         return;
                     }
-                } else if (isOffline && editingPlaceId) {
-                    // UPDATE estando offline: encolar es seguro
-                    const updatePayload = { ...data };
-                    delete updatePayload.owner_id;
-                    delete updatePayload.status;
-                    const opId = await enqueueOperation('place_update', { id: editingPlaceId, data: updatePayload }, { placeName: name });
-                    if (opId) {
-                        showToast('Sin conexión. Cambios encolados — se aplicarán cuando vuelva el internet');
-                        editingPlaceId = null;
-                        resetPlaceForm();
-                        await clearPlaceDraft();
-                        _hasUnsavedChanges = false;
-                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
-                        return;
-                    }
-                } else if (isTimeout) {
-                    // ★ FIX [v2.0.6]: timeout = ambiguo. El INSERT puede haber
-                    //   completado en el servidor. NO encolamos: pedimos al usuario
-                    //   que verifique primero en "Mis Locales" antes de reintentar.
-                    showToast('El servidor tardó demasiado. Revisa en "Mis Locales" si el local se guardó antes de reintentar.', true);
-                    return;  // no reseteamos el formulario para que el usuario pueda reintentar
                 }
-                // [F-5.4] Mensaje traducido y accionable
+
+                // Mensaje de error genérico para otros casos
                 let userMsg;
                 if (rawMsg.includes('row-level security') || rawMsg.includes('RLS')) {
                     userMsg = 'No tienes permisos para realizar esta acción. Si crees que es un error, contacta al administrador.';
-                } else if (rawMsg.includes('network') || rawMsg.includes('Network') || rawMsg.includes('fetch')) {
-                    userMsg = 'Error de conexión. Verifica tu internet e inténtalo de nuevo. Tu formulario se guardó automáticamente como borrador.';
                 } else if (rawMsg.includes('duplicate') || rawMsg.includes('unique')) {
                     userMsg = 'Ya existe un local con estos datos.';
                 } else {
@@ -3593,9 +3342,6 @@
         window.filterAdminPlaces = renderAdminPlaces;
 
         window.adminTogglePlaceStatus = async function(id, current) {
-            // ★ FIX [v2.0.6]: defensa en profundidad — valida rol admin en cliente
-            //   además de la RLS en el servidor.
-            if (!requireAdmin('adminTogglePlaceStatus')) return;
             const newStatus = current === 'published' ? 'draft' : 'published';
             const { error } = await sb.from('places').update({ status: newStatus }).eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
@@ -3606,9 +3352,7 @@
         };
 
         window.adminDeletePlace = async function(id) {
-            // ★ FIX [v2.0.6]: defensa en profundidad — valida rol admin en cliente.
-            if (!requireAdmin('adminDeletePlace')) return;
-            if (!confirm('Eliminar este local? Esta acción no se puede deshacer.')) return;
+            if (!confirm('Eliminar este local?')) return;
             const { error } = await sb.from('places').delete().eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
             showToast('Local eliminado');
@@ -4097,28 +3841,17 @@
         }
 
         window.saveProfile = async function() {
-            const fullName = $('s-name').value.trim();
-            const phone = $('s-phone').value.trim();
-            // [v2.0.8] Usar encolador: si no hay conexión, el cambio de perfil
-            // se guarda en la cola y se aplica cuando vuelva internet.
-            const result = await runOrQueue('profile_update',
-                { id: currentUser.id, data: { full_name: fullName, phone: phone } },
-                { placeName: 'Perfil de ' + (fullName || currentUser.email) }
-            );
-            if (result.queued) {
-                showToast('Sin conexión. Cambios de perfil encolados — se aplicarán cuando vuelva el internet');
-            } else if (result.ok) {
-                showToast('Perfil guardado correctamente');
-            } else {
-                showToast('Error al guardar perfil: ' + (result.error || 'desconocido'), true);
-                return;
-            }
-            // Optimistic UI: actualizar el estado local aunque esté encolado
-            userProfile.full_name = fullName;
-            userProfile.phone = phone;
+            const { error } = await sb.from('profiles').update({
+                full_name: $('s-name').value.trim(),
+                phone: $('s-phone').value.trim()
+            }).eq('id', currentUser.id);
+            if (error) { showToast('Error: ' + error.message, true); return; }
+            userProfile.full_name = $('s-name').value.trim();
+            userProfile.phone = $('s-phone').value.trim();
             $('sidebarUserName').textContent = userProfile.full_name || currentUser.email;
             const avatar = $('sidebarAvatar');
             if (userProfile.role !== 'admin') avatar.textContent = getInitials(userProfile.full_name);
+            showToast('Perfil guardado correctamente');
         };
 
         window.showChangePwModal = function() {
@@ -4145,8 +3878,19 @@
             // Iniciar tags e imagenes
             initTags();
             initImageGrid();
-            // [v2.0.8] Scroll spy para pills de navegación de categorías
-            setupMenuScrollSpy();
+
+            // ★ FIX [v2.0.18]: reintentar la cola cada 30s si hay ops pendientes.
+            setInterval(() => {
+                if (!navigator.onLine) return;
+                if (typeof processQueueNow !== 'function') return;
+                getPendingOps().then(ops => {
+                    const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+                    if (pending.length > 0) {
+                        console.log('[Queue] Reintentando', pending.length, 'ops pendientes (interval 30s)');
+                        processQueueNow();
+                    }
+                });
+            }, 30000);
 
             // [F-5.5] Listener de estado de conexión online/offline
             function updateConnectionIndicator() {
@@ -4284,28 +4028,10 @@
             // [F-5.1+] Listener de mensajes del SW para Background Sync
             // El SW envía 'execute-op' cuando el navegador dispara sync;
             // el cliente ejecuta la op contra Supabase y responde.
-            // ★ FIX [v2.0.6]: _opsInFlight evita procesar la misma op dos
-            // veces si el navegador dispara varios eventos sync seguidos.
-            const _opsInFlight = new Set();
             navigator.serviceWorker.addEventListener('message', async (event) => {
                 const data = event.data;
                 if (!data) return;
-
                 if (data.type === 'execute-op' && data.op) {
-                    const opKey = String(data.op.id) + '-' + data.messageId;
-                    if (_opsInFlight.has(opKey)) {
-                        console.warn('[SW msg] op duplicada ignorada:', opKey);
-                        if (navigator.serviceWorker.controller) {
-                            navigator.serviceWorker.controller.postMessage({
-                                type: 'op-result',
-                                messageId: data.messageId,
-                                result: { ok: false, fatal: false, error: 'already processing' }
-                            });
-                        }
-                        return;
-                    }
-                    _opsInFlight.add(opKey);
-
                     try {
                         const result = await executeOp(data.op);
                         // Responder al SW
@@ -4324,7 +4050,7 @@
                             if (isAdmin() && typeof loadAdminData === 'function') {
                                 await loadAdminData();
                             }
-                            await updatePendingBadge();
+                            updatePendingBadge();
                         }
                     } catch (err) {
                         if (navigator.serviceWorker.controller) {
@@ -4334,8 +4060,6 @@
                                 result: { ok: false, fatal: false, error: err.message || String(err) }
                             });
                         }
-                    } finally {
-                        _opsInFlight.delete(opKey);
                     }
                 } else if (data.type === 'queue-processed') {
                     // El SW terminó de procesar la cola: actualizar badge
@@ -4437,3 +4161,4 @@ document.addEventListener('keydown', function (e) {
 </script>
 </body>
 </html>
+tengo problemas con el dashboard se pierden los datos, no se guardan cuando actualizo y tengo la sensacion que entraron adentro de mi pagina
