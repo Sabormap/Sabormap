@@ -7,7 +7,7 @@
         llamar al servidor — útil para ediciones largas sin conexión).
       · Botón "Instalar App" visible en el top-bar cuando el navegador
         dispara beforeinstallprompt (Chrome/Edge Android/Desktop).
-      · manifest.json con shortcuts a Mis Locales, Agregar Local y
+      · manifest1.json con shortcuts a Mis Locales, Agregar Local y
         Resumen (long-press al icono de la app instalada).
       · SQL v2: GRANT EXECUTE en is_admin(), columnas must_order /
         editor_note / delivery_enabled / tags / menu / links / images,
@@ -32,7 +32,7 @@ const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 const PRECACHE_URLS = [
     './',
     './dashboard.html',
-    './manifest.json',
+    './manifest1.json',
     'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4'
