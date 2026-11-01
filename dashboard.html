@@ -3535,9 +3535,40 @@
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
             btnText.textContent = 'Guardando local...';
 
-            // ★ FIX [v2.0.6]: helper con timeout. Ya NO encolamos automáticamente
-            //   al vencer — el INSERT original puede seguir en vuelo y completarse
-            //   en el servidor, lo que crearía un duplicado al reintentar.
+            // ★ FIX [v2.0.16] — PRE-REFRESH DEL TOKEN antes de guardar.
+            //   Síntoma: el usuario hace clic en "Guardar" → timeout de 30s
+            //   aunque la conexión está OK ("En línea" visible). Si recarga
+            //   la página (F5) y reintenta, funciona. ¿Por qué? Porque al
+            //   recargar, Supabase renueva el JWT automáticamente. Sin
+            //   recargar, el token estaba casi expirado y el gateway de
+            //   Supabase se cuelga sin responder → vence el timeout.
+            //   Solución: forzar refreshSession() ANTES del primer intento,
+            //   no esperar a que falle. Es barato (<500ms) y elimina el
+            //   síntoma "tengo que recargar para que guarde".
+            try {
+                btnText.textContent = 'Verificando sesión...';
+                const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
+                if (refreshErr) {
+                    console.warn('[Save] refreshSession previo falló (no bloqueante):', refreshErr.message);
+                    // Si el refresh falla, intentar con la sesión actual.
+                    // Si esa también está expirada, los reintentos de
+                    // saveWithRetry harán refresh de nuevo.
+                } else if (refreshData?.session) {
+                    console.log('[Save] Token refrescado antes de guardar. Expires at:',
+                        new Date(refreshData.session.expires_at * 1000).toLocaleTimeString());
+                }
+            } catch (e) {
+                console.warn('[Save] Excepción en refreshSession previo (no bloqueante):', e);
+            }
+            btnText.textContent = 'Guardando local...';
+
+            // ★ FIX [v2.0.15]: helper con timeout.
+            //   v2.0.6 bajó el timeout a 15s para evitar esperas largas, pero en
+            //   redes cubanas eso NO es suficiente — el UPDATE falla con timeout
+            //   y como v2.0.6 ya no encola en timeout (para no duplicar), el
+            //   cambio se pierde. v2.0.15 sube a 30s + reintenta 2 veces con
+            //   backoff exponencial (1s, 4s) + verifica si el cambio se aplicó
+            //   antes de declarar fallo, para encolar solo si realmente no se guardó.
             const withTimeout = (promise, ms, label) => Promise.race([
                 promise,
                 new Promise((_, reject) => setTimeout(
@@ -3545,29 +3576,140 @@
                     ms
                 ))
             ]);
-            const SAVE_TIMEOUT = 15000; // ★ 15s (antes 30s)
+            const SAVE_TIMEOUT = 30000; // ★ 30s — redes cubanas necesitan más tiempo
+
+            // ★ FIX [v2.0.15]: helper que ejecuta la operación con hasta 3
+            //   intentos (inicial + 2 reintentos) y backoff exponencial.
+            //   Solo reintenta si el error es recuperable (timeout o red).
+            //   Errores de RLS/validación NO se reintentan (sería inútil).
+            const saveWithRetry = async (operation, opLabel) => {
+                const maxAttempts = 3;
+                const backoffMs = [0, 1000, 4000]; // 0s, 1s, 4s
+                let lastResult = null;
+                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                    if (attempt > 1) {
+                        btnText.textContent = 'Reintentando (' + (attempt-1) + '/' + (maxAttempts-1) + ')...';
+                        console.log('[Save] Reintento ' + attempt + ' para ' + opLabel + ' tras ' + backoffMs[attempt-1] + 'ms');
+                        await new Promise(r => setTimeout(r, backoffMs[attempt-1]));
+                        // ★ FIX [v2.0.16]: en cada reintento, refrescar la sesión
+                        //   antes de atacar. Aunque el error no sea de auth explícito,
+                        //   el gateway de Supabase a veces se cuelga con tokens
+                        //   casi expirados. Forzar refresh elimina esa causa.
+                        try {
+                            const { error: rErr } = await sb.auth.refreshSession();
+                            if (rErr) console.warn('[Save] refresh en reintento ' + attempt + ' falló:', rErr.message);
+                            else console.log('[Save] Token refrescado para reintento ' + attempt);
+                        } catch (e) {
+                            console.warn('[Save] refresh en reintento ' + attempt + ' excepción:', e);
+                        }
+                    }
+                    btnText.textContent = attempt === 1 ? 'Guardando local...' : 'Reintentando (' + attempt + '/' + maxAttempts + ')...';
+                    try {
+                        lastResult = await withTimeout(operation(), SAVE_TIMEOUT, opLabel + ' (intento ' + attempt + ')');
+                        // Si llegó aquí, no hubo timeout. Verificar si hay error.
+                        if (lastResult.error) {
+                            const msg = String(lastResult.error.message || '');
+                            const isAuth = msg.includes('JWT') || msg.includes('jwt') || msg.includes('401') ||
+                                           msg.includes('expired') || msg.includes('not authenticated');
+                            if (isAuth && attempt < maxAttempts) {
+                                // Intentar refresh de sesión y reintentar
+                                console.log('[Save] Error de auth en intento ' + attempt + ', refrescando sesión...');
+                                const { error: rErr } = await sb.auth.refreshSession();
+                                if (rErr) { return lastResult; } // no se pudo refrescar, devolver error
+                                continue; // reintentar con sesión nueva
+                            }
+                            // Error no recuperable (RLS, validación, etc.) — no reintentar
+                            return lastResult;
+                        }
+                        // Éxito
+                        return lastResult;
+                    } catch (err) {
+                        // Timeout o error de red — reintentar si quedan intentos
+                        lastResult = { error: { message: err.message || String(err) }, _networkError: true };
+                        const msg = String(err.message || err);
+                        const isRecoverable = msg.includes('Timeout') || msg.includes('network') ||
+                                              msg.includes('Network') || msg.includes('fetch') ||
+                                              msg.includes('Failed to fetch');
+                        if (!isRecoverable || attempt === maxAttempts) {
+                            console.warn('[Save] ' + opLabel + ' falló tras ' + attempt + ' intento(s):', msg);
+                            return lastResult;
+                        }
+                        // Continuar al siguiente intento
+                    }
+                }
+                return lastResult;
+            };
+
+            // ★ FIX [v2.0.15]: tras timeout/red, verificar si el cambio realmente
+            //   se aplicó consultando la BD. Solo encolar si NO se aplicó.
+            //   Esto evita duplicados (si el servidor sí procesó el UPDATE).
+            const verifyPlaceSaved = async (placeId, expectedData) => {
+                try {
+                    const { data, error } = await withTimeout(
+                        sb.from('places').select('name,description,updated_at').eq('id', placeId).maybeSingle(),
+                        10000,
+                        'verify'
+                    );
+                    if (error || !data) return false;
+                    // Si el nombre coincide, asumimos que el UPDATE se aplicó
+                    // (no podemos comparar updated_at porque puede ser igual)
+                    return data.name === expectedData.name;
+                } catch (e) {
+                    return false; // no se pudo verificar, asumir que no se guardó
+                }
+            };
 
             try {
                 let opError = null;
+                let saveResult = null;
                 if (editingPlaceId) {
                     // UPDATE: el owner_id y status no se tocan al editar
                     const update = { ...data };
                     delete update.owner_id;
                     delete update.status;
-                    let r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE');
-                    // [F-5.6] Si error de auth, refresh + reintento único
-                    if (r.error && await handleAuthError(r.error)) {
-                        r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE retry');
+                    // ★ FIX [v2.0.17]: añadir .select() para que Supabase devuelva
+                    //   la fila actualizada. Sin .select(), un UPDATE que no cumple
+                    //   RLS devuelve { data: null, error: null, count: 0 } — el
+                    //   código cree que fue exitoso pero 0 filas fueron tocadas.
+                    //   Con .select(), si RLS bloquea, data viene vacío y podemos
+                    //   detectarlo y avisar al usuario.
+                    saveResult = await saveWithRetry(
+                        () => sb.from('places').update(update).eq('id', editingPlaceId).select(),
+                        'UPDATE'
+                    );
+                    opError = saveResult.error;
+                    // ★ FIX [v2.0.17]: verificar que el UPDATE realmente tocó filas.
+                    //   Si saveResult.data es null o array vacío, RLS bloqueó el
+                    //   update silenciosamente. Avise al usuario en vez de mentirle.
+                    if (!opError) {
+                        const updatedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
+                        if (updatedRows === 0) {
+                            console.error('[Save] UPDATE devolvió 0 filas. editingPlaceId:', editingPlaceId, 'currentUser.id:', currentUser?.id);
+                            console.error('[Save] Posible RLS denial: auth.uid() != owner_id. Verifica que el local te pertenece.');
+                            opError = { message: 'No se pudo actualizar el local: es posible que no te pertenezca o que la sesión haya cambiado. Recarga la página e inténtalo de nuevo.' };
+                        } else {
+                            console.log('[Save] UPDATE exitoso. Filas afectadas:', updatedRows, '| ID:', saveResult.data[0]?.id);
+                            showToast('Local actualizado correctamente');
+                        }
                     }
-                    opError = r.error;
-                    if (!opError) showToast('Local actualizado correctamente');
                 } else {
-                    let r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT');
-                    if (r.error && await handleAuthError(r.error)) {
-                        r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT retry');
+                    // ★ FIX [v2.0.17]: también añadir .select() al INSERT para
+                    //   recibir el ID del nuevo local y confirmar que se creó.
+                    saveResult = await saveWithRetry(
+                        () => sb.from('places').insert(data).select(),
+                        'INSERT'
+                    );
+                    opError = saveResult.error;
+                    if (!opError) {
+                        const insertedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
+                        if (insertedRows === 0) {
+                            console.error('[Save] INSERT devolvió 0 filas. Posible RLS denial.');
+                            opError = { message: 'No se pudo crear el local: permisos insuficientes (RLS). Verifica tu sesión.' };
+                        } else {
+                            console.log('[Save] INSERT exitoso. Nuevo ID:', saveResult.data[0]?.id);
+                            showToast('Local creado correctamente');
+                        }
                     }
-                    opError = r.error;
-                    if (!opError) showToast('Local creado correctamente');
                 }
                 if (opError) throw opError;
 
@@ -3589,17 +3731,49 @@
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
                 console.error('Places insert/update error:', err);
-                // [F-5.1+] Si el error es de red, encolar la operación para Background Sync
                 const rawMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Error desconocido');
-                // ★ FIX [v2.0.6]: distinguimos offline real (sin request en vuelo,
-                //   seguro encolar) de timeout (ambiguo, el request puede haber
-                //   completado en el servidor → no encolar para no duplicar).
-                const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
-                                        rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch');
                 const isTimeout = rawMsg.includes('Timeout');
                 const isOffline = !navigator.onLine;
+                const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
+                                        rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch');
 
-                if (isOffline && !editingPlaceId) {
+                // ★ FIX [v2.0.15]: tras timeout, verificar si el cambio realmente
+                //   se aplicó antes de encolar. Solo encolar si NO se aplicó.
+                if (isTimeout && editingPlaceId) {
+                    btnText.textContent = 'Verificando si se guardó...';
+                    const alreadySaved = await verifyPlaceSaved(editingPlaceId, data);
+                    if (alreadySaved) {
+                        // El UPDATE sí se aplicó en el servidor aunque hicimos timeout
+                        console.log('[Save] El UPDATE se aplicó en el servidor a pesar del timeout. No encolar.');
+                        showToast('Local actualizado (la conexión tardó pero se guardó)');
+                        editingPlaceId = null;
+                        resetPlaceForm();
+                        await clearPlaceDraft();
+                        _hasUnsavedChanges = false;
+                        try { await withTimeout(loadMyPlaces(), 15000, 'reload'); }
+                        catch (e) { console.warn('Recarga post-save falló:', e); }
+                        renderOverview();
+                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
+                        return;
+                    }
+                    // No se verificó o no se aplicó → encolar para reintento en background
+                    const updatePayload = { ...data };
+                    delete updatePayload.owner_id;
+                    delete updatePayload.status;
+                    const opId = await enqueueOperation('place_update',
+                        { id: editingPlaceId, data: updatePayload },
+                        { placeName: name }
+                    );
+                    if (opId) {
+                        showToast('Sin respuesta del servidor. Cambios encolados — se aplicarán cuando la conexión mejore');
+                        editingPlaceId = null;
+                        resetPlaceForm();
+                        await clearPlaceDraft();
+                        _hasUnsavedChanges = false;
+                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
+                        return;
+                    }
+                } else if (isOffline && !editingPlaceId) {
                     // INSERT estando offline: encolar es seguro (no hay request en vuelo)
                     const opId = await enqueueOperation('place_insert', data, { placeName: name });
                     if (opId) {
