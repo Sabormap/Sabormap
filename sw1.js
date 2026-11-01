@@ -1,9 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.18 — timeout 15s + siempre encolar en local tras fallo +
-    pre-refresh del token + .select() para detectar RLS silent denial +
-    polyfill Web Locks + logout optimista. Hereda todos los fixes
-    v2.0.6 → v2.0.17.]
+   [v2.0.19 — bump de versión para forzar la descarga del dashboard.html
+    actualizado con:
+      · CSS responsive del editor de carta/menú en móvil (<720px y <380px)
+      · Guardado de draft en localStorage (capa primaria) + IndexedDB
+      · Autosave cada 1.5s en vez de 30s
+      · Submit guarda draft ANTES de intentar el servidor
+      · Bug fix: clearPlaceDraft se llama ANTES de resetear editingPlaceId
+      · processQueueNow + handler del SW limpian el draft cuando la cola
+        procesa exitosamente.
+    Hereda todos los fixes v2.0.6 → v2.0.18.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs críticos.
@@ -15,7 +21,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.18';
+const VERSION = 'v2.0.19';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
