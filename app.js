@@ -519,6 +519,173 @@ function mapDbPlaceToPublic(p) {
 
 // Trae de Supabase todos los locales con status='published' y los agrega a staticPlaces
 // sin pisar los locales estáticos (mantenemos los originales + los de la DB).
+/* ═══════════════════════════════════════════════════════════════════
+   [v2.0.21] CACHE LOCAL DE LOCALES PUBLICADOS — offline-first
+   ───────────────────────────────────────────────────────────────────
+   PROBLEMA: el local creado desde el dashboard y publicado en Supabase
+   solo se veía cuando había conexión. Offline, la home solo mostraba
+   los 256 staticPlaces y perdía el local 257 (el de Supabase).
+
+   SOLUCIÓN: capas de carga, en este orden:
+     1) staticPlaces (places.js)                       — siempre disponible
+     2) Cache local (localStorage) de locales publicados — siempre disponible,
+        incluso offline. Lo llena loadPlacesFromSupabase() cuando hay red.
+     3) Supabase (refresh en vivo)                     — solo con conexión,
+        actualiza el cache local para la próxima sesión offline.
+
+   El cache se comparte con el dashboard vía la misma key de localStorage
+   ('sabormap_published_places_cache'). Cuando el dashboard publica,
+   edita o elimina un local, actualiza este cache directamente → así
+   la home lo ve instantáneamente sin esperar al refresh desde Supabase.
+
+   TTL: 7 días. Si el cache es más viejo, aún se usa como fallback
+   (offline es offline), pero se marca como "stale" en logs.
+   ═══════════════════════════════════════════════════════════════════ */
+const PUBLISHED_PLACES_CACHE_KEY = 'sabormap_published_places_cache';
+const PUBLISHED_PLACES_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
+
+/* Lee el cache de locales publicados desde localStorage.
+   Devuelve [] si no hay cache o está corrupto.
+   No elimina el cache aunque esté expirado: offline es offline. */
+function loadCachedPublishedPlaces() {
+    try {
+        const raw = localStorage.getItem(PUBLISHED_PLACES_CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.places)) return [];
+        const age = Date.now() - (parsed.savedAt || 0);
+        if (age > PUBLISHED_PLACES_CACHE_TTL_MS) {
+            console.info('[Cache] Cache de locales publicados expirado hace ' +
+                Math.round(age / 86400000) + ' días — usándolo como fallback offline');
+        }
+        return parsed.places;
+    } catch (e) {
+        console.warn('[Cache] Error leyendo cache de locales:', e);
+        return [];
+    }
+}
+
+/* Guarda los locales publicados en localStorage.
+   Recibe los registros CRUDOS tal como los devuelve Supabase (snake_case).
+   El dashboard también llama esta función cuando publica/edita un local. */
+function saveCachedPublishedPlaces(dbPlaces) {
+    if (!Array.isArray(dbPlaces)) return;
+    try {
+        // Minimalizar: solo campos necesarios para renderizar + metadata
+        const minimal = dbPlaces.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            neighborhood: p.neighborhood,
+            address: p.address,
+            phone: p.phone,
+            description: p.description,
+            price_range: p.price_range,
+            schedule: p.schedule,
+            must_order: p.must_order,
+            editor_note: p.editor_note,
+            tags: p.tags,
+            images: p.images,
+            menu: p.menu,
+            links: p.links,
+            lat: p.lat,
+            lng: p.lng,
+            plus_code: p.plus_code,
+            delivery_enabled: p.delivery_enabled,
+            status: p.status
+        }));
+        const payload = {
+            savedAt: Date.now(),
+            version: 1,
+            places: minimal
+        };
+        localStorage.setItem(PUBLISHED_PLACES_CACHE_KEY, JSON.stringify(payload));
+        console.info('[Cache] Guardados', minimal.length, 'locales publicados en localStorage');
+    } catch (e) {
+        // localStorage lleno: intentar limpiar caches viejos y reintentar
+        if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+            console.warn('[Cache] localStorage lleno, purgando otros caches...');
+            // No tocamos sabormap_draft_place_* ni sabormap-theme (del usuario)
+            // Solo borramos el cache de published places viejo (si existe)
+            try { localStorage.removeItem(PUBLISHED_PLACES_CACHE_KEY); } catch (e2) {}
+            try {
+                localStorage.setItem(PUBLISHED_PLACES_CACHE_KEY, JSON.stringify({
+                    savedAt: Date.now(),
+                    version: 1,
+                    places: minimal
+                }));
+                console.info('[Cache] Guardados', minimal.length, 'locales tras purge');
+                return;
+            } catch (e2) {
+                console.warn('[Cache] No se pudo guardar ni tras purge:', e2);
+            }
+        } else {
+            console.warn('[Cache] No se pudo guardar cache de locales:', e);
+        }
+    }
+}
+
+/* Carga el cache local de locales publicados y los agrega a staticPlaces
+   (sin pisar los estáticos). Devuelve cuántos agregó.
+   Se llama al inicio de DOMContentLoaded para que el render inicial
+   incluya los locales publicados incluso si estamos offline. */
+function loadCachedPlacesIntoStatic() {
+    const cached = loadCachedPublishedPlaces();
+    if (!cached.length) return 0;
+
+    const existingIds = new Set(staticPlaces.map(p => String(p.id)));
+    let added = 0;
+    cached.forEach(p => {
+        if (existingIds.has(String(p.id))) return;
+        const mapped = mapDbPlaceToPublic(p);
+        if (!mapped) return;
+        staticPlaces.push(mapped);
+        existingIds.add(String(mapped.id));
+        added++;
+    });
+    if (added > 0) {
+        console.info(`[Cache] ${added} locales publicados cargados desde cache local (total: ${staticPlaces.length})`);
+    }
+    return added;
+}
+
+/* Función pública: el dashboard la llama vía localStorage para invalidar
+   el cache cuando se publica/edita/elimina un local. Aquí solo escuchamos
+   cambios en la key y refrescamos staticPlaces.
+   También escuchamos el evento 'storage' que se dispara en otras pestañas
+   del mismo origen → así si el dashboard publica en una pestaña, la home
+   abierta en otra pestaña se refresca sola. */
+window.addEventListener('storage', (e) => {
+    if (e.key !== PUBLISHED_PLACES_CACHE_KEY) return;
+    console.info('[Cache] Cambio detectado en cache de locales publicados, refrescando...');
+    refreshStaticPlacesFromCache();
+});
+
+/* Reemplaza los locales de cache (los que tienen _fromDb=true) por la
+   versión más reciente del cache, sin tocar los staticPlaces originales. */
+function refreshStaticPlacesFromCache() {
+    // Quitar los locales que vinieron del cache/Supabase (marcados con _fromDb)
+    const before = staticPlaces.length;
+    staticPlaces = staticPlaces.filter(p => !p._fromDb);
+    const removed = before - staticPlaces.length;
+
+    // Volver a cargar el cache
+    const added = loadCachedPlacesIntoStatic();
+
+    if (removed > 0 || added > 0) {
+        if (typeof populateBarrios === 'function') populateBarrios();
+        if (typeof renderPlaces === 'function') renderPlaces();
+        if (typeof updateStatNumbers === 'function') updateStatNumbers();
+        console.info(`[Cache] Refresco: -${removed} +${added} locales`);
+    }
+}
+
+/* Exportar al window para que el dashboard pueda invalidar via postMessage
+   si está en otro scope (raro pero posible). */
+window.sabormapInvalidatePublishedCache = function() {
+    refreshStaticPlacesFromCache();
+};
+
 async function loadPlacesFromSupabase() {
     if (!sb) { console.warn('Supabase client no inicializado'); return; }
     try {
@@ -531,8 +698,15 @@ async function loadPlacesFromSupabase() {
         if (error) { console.warn('Supabase places fetch error:', error); return; }
         if (!Array.isArray(data) || data.length === 0) {
             console.info('No hay locales publicados en Supabase todavía');
+            // Aunque no haya datos en Supabase, guardamos cache vacío para
+            // sobrescribir cualquier cache anterior que tenga locales ya borrados.
+            saveCachedPublishedPlaces([]);
             return;
         }
+
+        // ★ [v2.0.21] Guardar en localStorage para que la próxima sesión
+        //   offline tenga estos locales disponibles sin conexión.
+        saveCachedPublishedPlaces(data);
 
         // IDs que ya existen (los estáticos tienen id numérico 1..N, los de DB son uuid strings)
         const existingIds = new Set(staticPlaces.map(p => String(p.id)));
@@ -560,6 +734,8 @@ async function loadPlacesFromSupabase() {
         }
     } catch (err) {
         console.warn('Error cargando locales desde Supabase:', err);
+        // Si la red falló, NO tocamos el cache: seguimos usando el último válido.
+        // Si tampoco hay cache, staticPlaces ya tiene los locales estáticos.
     }
 }
 
@@ -621,7 +797,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScrollBtns();
     animateStats();
     handleMobileThemeToggle();
-    // ★ Cargar locales publicados desde Supabase (async, no bloquea el render inicial) ★
+    // ★ [v2.0.21] CACHE-FIRST: cargar locales publicados desde localStorage
+    //   ANTES de intentar Supabase. Así el render inicial ya incluye el
+    //   local 257 (creado desde el dashboard) incluso si estamos offline.
+    //   Esto sincroniza el contador: offline y online ven los mismos locales.
+    loadCachedPlacesIntoStatic();
+    // Después de cargar el cache, re-renderizar la grilla con lo que tengamos
+    // (puede ser solo staticPlaces, o staticPlaces + cache local).
+    if (typeof renderPlaces === 'function') renderPlaces();
+    if (typeof populateBarrios === 'function') populateBarrios();
+    if (typeof updateStatNumbers === 'function') updateStatNumbers();
+    // ★ Cargar locales publicados desde Supabase (async, no bloquea el render
+    //   inicial que ya tiene el cache local). Cuando termina, actualiza el
+    //   cache y refresca la grilla si hay cambios.
     loadPlacesFromSupabase();
     // ★ Cargar colecciones dinamicas desde Supabase ★
     loadCollectionsFromSupabase();
@@ -1770,7 +1958,25 @@ if ('serviceWorker' in navigator) {
    ============================================================ */
 window.addEventListener('online', () => {
     showToast('Conexión restablecida');
+    // ★ [v2.0.21] Recargar locales desde Supabase: refresca el cache local
+    //   y actualiza la grilla si hay cambios (locales nuevos, edits, etc.).
+    loadPlacesFromSupabase();
+    // También refrescar colecciones por si cambiaron desde el dashboard
+    if (typeof loadCollectionsFromSupabase === 'function') {
+        loadCollectionsFromSupabase();
+    }
 });
 window.addEventListener('offline', () => {
     showToast('Sin conexión — modo offline activo');
+    // ★ [v2.0.21] Asegurar que el cache local esté cargado en staticPlaces.
+    //   Si la página se cargó offline y el cache aún no se había inyectado
+    //   (raro pero posible), lo cargamos ahora.
+    if (typeof loadCachedPlacesIntoStatic === 'function') {
+        const added = loadCachedPlacesIntoStatic();
+        if (added > 0) {
+            if (typeof renderPlaces === 'function') renderPlaces();
+            if (typeof populateBarrios === 'function') populateBarrios();
+            if (typeof updateStatNumbers === 'function') updateStatNumbers();
+        }
+    }
 });
