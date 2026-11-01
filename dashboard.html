@@ -267,22 +267,94 @@
         /* Carta / Menu editor */
         .menu-category{background:var(--card-2);border:1px solid var(--border);border-radius:14px;padding:18px}
         .menu-category-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-        .menu-category-head input{flex:1}
+        .menu-category-head input{flex:1;min-width:0}
         .menu-category-head .btn-icon{flex-shrink:0;width:34px;height:34px}
-        .menu-items{display:flex;flex-direction:column;gap:8px}
-        .menu-item-row{display:grid;grid-template-columns:1fr 2fr 100px 34px;gap:8px;align-items:center}
+        .menu-items{display:flex;flex-direction:column;gap:10px}
+        /* Cada plato = grid de 5 columnas en desktop: nombre | descripción | precio | moneda | borrar */
+        .menu-item-row{
+            display:grid;
+            grid-template-columns:minmax(120px,1fr) minmax(180px,2fr) 90px 110px 34px;
+            gap:8px;align-items:center;
+        }
         .menu-item-row input{padding:9px 12px;font-size:0.84rem}
+        .menu-item-row select{padding:9px 12px;font-size:0.84rem}
         .menu-item-row .btn-icon{width:34px;height:34px;font-size:0.75rem}
-        @media(max-width:640px){.menu-item-row{grid-template-columns:1fr 1fr;gap:8px}.menu-item-row input:nth-child(3){grid-column:1}.menu-item-row .btn-icon{grid-column:2}}
         .menu-add-item-btn{margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px 12px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.25s;width:100%;text-align:center}
         .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
+
+        /* ★ FIX MOBILE [v2.0.19]: layout legible para carta/menú en celular.
+           En pantallas <720px apilamos los campos con labels visibles y
+           precios/moneda en una fila. Antes los campos se comprimían a
+           una columna invisible de ~30px y el select se rompía. */
+        @media(max-width:720px){
+            .menu-category{padding:14px}
+            .menu-category-head{gap:8px;margin-bottom:10px}
+            .menu-item-row{
+                grid-template-columns:1fr 1fr;
+                grid-template-areas:
+                    "name    name"
+                    "desc    desc"
+                    "price   currency"
+                    "delete  delete";
+                gap:8px 8px;
+                background:var(--card);
+                border:1px solid var(--border-soft);
+                border-radius:12px;
+                padding:12px;
+            }
+            .menu-item-row > input:nth-child(1){grid-area:name}      /* nombre plato  */
+            .menu-item-row > input:nth-child(2){grid-area:desc}      /* descripción   */
+            .menu-item-row > input:nth-child(3){grid-area:price}     /* precio        */
+            .menu-item-row > select:nth-child(4){grid-area:currency} /* moneda        */
+            .menu-item-row > .btn-icon:nth-child(5){                 /* borrar        */
+                grid-area:delete;
+                width:100%;height:34px;
+                border-radius:9px;
+                background:rgba(239,68,68,0.08);
+                border-color:rgba(239,68,68,0.25);
+                color:#f87171;
+            }
+            .menu-item-row > .btn-icon:nth-child(5):hover{
+                background:rgba(239,68,68,0.18);
+            }
+            .menu-item-row input,
+            .menu-item-row select{font-size:0.86rem;padding:10px 12px}
+            .menu-add-item-btn{padding:11px 12px;font-size:0.84rem}
+        }
+        /* Móvil muy pequeño: moneda bajo precio en vez de al lado */
+        @media(max-width:380px){
+            .menu-item-row{
+                grid-template-columns:1fr;
+                grid-template-areas:
+                    "name"
+                    "desc"
+                    "price"
+                    "currency"
+                    "delete";
+            }
+        }
 
         /* Delivery / Links editor */
         .link-row{display:grid;grid-template-columns:160px 1fr 34px;gap:8px;align-items:center}
         .link-row input{padding:9px 12px;font-size:0.84rem}
         .link-row .btn-icon{width:34px;height:34px;font-size:0.75rem}
         .link-row select{padding:9px 12px;font-size:0.84rem}
-        @media(max-width:640px){.link-row{grid-template-columns:1fr 34px;gap:8px}.link-row select{grid-column:1/3}}
+        @media(max-width:640px){
+            .link-row{
+                grid-template-columns:1fr 34px;
+                grid-template-areas:
+                    "platform delete"
+                    "url       url";
+                gap:8px;
+                background:var(--card);
+                border:1px solid var(--border-soft);
+                border-radius:12px;
+                padding:12px;
+            }
+            .link-row select:nth-child(1){grid-area:platform}
+            .link-row input:nth-child(2){grid-area:url}
+            .link-row .btn-icon:nth-child(3){grid-area:delete}
+        }
 
         .my-place-card{background:linear-gradient(160deg,var(--card) 0%,var(--card-2) 100%);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);box-shadow:var(--shadow-card)}
         .my-place-card:hover{border-color:rgba(139,92,246,0.35);box-shadow:var(--shadow-hover);transform:translateY(-4px)}
@@ -1002,9 +1074,17 @@
                             <div class="form-hint" style="margin-top:10px">Hasta 5 imagenes. Click en el slot para subir.</div>
                         </div>
 
-                        <div style="display:flex;gap:12px;justify-content:flex-end">
-                            <button type="button" class="btn-secondary" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Cancelar</button>
-                            <button type="submit" class="btn-primary" id="placeSubmitBtn"><i aria-hidden="true" class="fas fa-save"></i> <span id="placeSubmitText">Guardar Local</span></button>
+                        <div style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
+                            <!-- [v2.0.19] Indicador de draft local: muestra al usuario
+                                 cuándo se salvó su borrador por última vez. -->
+                            <div id="draftIndicator" style="display:none;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);justify-content:flex-end;padding:0 4px" aria-live="polite">
+                                <i aria-hidden="true" class="fas fa-cloud-arrow-up"></i>
+                                <span class="draft-text">Borrador guardado</span>
+                            </div>
+                            <div style="display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap">
+                                <button type="button" class="btn-secondary" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Cancelar</button>
+                                <button type="submit" class="btn-primary" id="placeSubmitBtn"><i aria-hidden="true" class="fas fa-save"></i> <span id="placeSubmitText">Guardar Local</span></button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -1632,7 +1712,17 @@
             }
         }
 
-        /* ─── [F-5.2] IndexedDB para guardado automático de borradores ─── */
+        /* ─── [F-5.2 + v2.0.19] DRAFT LOCAL — doble capa de protección ───
+           Estrategia pedida por el usuario:
+             1) Cada cambio del formulario se salva en localStorage
+                (síncrono, instantáneo, sobrevive a recargas y cierres).
+             2) Además se guarda una copia más completa en IndexedDB
+                (por si localStorage se llena — quota ~5MB).
+             3) Al volver la conexión (o al hacer submit), se intenta
+                subir al servidor. Si falla, el draft queda guardado y
+                se encola la operación en `sabormap_pending_ops`.
+           El draft NUNCA se borra hasta que el servidor confirma la
+           escritura con `.select()` (RLS silent denial detectado). */
         let _draftDB = null;
         function openDraftDB() {
             return new Promise((resolve, reject) => {
@@ -1649,40 +1739,161 @@
                 req.onerror = () => resolve(null);
             });
         }
-        async function savePlaceDraft() {
-            if (!placeForm) return;
-            try {
-                const db = await openDraftDB();
-                if (!db) return;
-                const data = collectPlaceFormData();
-                data.id = 'current';
-                data.savedAt = new Date().toISOString();
-                // Las imágenes File no se pueden serializar a IndexedDB directamente; guardar solo metadatos
-                data.imageMeta = placeImages.map(img => img instanceof File ? { name: img.name, size: img.size } : { url: img });
-                const tx = db.transaction('place_form', 'readwrite');
-                tx.objectStore('place_form').put(data);
-                tx.oncomplete = () => { /* silent success */ };
-            } catch (e) { /* silent */ }
+
+        /* Clave única en localStorage para el draft del formulario activo.
+           Incluimos editingPlaceId para distinguir crear vs editar. */
+        function draftLSKey() {
+            return 'sabormap_draft_place_' + (editingPlaceId || 'new');
         }
+
+        /* Devuelve todos los drafts guardados (para listar/restaurar).
+           Utilidad para depuración y para futura UI de "borradores guardados". */
+        function listAllPlaceDraftsLS() {
+            const out = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.indexOf('sabormap_draft_place_') === 0) {
+                    try {
+                        const v = JSON.parse(localStorage.getItem(k));
+                        if (v && v.savedAt) out.push({ key: k, ...v });
+                    } catch (e) {}
+                }
+            }
+            out.sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+            return out;
+        }
+
+        /* Guarda el draft en localStorage de forma síncrona + en IndexedDB.
+           Es seguro llamarlo en cada keystroke (debounced arriba). */
+        async function savePlaceDraft() {
+            try {
+                if (!placeForm) return;
+                const data = collectPlaceFormData();
+                data.id = editingPlaceId || 'new';
+                data.editingPlaceId = editingPlaceId || null;
+                data.savedAt = new Date().toISOString();
+                /* Las imágenes File no se serializan a JSON; guardamos metadata
+                   para recordarle al usuario cuántas imágenes tenía cargadas.
+                   Las URLs (strings) sí las preservamos. */
+                data.imageMeta = placeImages.map(img => {
+                    if (img instanceof File) return { kind: 'file', name: img.name, size: img.size };
+                    if (typeof img === 'string') return { kind: 'url', url: img };
+                    return null;
+                }).filter(Boolean);
+
+                /* ── 1) localStorage (capa primaria, instantánea) ── */
+                try {
+                    localStorage.setItem(draftLSKey(), JSON.stringify(data));
+                } catch (quotaErr) {
+                    /* Si localStorage se llenó (raro pero posible), intentamos
+                       limpiar drafts viejos y reintentar una vez. */
+                    console.warn('[Draft] localStorage lleno, purgando drafts viejos:', quotaErr);
+                    purgeOldDraftsLS(7);
+                    try { localStorage.setItem(draftLSKey(), JSON.stringify(data)); }
+                    catch (e2) { console.warn('[Draft] No se pudo salvar en localStorage:', e2); }
+                }
+
+                /* ── 2) IndexedDB (capa secundaria, más capacidad) ── */
+                const db = await openDraftDB();
+                if (db) {
+                    const tx = db.transaction('place_form', 'readwrite');
+                    tx.objectStore('place_form').put(data);
+                    tx.oncomplete = () => { /* ok silencioso */ };
+                }
+
+                /* ── 3) Indicador visual ── */
+                updateDraftIndicator('saved');
+            } catch (e) {
+                console.warn('[Draft] No se pudo salvar:', e);
+                updateDraftIndicator('error');
+            }
+        }
+
+        /* Carga el draft desde localStorage (capa primaria). Si no está,
+           cae a IndexedDB. Devuelve null si no hay draft. */
         async function loadPlaceDraft() {
+            /* 1) localStorage */
+            try {
+                const raw = localStorage.getItem(draftLSKey());
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.savedAt) return data;
+                }
+            } catch (e) {}
+
+            /* 2) IndexedDB */
             try {
                 const db = await openDraftDB();
                 if (!db) return null;
-                return new Promise((resolve) => {
+                return await new Promise((resolve) => {
                     const tx = db.transaction('place_form', 'readonly');
-                    const req = tx.objectStore('place_form').get('current');
+                    const req = tx.objectStore('place_form').get(editingPlaceId || 'new');
                     req.onsuccess = () => resolve(req.result || null);
                     req.onerror = () => resolve(null);
                 });
             } catch (e) { return null; }
         }
+
+        /* Borra el draft actual de localStorage e IndexedDB. Se llama
+           solo cuando el servidor confirma la escritura. */
         async function clearPlaceDraft() {
+            try { localStorage.removeItem(draftLSKey()); } catch (e) {}
             try {
                 const db = await openDraftDB();
                 if (!db) return;
                 const tx = db.transaction('place_form', 'readwrite');
-                tx.objectStore('place_form').delete('current');
-            } catch (e) { /* silent */ }
+                tx.objectStore('place_form').delete(editingPlaceId || 'new');
+            } catch (e) {}
+            updateDraftIndicator('cleared');
+        }
+
+        /* Purga drafts de localStorage más antiguos que N días.
+           Se usa cuando se llena el quota. */
+        function purgeOldDraftsLS(daysOld) {
+            const cutoff = Date.now() - daysOld * 86400000;
+            const toRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (!k || k.indexOf('sabormap_draft_place_') !== 0) continue;
+                try {
+                    const v = JSON.parse(localStorage.getItem(k));
+                    if (v && v.savedAt && new Date(v.savedAt).getTime() < cutoff) {
+                        toRemove.push(k);
+                    }
+                } catch (e) { toRemove.push(k); }  /* corrupto → borrar */
+            }
+            toRemove.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+            return toRemove.length;
+        }
+
+        /* Indicador visual discreto en el botón de guardar:
+           - 'saved'   → "Borrador guardado · HH:MM"
+           - 'error'   → "No se pudo guardar el borrador"
+           - 'cleared' → oculta el indicador
+           - 'saving'  → "Guardando borrador..." */
+        function updateDraftIndicator(state) {
+            const wrap = document.getElementById('draftIndicator');
+            if (!wrap) return;
+            const txt = wrap.querySelector('.draft-text');
+            if (state === 'cleared') {
+                wrap.style.display = 'none';
+                return;
+            }
+            wrap.style.display = 'flex';
+            if (state === 'saved') {
+                const t = new Date().toLocaleTimeString('es-CU', { hour: '2-digit', minute: '2-digit' });
+                wrap.style.color = 'var(--green)';
+                wrap.querySelector('i').className = 'fas fa-cloud-arrow-up';
+                if (txt) txt.textContent = 'Borrador guardado · ' + t;
+            } else if (state === 'saving') {
+                wrap.style.color = 'var(--muted)';
+                wrap.querySelector('i').className = 'fas fa-spinner fa-spin';
+                if (txt) txt.textContent = 'Guardando borrador...';
+            } else if (state === 'error') {
+                wrap.style.color = 'var(--red)';
+                wrap.querySelector('i').className = 'fas fa-triangle-exclamation';
+                if (txt) txt.textContent = 'No se pudo guardar el borrador local';
+            }
         }
 
         /* ═══════════════════════════════════════════════════
@@ -1863,6 +2074,21 @@
                     const result = await executeOp(op);
                     if (result.ok) {
                         await deleteOp(op.id);
+                        // [v2.0.19] Limpiar el draft de localStorage asociado a
+                        // esta op (si tenía metadata.draftLSKey).
+                        try {
+                            const meta = op.metadata || {};
+                            if (meta.draftLSKey) {
+                                localStorage.removeItem(meta.draftLSKey);
+                            }
+                            if (meta.draftId !== undefined) {
+                                const db = await openDraftDB();
+                                if (db) {
+                                    const tx = db.transaction('place_form', 'readwrite');
+                                    tx.objectStore('place_form').delete(meta.draftId || 'new');
+                                }
+                            }
+                        } catch (e) { /* no crítico */ }
                     } else if (result.fatal) {
                         // Error no recuperable: marcar como failed y avisar al usuario
                         await updateOpStatus(op.id, 'failed', result.error);
@@ -1957,16 +2183,41 @@
         }
         let _autosaveTimer = null;
         let _hasUnsavedChanges = false;
+        /* ★ FIX [v2.0.19]: autosave cada 1.5s en vez de 30s.
+           El usuario reportó que perdía datos al editar. Con 30s de debounce,
+           cualquier cambio en los últimos 30s se perdía si cerraba la pestaña
+           o se iba el internet. Con 1.5s el draft se salva casi en tiempo real. */
+        const AUTOSAVE_DEBOUNCE_MS = 1500;
         function scheduleAutosave() {
             _hasUnsavedChanges = true;
             clearTimeout(_autosaveTimer);
-            _autosaveTimer = setTimeout(savePlaceDraft, 30000); // 30s
+            updateDraftIndicator('saving');
+            _autosaveTimer = setTimeout(async () => {
+                await savePlaceDraft();
+                _hasUnsavedChanges = false;
+            }, AUTOSAVE_DEBOUNCE_MS);
         }
-        window.addEventListener('beforeunload', (e) => {
+        /* Guardado síncrono de emergencia antes de cerrar/recargar la pestaña.
+           localStorage.setItem es síncrono, así que sobrevive aunque el
+           navegador mate la página de golpe. IndexedDB no lo es, así que
+           también disparamos savePlaceDraft() (que ya hace localStorage). */
+        window.addEventListener('beforeunload', () => {
             if (_hasUnsavedChanges) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
+                try { savePlaceDraft(); } catch (e) {}
+            }
+        });
+        /* `pagehide` es más confiable en iOS Safari que beforeunload. */
+        window.addEventListener('pagehide', () => {
+            if (_hasUnsavedChanges) {
+                try { savePlaceDraft(); } catch (e) {}
+                _hasUnsavedChanges = false;
+            }
+        });
+        /* Cuando la conexión se cae, salvamos el draft inmediatamente
+           para asegurar que todo lo escrito hasta ahora quede en localStorage. */
+        window.addEventListener('offline', () => {
+            if (_hasUnsavedChanges) {
+                try { savePlaceDraft(); } catch (e) {}
             }
         });
         // Detectar cambios en el formulario
@@ -2604,11 +2855,11 @@
             }
             container.innerHTML = placeMenu.map((cat, ci) => {
                 const items = (cat.items || []).map((it, ii) => `
-                    <div class="menu-item-row" style="grid-template-columns:1fr 2fr 90px 110px 34px">
-                        <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)">
-                        <input type="text" class="form-input" placeholder="Descripción" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
-                        <input type="text" class="form-input" placeholder="350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
-                        <select class="form-select" onchange="updateMenuItem(${ci},${ii},'currency',this.value)">
+                    <div class="menu-item-row" data-menu-row>
+                        <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)" aria-label="Nombre del plato">
+                        <input type="text" class="form-input" placeholder="Descripción" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)" aria-label="Descripción del plato">
+                        <input type="text" class="form-input" inputmode="decimal" placeholder="350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)" aria-label="Precio">
+                        <select class="form-select" onchange="updateMenuItem(${ci},${ii},'currency',this.value)" aria-label="Moneda">
                             <option value="CUP" ${it.currency!=='MLC'&&it.currency!=='USD'&&it.currency!=='EUR'?'selected':''}>CUP</option>
                             <option value="MLC" ${it.currency==='MLC'?'selected':''}>MLC</option>
                             <option value="USD" ${it.currency==='USD'?'selected':''}>USD</option>
@@ -2620,7 +2871,7 @@
                 return `
                     <div class="menu-category">
                         <div class="menu-category-head">
-                            <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
+                            <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)" aria-label="Nombre de la categoría">
                             <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
                         </div>
                         <div class="menu-items">${items}</div>
@@ -2733,6 +2984,9 @@
             initImageGrid();
             renderMenuEditor();
             renderLinksEditor();
+            // [v2.0.19] Ocultar indicador de draft al limpiar el form
+            updateDraftIndicator('cleared');
+            _hasUnsavedChanges = false;
         }
 
         window.editPlace = async function(id) {
@@ -2823,6 +3077,20 @@
             if (name.length > 100) { showToast('El nombre no puede exceder 100 caracteres', true); $('f-name').focus(); return; }
             if (!category) { showToast('Selecciona una categoría', true); $('f-category').focus(); return; }
             if (!neighborhood) { showToast('Selecciona un municipio', true); $('f-neighborhood').focus(); return; }
+
+            // ★ FIX [v2.0.19]: SALVAR EL DRAFT PRIMERO, ANTES DE CUALQUIER COSA.
+            //   No importa si hay o no hay conexión: primero garantizamos que
+            //   todo lo que el usuario escribió quede en localStorage. Solo
+            //   después intentamos subir al servidor. Si el servidor falla,
+            //   el draft sigue guardado y el usuario no pierde nada.
+            btnText.textContent = 'Guardando borrador...';
+            updateDraftIndicator('saving');
+            try { await savePlaceDraft(); } catch (draftErr) {
+                console.warn('[Save] No se pudo salvar draft antes del submit:', draftErr);
+                /* No abortamos: seguimos intentando el servidor. El draft es
+                   un safety net, no un bloqueador. */
+            }
+            btnText.textContent = originalText;
 
             // [F-1.2] Validación de teléfono cubano si el campo no está vacío
             const phone = (($('f-phone') || {}).value || '').trim();
@@ -3037,9 +3305,13 @@
                 }
                 if (opError) throw opError;
 
+                // ★ FIX [v2.0.19]: clearPlaceDraft() usa draftLSKey() que depende
+                //   de editingPlaceId. Si hacemos editingPlaceId=null primero,
+                //   se borraría la key 'new' en vez de la del local editado.
+                //   Por eso limpiamos el draft ANTES de resetear editingPlaceId.
+                await clearPlaceDraft();
                 editingPlaceId = null;
                 resetPlaceForm();
-                await clearPlaceDraft();
                 _hasUnsavedChanges = false;
                 try {
                     await withTimeout(loadMyPlaces(), 15000, 'reload');
@@ -3076,10 +3348,37 @@
                     }
                     if (opId) {
                         showToast('Cambios guardados localmente. Se sincronizarán automáticamente cuando el servidor responda.');
+                        // ★ FIX [v2.0.19]: NO borramos el draft aquí. El servidor
+                        //   todavía no confirmó la escritura; si borramos el draft
+                        //   y la cola falla permanentemente, los datos se pierden.
+                        //   El draft queda como safety net hasta que:
+                        //   1) la cola procesa exitosamente (ver handler de
+                        //      'queue-processed' / message del SW que llama
+                        //      clearPlaceDraftById), o
+                        //   2) el usuario sobreescribe el draft editando de nuevo.
+                        const draftId = editingPlaceId;  // capturar antes de resetear
                         editingPlaceId = null;
                         resetPlaceForm();
-                        await clearPlaceDraft();
                         _hasUnsavedChanges = false;
+                        // Guardar referencia al draftId en la operación, para que
+                        // cuando se procese con éxito se sepa qué draft limpiar.
+                        try {
+                            const db = await openOpsDB();
+                            if (db) {
+                                const tx = db.transaction('ops', 'readwrite');
+                                const store = tx.objectStore('ops');
+                                const getReq = store.get(opId);
+                                getReq.onsuccess = () => {
+                                    const op = getReq.result;
+                                    if (op) {
+                                        op.metadata = op.metadata || {};
+                                        op.metadata.draftId = draftId;  // null si era INSERT
+                                        op.metadata.draftLSKey = 'sabormap_draft_place_' + (draftId || 'new');
+                                        store.put(op);
+                                    }
+                                };
+                            }
+                        } catch (e) { /* no crítico */ }
                         // Forzar procesamiento inmediato de la cola
                         if (typeof processQueueNow === 'function') {
                             setTimeout(() => processQueueNow(), 2000);
@@ -3939,31 +4238,62 @@
             });
             updateConnectionIndicator();
 
-            // [F-5.2] Recuperar borrador al cargar el panel add-place
+            // [F-5.2 + v2.0.19] Recuperar borrador al cargar el panel add-place.
+            //   Ahora también:
+            //   · Recupera las URLs de imágenes (las File no se pueden
+            //     serializar, pero las URLs ya subidas sí).
+            //   · Muestra el indicador "Borrador guardado · HH:MM" con la
+            //     fecha real del draft para que el usuario sepa qué recuperó.
+            //   · Auto-restaura sin preguntar si el draft es muy reciente
+            //     (< 5 min) — comportamiento tipo "continuar donde lo dejé".
             const checkDraftOnPanelSwitch = (panelId) => {
                 if (panelId === 'add-place' && !editingPlaceId) {
                     loadPlaceDraft().then(draft => {
-                        if (draft && draft.savedAt) {
-                            const savedDate = new Date(draft.savedAt);
-                            const hoursAgo = ((Date.now() - savedDate.getTime()) / 3600000).toFixed(1);
-                            if (confirm('Tienes un borrador sin guardar de hace ' + hoursAgo + ' hora(s). ¿Quieres recuperarlo?')) {
-                                // Restaurar campos
-                                const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
-                                fields.forEach(f => {
-                                    const el = $('f-' + f);
-                                    if (el && draft[f] !== undefined) el.value = draft[f];
-                                });
-                                placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
-                                placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
-                                placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
-                                renderTags();
-                                renderMenuEditor();
-                                renderLinksEditor();
-                                _hasUnsavedChanges = false;  // ya restaurado
-                                showToast('Borrador recuperado');
-                            } else {
-                                clearPlaceDraft();
+                        if (!draft || !draft.savedAt) return;
+                        const savedDate = new Date(draft.savedAt);
+                        const minutesAgo = (Date.now() - savedDate.getTime()) / 60000;
+                        const hoursAgo = (minutesAgo / 60).toFixed(1);
+                        const timeLabel = savedDate.toLocaleTimeString('es-CU', { hour: '2-digit', minute: '2-digit' });
+
+                        /* Si el draft tiene nombre, es muy reciente y no hay
+                           nada cargado aún, restauramos sin preguntar. */
+                        const hasContentAlready = ($('f-name') || {}).value || placeMenu.length || placeTags.length;
+                        const autoRestore = draft.name && minutesAgo < 5 && !hasContentAlready;
+                        const shouldRestore = autoRestore || confirm(
+                            'Tienes un borrador sin guardar de hace ' + hoursAgo + ' hora(s) (guardado a las ' + timeLabel + ').\n\n¿Quieres recuperarlo?'
+                        );
+
+                        if (shouldRestore) {
+                            // Restaurar campos
+                            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+                            fields.forEach(f => {
+                                const el = $('f-' + f);
+                                if (el && draft[f] !== undefined) el.value = draft[f];
+                            });
+                            placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
+                            placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
+                            placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
+                            /* Recuperar las URLs de imágenes que ya estaban subidas.
+                               Las File no se pueden recuperar, solo las URLs. */
+                            if (Array.isArray(draft.imageMeta)) {
+                                placeImages = draft.imageMeta
+                                    .filter(m => m && m.kind === 'url')
+                                    .map(m => m.url);
+                                /* Si tenía File images que se perdieron, avisar. */
+                                const lostFiles = draft.imageMeta.filter(m => m && m.kind === 'file');
+                                if (lostFiles.length > 0) {
+                                    setTimeout(() => showToast('Se perdieron ' + lostFiles.length + ' imagen(es) no subidas del borrador. Vuelve a subirlas.', true), 800);
+                                }
                             }
+                            renderTags();
+                            renderMenuEditor();
+                            renderLinksEditor();
+                            initImageGrid();
+                            _hasUnsavedChanges = false;  // ya restaurado
+                            updateDraftIndicator('saved');
+                            showToast('Borrador recuperado (guardado a las ' + timeLabel + ')');
+                        } else {
+                            clearPlaceDraft();
                         }
                     });
                 }
@@ -4026,7 +4356,7 @@
                 }
             });
             // [F-5.1+] Listener de mensajes del SW para Background Sync
-            // El SW envía 'execute-op' cuando el navegador dispara sync;
+            // El SW envía 'execute-op' cuando el navegador dispira sync;
             // el cliente ejecuta la op contra Supabase y responde.
             navigator.serviceWorker.addEventListener('message', async (event) => {
                 const data = event.data;
@@ -4042,9 +4372,27 @@
                                 result: result
                             });
                         }
-                        // Si fue exitosa, recargar datos y actualizar badge
+                        // Si fue exitosa, recargar datos, actualizar badge y
+                        // limpiar el draft asociado a esta operación (si tenía).
                         if (result.ok) {
                             showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
+                            // [v2.0.19] Limpiar el draft de localStorage asociado
+                            // a esta op (si existe). Solo operaciones place_insert /
+                            // place_update tienen draftId en metadata.
+                            try {
+                                const meta = data.op.metadata || {};
+                                if (meta.draftLSKey) {
+                                    localStorage.removeItem(meta.draftLSKey);
+                                }
+                                if (meta.draftId !== undefined) {
+                                    // También limpiar de IndexedDB
+                                    const db = await openDraftDB();
+                                    if (db) {
+                                        const tx = db.transaction('place_form', 'readwrite');
+                                        tx.objectStore('place_form').delete(meta.draftId || 'new');
+                                    }
+                                }
+                            } catch (e) { /* no crítico */ }
                             await loadMyPlaces();
                             renderOverview();
                             if (isAdmin() && typeof loadAdminData === 'function') {
