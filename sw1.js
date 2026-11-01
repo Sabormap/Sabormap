@@ -1,15 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.19 — bump de versión para forzar la descarga del dashboard.html
+   [v2.0.20 — bump de versión para forzar la descarga del dashboard.html
     actualizado con:
-      · CSS responsive del editor de carta/menú en móvil (<720px y <380px)
-      · Guardado de draft en localStorage (capa primaria) + IndexedDB
-      · Autosave cada 1.5s en vez de 30s
-      · Submit guarda draft ANTES de intentar el servidor
-      · Bug fix: clearPlaceDraft se llama ANTES de resetear editingPlaceId
-      · processQueueNow + handler del SW limpian el draft cuando la cola
-        procesa exitosamente.
-    Hereda todos los fixes v2.0.6 → v2.0.18.]
+      · Botón "Guardar Borrador" separado del botón "Publicar Local"
+        (handlePlaceDraft guarda solo en localStorage/IndexedDB sin
+        llamar al servidor — útil para ediciones largas sin conexión).
+      · Botón "Instalar App" visible en el top-bar cuando el navegador
+        dispara beforeinstallprompt (Chrome/Edge Android/Desktop).
+      · manifest.json con shortcuts a Mis Locales, Agregar Local y
+        Resumen (long-press al icono de la app instalada).
+      · SQL v2: GRANT EXECUTE en is_admin(), columnas must_order /
+        editor_note / delivery_enabled / tags / menu / links / images,
+        policy places_select_public_published para que la home page
+        muestre locales publicados sin login.
+    Hereda todos los fixes v2.0.6 → v2.0.19.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs críticos.
@@ -21,7 +25,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.19';
+const VERSION = 'v2.0.20';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
