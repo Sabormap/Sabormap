@@ -2091,6 +2091,104 @@
         }
         window.showPendingOpsModal = showPendingOpsModal;
 
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.21] CACHE PÚBLICO COMPARTIDO CON LA HOME
+           ────────────────────────────────────────────────────────────────
+           La home (index.html + app.js) mantiene un cache local de los
+           locales publicados en localStorage con la key
+           'sabormap_published_places_cache'. Esto permite que se vean
+           offline (incluyendo los creados desde este dashboard).
+
+           Cuando el dashboard hace INSERT / UPDATE / DELETE de un local,
+           debe también actualizar ese cache compartido, para que:
+             · Si el usuario abre la home en otra pestaña, vea el cambio
+               instantáneamente (gracias al evento 'storage').
+             · Si el usuario abre la home offline más tarde, el cache ya
+               tenga la versión más reciente.
+
+           Las funciones siguientes son NO-BLOCKING: si el cache no existe
+           o está corrupto, no pasa nada, se ignora silenciosamente. */
+        const PUBLIC_PLACES_CACHE_KEY = 'sabormap_published_places_cache';
+
+        /* Lee el cache público actual. Devuelve [] si no existe. */
+        function readPublicPlacesCache() {
+            try {
+                const raw = localStorage.getItem(PUBLIC_PLACES_CACHE_KEY);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.places)) return [];
+                return parsed.places;
+            } catch (e) { return []; }
+        }
+
+        /* Escribe el cache público completo. Recibe un array de places
+           en formato Supabase (snake_case). */
+        function writePublicPlacesCache(places) {
+            try {
+                localStorage.setItem(PUBLIC_PLACES_CACHE_KEY, JSON.stringify({
+                    savedAt: Date.now(),
+                    version: 1,
+                    places: places
+                }));
+            } catch (e) { /* no crítico */ }
+        }
+
+        /* Agrega o actualiza un local en el cache público.
+           Recibe el place en formato Supabase (snake_case). */
+        function upsertPublicPlaceInCache(dbPlace) {
+            if (!dbPlace || !dbPlace.id) return;
+            try {
+                const places = readPublicPlacesCache();
+                const idx = places.findIndex(p => String(p.id) === String(dbPlace.id));
+                if (idx >= 0) places[idx] = dbPlace;
+                else places.push(dbPlace);
+                writePublicPlacesCache(places);
+            } catch (e) { /* no crítico */ }
+        }
+
+        /* Elimina un local del cache público por id. */
+        function removePublicPlaceFromCache(placeId) {
+            if (!placeId) return;
+            try {
+                const places = readPublicPlacesCache();
+                const filtered = places.filter(p => String(p.id) !== String(placeId));
+                if (filtered.length !== places.length) {
+                    writePublicPlacesCache(filtered);
+                }
+            } catch (e) { /* no crítico */ }
+        }
+
+        /* Convierte el `data` que el dashboard usa (camelCase, con tags/menu/links
+           ya como arrays) de vuelta al formato Supabase (snake_case) para que
+           la home lo pueda leer con su mapDbPlaceToPublic(). */
+        function dashboardDataToSupabaseFormat(data, placeId) {
+            return {
+                id: placeId || data.id,
+                name: data.name,
+                category: data.category,
+                neighborhood: data.neighborhood,
+                address: data.address,
+                phone: data.phone,
+                description: data.description,
+                price_range: data.price_range,
+                schedule: data.schedule,
+                must_order: data.must_order,
+                editor_note: data.editor_note,
+                tags: data.tags,
+                images: data.images,
+                menu: data.menu,
+                links: data.links,
+                lat: data.lat || null,
+                lng: data.lng || null,
+                plus_code: data.plus_code || null,
+                delivery_enabled: !!data.delivery_enabled,
+                status: data.status || 'published',
+                owner_id: data.owner_id,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+        }
+
         /* Procesar la cola de operaciones (en cliente o en SW)
            Esta función es referenciada por el SW vía importScripts-like pattern:
            el SW ejecuta su propia versión (ver sw1.js). Esta versión de cliente
@@ -3058,6 +3156,11 @@
                 showToast('Error al eliminar: ' + result.error, true);
                 return;
             }
+            // ★ [v2.0.21] Quitar del cache público compartido con la home,
+            //   tanto si se eliminó del servidor como si quedó encolado
+            //   (en cuyo caso cuando se procese la cola, ya no estará en
+            //   Supabase y la próxima carga de la home lo quitará).
+            removePublicPlaceFromCache(id);
             // Optimistic UI: quitar del array local
             myPlaces = myPlaces.filter(p => String(p.id) !== String(id));
             renderOverview();
@@ -3086,6 +3189,17 @@
             // Optimistic UI: marcar como publicado en memoria
             const p = myPlaces.find(p => String(p.id) === String(id));
             if (p) p.status = 'published';
+            // ★ [v2.0.21] Agregar al cache público compartido con la home.
+            //   Como el publishPlace solo cambia status a 'published' (no
+            //   reenvía todos los datos), usamos el registro que ya tenemos
+            //   en myPlaces y lo convertimos al formato Supabase.
+            if (p) {
+                try {
+                    const dbPlace = dashboardDataToSupabaseFormat(p, p.id);
+                    dbPlace.status = 'published';
+                    upsertPublicPlaceInCache(dbPlace);
+                } catch (e) { /* no crítico */ }
+            }
             renderOverview();
             if (typeof renderMyPlaces === 'function') renderMyPlaces();
             if (navigator.onLine) {
@@ -3363,6 +3477,12 @@
                         } else {
                             console.log('[Save] UPDATE exitoso. Filas:', updatedRows);
                             showToast('Local actualizado correctamente');
+                            // ★ [v2.0.21] Actualizar cache público compartido con la home.
+                            //   saveResult.data[0] trae el registro tal como quedó en Supabase
+                            //   (snake_case), perfecto para inyectar directo en el cache.
+                            if (saveResult.data && saveResult.data[0]) {
+                                upsertPublicPlaceInCache(saveResult.data[0]);
+                            }
                         }
                     }
                 } else {
@@ -3379,6 +3499,12 @@
                         } else {
                             console.log('[Save] INSERT exitoso. Nuevo ID:', saveResult.data[0]?.id);
                             showToast('Local creado correctamente');
+                            // ★ [v2.0.21] Insertar el nuevo local en el cache público
+                            //   compartido con la home. Así, si el usuario abre index.html
+                            //   en otra pestaña (o está offline), verá este local de inmediato.
+                            if (saveResult.data && saveResult.data[0]) {
+                                upsertPublicPlaceInCache(saveResult.data[0]);
+                            }
                         }
                     }
                 }
@@ -3724,6 +3850,18 @@
             const { error } = await sb.from('places').update({ status: newStatus }).eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
             showToast('Estado cambiado a ' + newStatus);
+            // ★ [v2.0.21] Sincronizar cache público compartido con la home.
+            //   Si pasó a 'published' → agregar al cache. Si pasó a 'draft'
+            //   → quitarlo del cache (la home solo muestra published).
+            if (newStatus === 'published') {
+                const place = allPlaces.find(p => String(p.id) === String(id));
+                if (place) {
+                    place.status = 'published';
+                    upsertPublicPlaceInCache(place);
+                }
+            } else {
+                removePublicPlaceFromCache(id);
+            }
             await loadAdminData();
             await loadMyPlaces();
             renderAdminPlaces();
@@ -3734,6 +3872,8 @@
             const { error } = await sb.from('places').delete().eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
             showToast('Local eliminado');
+            // ★ [v2.0.21] Quitar del cache público compartido con la home.
+            removePublicPlaceFromCache(id);
             await loadAdminData();
             await loadMyPlaces();
             renderAdminPlaces();
