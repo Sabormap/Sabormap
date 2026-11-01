@@ -267,187 +267,15 @@
         /* Carta / Menu editor */
         .menu-category{background:var(--card-2);border:1px solid var(--border);border-radius:14px;padding:18px}
         .menu-category-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-        .menu-category-head input{flex:1;min-width:0}
+        .menu-category-head input{flex:1}
         .menu-category-head .btn-icon{flex-shrink:0;width:34px;height:34px}
         .menu-items{display:flex;flex-direction:column;gap:8px}
-        .menu-item-row{display:grid;grid-template-columns:1fr 2fr 90px 110px 34px 34px;gap:8px;align-items:center}
+        .menu-item-row{display:grid;grid-template-columns:1fr 2fr 100px 34px;gap:8px;align-items:center}
         .menu-item-row input{padding:9px 12px;font-size:0.84rem}
         .menu-item-row .btn-icon{width:34px;height:34px;font-size:0.75rem}
+        @media(max-width:640px){.menu-item-row{grid-template-columns:1fr 1fr;gap:8px}.menu-item-row input:nth-child(3){grid-column:1}.menu-item-row .btn-icon{grid-column:2}}
         .menu-add-item-btn{margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px 12px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.25s;width:100%;text-align:center}
         .menu-add-item-btn:hover{border-color:var(--secondary);color:var(--secondary)}
-
-        /* ═══════════════════════════════════════════════════
-           [v2.0.13] EDITOR DE CARTA RESPONSIVE — móvil
-           En móvil cada plato se renderiza como una tarjeta
-           vertical: nombre, descripción, precio+moneda, acciones.
-           Así caben los 6 campos sin que se solapen.
-           ═══════════════════════════════════════════════════ */
-        @media(max-width:680px){
-            /* Tarjeta de categoría: menos padding en móvil */
-            .menu-category{padding:14px}
-
-            /* Head de categoría: input arriba, badge + botón abajo */
-            .menu-category-head{
-                flex-wrap:wrap;
-                gap:8px;
-                margin-bottom:12px;
-            }
-            .menu-category-head input{
-                flex:1 1 100%;
-                order:1;
-            }
-            .menu-category-head .menu-availability-badge{
-                order:2;
-                flex:1 1 auto;
-            }
-            .menu-category-head .btn-icon{
-                order:3;
-            }
-
-            /* Cada plato = tarjeta vertical con secciones.
-               ★ FIX [v2.0.14]: !important para sobreescribir cualquier
-               estilo inline que pueda quedar en el elemento. Antes, el
-               style="grid-template-columns:1fr 2fr 90px 110px 34px 34px"
-               inline sobreescribía esta media query y en móvil los 6
-               campos se colapsaban en columnas minúsculas. */
-            .menu-item-row{
-                display:grid !important;
-                grid-template-columns:1fr 1fr !important;
-                grid-template-areas:
-                    "name name"
-                    "desc desc"
-                    "price currency"
-                    "avail delete" !important;
-                gap:6px 8px !important;
-                align-items:center;
-                padding:10px;
-                background:var(--card);
-                border:1px solid var(--border-soft);
-                border-radius:10px;
-            }
-            .menu-item-row > *:nth-child(1){grid-area:name}
-            .menu-item-row > *:nth-child(2){grid-area:desc}
-            .menu-item-row > *:nth-child(3){grid-area:price}
-            .menu-item-row > *:nth-child(4){grid-area:currency}
-            .menu-item-row > *:nth-child(5){grid-area:avail;justify-self:start}
-            .menu-item-row > *:nth-child(6){grid-area:delete;justify-self:end}
-
-            /* Inputs más grandes para táctil */
-            .menu-item-row input{padding:11px 12px;font-size:0.9rem}
-            .menu-item-row .form-select{padding:11px 28px 11px 12px;font-size:0.9rem}
-            .menu-item-row .btn-icon,
-            .menu-item-row .menu-availability-btn{
-                width:38px;height:38px;font-size:0.85rem;
-            }
-
-            /* Las nav pills: no tan pegadas al top en móvil (el top-bar es más alto) */
-            .menu-nav-pills{
-                top:56px;
-                padding:6px 4px 10px;
-                gap:6px;
-            }
-            .menu-nav-pill{
-                padding:6px 12px;
-                font-size:0.76rem;
-            }
-
-            /* Botón "Agregar plato" más grande en móvil */
-            .menu-add-item-btn{
-                padding:12px;
-                font-size:0.86rem;
-            }
-        }
-
-        /* En pantallas muy angostas (≤400px), precio y moneda apilados.
-           ★ FIX [v2.0.14]: !important por la misma razón que arriba. */
-        @media(max-width:400px){
-            .menu-item-row{
-                grid-template-columns:1fr !important;
-                grid-template-areas:
-                    "name"
-                    "desc"
-                    "price"
-                    "currency"
-                    "avail"
-                    "delete" !important;
-            }
-            .menu-item-row > *:nth-child(5),
-            .menu-item-row > *:nth-child(6){
-                justify-self:stretch;
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════
-           [v2.0.11] PLATOS AGOTADOS — Toggle de disponibilidad
-           Permite marcar un plato como "agotado" sin borrarlo.
-           Se ve tachado y atenuado, y se guarda como available:false
-           en el jsonb del menú. En la home se puede mostrar como
-           "Agotado" en vez de eliminarlo.
-           ═══════════════════════════════════════════════════ */
-        .menu-item-row.unavailable{
-            opacity:0.55;
-            background:rgba(239,68,68,0.04);
-            border-radius:10px;
-            padding:4px;
-        }
-        .menu-item-row.unavailable input{
-            text-decoration:line-through;
-            text-decoration-color:rgba(239,68,68,0.6);
-            text-decoration-thickness:1.5px;
-        }
-        .menu-availability-btn{
-            width:34px;
-            height:34px;
-            border-radius:9px;
-            border:1px solid var(--border);
-            background:var(--card);
-            color:var(--green);
-            cursor:pointer;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:0.78rem;
-            transition:all 0.2s ease;
-            flex-shrink:0;
-        }
-        .menu-availability-btn:hover{
-            border-color:var(--green);
-            box-shadow:0 0 0 3px rgba(34,197,94,0.12);
-        }
-        .menu-availability-btn.is-unavailable{
-            color:var(--red);
-            border-color:rgba(239,68,68,0.4);
-            background:rgba(239,68,68,0.08);
-        }
-        .menu-availability-btn.is-unavailable:hover{
-            border-color:var(--red);
-            box-shadow:0 0 0 3px rgba(239,68,68,0.12);
-        }
-        .menu-availability-badge{
-            display:inline-flex;
-            align-items:center;
-            gap:4px;
-            font-size:0.65rem;
-            font-weight:700;
-            text-transform:uppercase;
-            letter-spacing:0.05em;
-            padding:2px 7px;
-            border-radius:100px;
-            margin-left:6px;
-            vertical-align:middle;
-        }
-        .menu-availability-badge.available{
-            background:rgba(34,197,94,0.12);
-            color:var(--green);
-        }
-        .menu-availability-badge.unavailable{
-            background:rgba(239,68,68,0.12);
-            color:var(--red);
-        }
-        /* En móvil, el botón de disponibilidad va al final */
-        @media(max-width:640px){
-            .menu-item-row .menu-availability-btn{grid-column:auto;justify-self:start}
-        }
 
         /* ═══════════════════════════════════════════════════
            [v2.0.8] NAV PILLS — Botones de navegación para categorías
@@ -2587,81 +2415,12 @@
            AUTH: Logout
         ======================================== */
         window.handleLogout = async function() {
-            // ★ FIX [v2.0.9] — Logout optimista e instantáneo.
-            //
-            // ANTES: `await sb.auth.signOut()` llamaba al servidor para
-            // revocar el JWT. En redes cubanas lentas, esto podía colgarse
-            // 30s+ o timeout. El usuario veía el dashboard congelado.
-            //
-            // AHORA: cerramos la UI al instante (optimistic) y luego:
-            //   1. Limpiamos la sesión LOCAL (sin red) → instantáneo.
-            //   2. Disparamos signOut global en background (con timeout 5s).
-            //   3. Detenemos el procesador de cola para que no intente
-            //      refrescar sesión de un usuario que ya se fue.
-            //   4. Ocultamos banner/badge de ops pendientes (se restauran
-            //      al volver a loguear, las ops se quedan en IndexedDB).
-
-            // 1) UI optimista: ocultar dashboard y mostrar login YA
-            const dashWrap = $('dashboardWrap');
-            const authScreen = $('authScreen');
-            if (dashWrap) dashWrap.classList.remove('visible');
-            if (authScreen) authScreen.style.display = 'flex';
-            try { showView('login'); } catch (e) {}
-
-            // 2) Limpiar estado en memoria inmediatamente
-            currentUser = null;
-            userProfile = null;
-            userSubscription = null;
-            myPlaces = [];
-            allPlaces = [];
-            allProfiles = [];
-            allSubs = [];
-            allLogs = [];
-
-            // 3) Ocultar badge y banner de ops pendientes (las ops se
-            //    conservan en IndexedDB para cuando el usuario vuelva).
-            const badge = $('pendingOpsBadge');
-            if (badge) badge.style.display = 'none';
-            const banner = $('pendingBanner');
-            if (banner) banner.style.display = 'none';
-
-            // 4) Detener el procesador de cola si estaba corriendo
-            //    (la flag _processingQueue se liberará sola en el finally,
-            //    pero marcamos para que no arranque de nuevo).
-            if (typeof _processingQueue !== 'undefined') {
-                _processingQueue = false;
-            }
-
-            // 5) Limpiar sesión LOCAL (sin network call) — instantáneo
-            try {
-                await sb.auth.signOut({ scope: 'local' });
-            } catch (e) {
-                console.warn('[Logout] signOut local falló (no crítico):', e);
-            }
-
-            // 6) Disparar signOut GLOBAL en background (no await).
-            //    Si la red está bien, el token se revoca en el servidor.
-            //    Si la red falla o tarda, no importa: el usuario ya está
-            //    logout localmente y verá el login. El token expirará solo.
-            (async () => {
-                try {
-                    const timeoutPromise = new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error('signOut timeout')), 5000)
-                    );
-                    await Promise.race([
-                        sb.auth.signOut({ scope: 'global' }),
-                        timeoutPromise
-                    ]);
-                    console.log('[Logout] Token revocado en servidor ✅');
-                } catch (err) {
-                    // No crítico: el token expirará solo, o se revocará
-                    // la próxima vez que el usuario cierre todas las sesiones.
-                    console.warn('[Logout] No se pudo revocar token en servidor (no crítico):', err.message || err);
-                }
-            })();
-
-            // 7) Mensaje al usuario
-            try { showToast('Sesión cerrada correctamente'); } catch (e) {}
+            await sb.auth.signOut();
+            currentUser = null; userProfile = null; userSubscription = null;
+            myPlaces = []; allPlaces = []; allProfiles = []; allSubs = []; allLogs = [];
+            $('dashboardWrap').classList.remove('visible');
+            $('authScreen').style.display = 'flex';
+            showView('login');
         };
 
         /* ========================================
@@ -2932,15 +2691,7 @@
             placeTags.forEach((tag, i) => {
                 const chip = document.createElement('span');
                 chip.className = 'tag-chip';
-                // ★ FIX [v2.0.10] XSS: usar textContent para el tag (no innerHTML).
-                //   Antes, un tag con <script> o <img onerror=...> se ejecutaba.
-                chip.textContent = tag;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.innerHTML = '&times;';
-                btn.onclick = (function(idx) { return function() { removeTag(idx); }; })(i);
-                chip.appendChild(document.createTextNode(' '));
-                chip.appendChild(btn);
+                chip.innerHTML = tag + ' <button type="button" onclick="removeTag(' + i + ')">&times;</button>';
                 wrapper.insertBefore(chip, input);
             });
         }
@@ -3011,16 +2762,8 @@
                 return;
             }
             container.innerHTML = placeMenu.map((cat, ci) => {
-                const items = (cat.items || []).map((it, ii) => {
-                    // [v2.0.11] available default true si no está definido
-                    const isAvailable = it.available !== false;
-                    const rowClass = isAvailable ? '' : ' unavailable';
-                    const btnClass = isAvailable ? '' : ' is-unavailable';
-                    const btnIcon = isAvailable ? 'fa-check' : 'fa-ban';
-                    const btnTitle = isAvailable ? 'Disponible (clic para marcar agotado)' : 'Agotado (clic para marcar disponible)';
-                    const btnLabel = isAvailable ? 'Marcar como agotado' : 'Marcar como disponible';
-                    return `
-                    <div class="menu-item-row${rowClass}">
+                const items = (cat.items || []).map((it, ii) => `
+                    <div class="menu-item-row" style="grid-template-columns:1fr 2fr 90px 110px 34px">
                         <input type="text" class="form-input" placeholder="Nombre del plato" value="${escapeAttr(it.name||'')}" oninput="updateMenuItem(${ci},${ii},'name',this.value)">
                         <input type="text" class="form-input" placeholder="Descripción" value="${escapeAttr(it.desc||'')}" oninput="updateMenuItem(${ci},${ii},'desc',this.value)">
                         <input type="text" class="form-input" placeholder="350" value="${escapeAttr(it.price||'')}" oninput="updateMenuItem(${ci},${ii},'price',this.value)">
@@ -3030,22 +2773,13 @@
                             <option value="USD" ${it.currency==='USD'?'selected':''}>USD</option>
                             <option value="EUR" ${it.currency==='EUR'?'selected':''}>EUR</option>
                         </select>
-                        <button type="button" class="menu-availability-btn${btnClass}" aria-label="${btnLabel}" onclick="toggleMenuItemAvailability(${ci},${ii})" title="${btnTitle}"><i aria-hidden="true" class="fas ${btnIcon}"></i></button>
                         <button type="button" class="btn-icon" aria-label="Eliminar plato" onclick="removeMenuItem(${ci},${ii})" title="Eliminar plato"><i aria-hidden="true" class="fas fa-trash"></i></button>
                     </div>
-                    `;
-                }).join('');
-                // [v2.0.11] contador de agotados para mostrar en el header de la categoría
-                const totalItems = (cat.items || []).length;
-                const unavailableCount = (cat.items || []).filter(it => it.available === false).length;
-                const catBadge = unavailableCount > 0
-                    ? '<span class="menu-availability-badge unavailable" title="Platos agotados en esta categoría"><i aria-hidden="true" class="fas fa-ban" style="font-size:0.6rem"></i> ' + unavailableCount + ' agotado' + (unavailableCount > 1 ? 's' : '') + '</span>'
-                    : '';
+                `).join('');
                 return `
                     <div class="menu-category" data-cat-index="${ci}" id="menuCat-${ci}">
                         <div class="menu-category-head">
                             <input type="text" class="form-input" placeholder="Nombre de la categoría (ej: Entradas)" value="${escapeAttr(cat.category||'')}" oninput="updateMenuCategory(${ci},this.value)">
-                            ${catBadge}
                             <button type="button" class="btn-icon" aria-label="Eliminar categoría" onclick="removeMenuCategory(${ci})" title="Eliminar categoría"><i aria-hidden="true" class="fas fa-times"></i></button>
                         </div>
                         <div class="menu-items">${items}</div>
@@ -3148,15 +2882,7 @@
             }, { passive: true });
         }
 
-        // ★ FIX [v2.0.10] escapeAttr ahora también cubre & y ' (estaba incompleto)
-        function escapeAttr(s) {
-            return String(s==null?'':s)
-                .replace(/&/g,'&amp;')
-                .replace(/"/g,'&quot;')
-                .replace(/'/g,'&#39;')
-                .replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;');
-        }
+        function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
         window.addMenuCategory = function() {
             placeMenu.push({ category: '', items: [] });
@@ -3184,8 +2910,7 @@
         window.addMenuItem = function(ci) {
             if (!placeMenu[ci]) return;
             if (!placeMenu[ci].items) placeMenu[ci].items = [];
-            // [v2.0.11] available: true por defecto en platos nuevos
-            placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP', available:true });
+            placeMenu[ci].items.push({ name:'', desc:'', price:'', currency:'CUP' });
             renderMenuEditor();
             // [v2.0.8] scroll al nuevo plato y enfocar su primer input
             setTimeout(() => {
@@ -3200,24 +2925,6 @@
         window.updateMenuItem = function(ci, ii, field, val) {
             const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
             cat.items[ii][field] = val;
-        };
-        /* [v2.0.11] Toggle de disponibilidad: marca el plato como
-           agotado (available:false) sin tener que borrarlo. Visualmente
-           se tacha y atenua; al guardar se persiste en el jsonb. */
-        window.toggleMenuItemAvailability = function(ci, ii) {
-            const cat = placeMenu[ci]; if (!cat || !cat.items[ii]) return;
-            const item = cat.items[ii];
-            const wasAvailable = item.available !== false;
-            item.available = !wasAvailable;
-            // Feedback inmediato al usuario
-            const itemName = (item.name || '').trim() || 'este plato';
-            showToast(wasAvailable
-                ? '🔴 "' + itemName + '" marcado como agotado'
-                : '🟢 "' + itemName + '" disponible nuevamente');
-            renderMenuEditor();
-            // Actualizar también el badge de la pill (contador de platos no cambia,
-            // pero el nombre de la categoría sí puede afectar)
-            renderMenuNavPills();
         };
         window.removeMenuItem = function(ci, ii) {
             const cat = placeMenu[ci]; if (!cat) return;
@@ -3430,9 +3137,7 @@
                             name:  (it.name || '').trim(),
                             desc:  (it.desc || '').trim(),
                             price: (it.price || '').trim(),
-                            currency: ['CUP','MLC','USD','EUR'].includes(it.currency) ? it.currency : 'CUP',
-                            // [v2.0.11] persistir available (default true si no estaba definido)
-                            available: it.available !== false
+                            currency: ['CUP','MLC','USD','EUR'].includes(it.currency) ? it.currency : 'CUP'
                         }))
                         .filter(it => it.name)   // solo items con nombre
                 }))
@@ -3535,40 +3240,9 @@
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
             btnText.textContent = 'Guardando local...';
 
-            // ★ FIX [v2.0.16] — PRE-REFRESH DEL TOKEN antes de guardar.
-            //   Síntoma: el usuario hace clic en "Guardar" → timeout de 30s
-            //   aunque la conexión está OK ("En línea" visible). Si recarga
-            //   la página (F5) y reintenta, funciona. ¿Por qué? Porque al
-            //   recargar, Supabase renueva el JWT automáticamente. Sin
-            //   recargar, el token estaba casi expirado y el gateway de
-            //   Supabase se cuelga sin responder → vence el timeout.
-            //   Solución: forzar refreshSession() ANTES del primer intento,
-            //   no esperar a que falle. Es barato (<500ms) y elimina el
-            //   síntoma "tengo que recargar para que guarde".
-            try {
-                btnText.textContent = 'Verificando sesión...';
-                const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
-                if (refreshErr) {
-                    console.warn('[Save] refreshSession previo falló (no bloqueante):', refreshErr.message);
-                    // Si el refresh falla, intentar con la sesión actual.
-                    // Si esa también está expirada, los reintentos de
-                    // saveWithRetry harán refresh de nuevo.
-                } else if (refreshData?.session) {
-                    console.log('[Save] Token refrescado antes de guardar. Expires at:',
-                        new Date(refreshData.session.expires_at * 1000).toLocaleTimeString());
-                }
-            } catch (e) {
-                console.warn('[Save] Excepción en refreshSession previo (no bloqueante):', e);
-            }
-            btnText.textContent = 'Guardando local...';
-
-            // ★ FIX [v2.0.15]: helper con timeout.
-            //   v2.0.6 bajó el timeout a 15s para evitar esperas largas, pero en
-            //   redes cubanas eso NO es suficiente — el UPDATE falla con timeout
-            //   y como v2.0.6 ya no encola en timeout (para no duplicar), el
-            //   cambio se pierde. v2.0.15 sube a 30s + reintenta 2 veces con
-            //   backoff exponencial (1s, 4s) + verifica si el cambio se aplicó
-            //   antes de declarar fallo, para encolar solo si realmente no se guardó.
+            // ★ FIX [v2.0.6]: helper con timeout. Ya NO encolamos automáticamente
+            //   al vencer — el INSERT original puede seguir en vuelo y completarse
+            //   en el servidor, lo que crearía un duplicado al reintentar.
             const withTimeout = (promise, ms, label) => Promise.race([
                 promise,
                 new Promise((_, reject) => setTimeout(
@@ -3576,140 +3250,29 @@
                     ms
                 ))
             ]);
-            const SAVE_TIMEOUT = 30000; // ★ 30s — redes cubanas necesitan más tiempo
-
-            // ★ FIX [v2.0.15]: helper que ejecuta la operación con hasta 3
-            //   intentos (inicial + 2 reintentos) y backoff exponencial.
-            //   Solo reintenta si el error es recuperable (timeout o red).
-            //   Errores de RLS/validación NO se reintentan (sería inútil).
-            const saveWithRetry = async (operation, opLabel) => {
-                const maxAttempts = 3;
-                const backoffMs = [0, 1000, 4000]; // 0s, 1s, 4s
-                let lastResult = null;
-                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                    if (attempt > 1) {
-                        btnText.textContent = 'Reintentando (' + (attempt-1) + '/' + (maxAttempts-1) + ')...';
-                        console.log('[Save] Reintento ' + attempt + ' para ' + opLabel + ' tras ' + backoffMs[attempt-1] + 'ms');
-                        await new Promise(r => setTimeout(r, backoffMs[attempt-1]));
-                        // ★ FIX [v2.0.16]: en cada reintento, refrescar la sesión
-                        //   antes de atacar. Aunque el error no sea de auth explícito,
-                        //   el gateway de Supabase a veces se cuelga con tokens
-                        //   casi expirados. Forzar refresh elimina esa causa.
-                        try {
-                            const { error: rErr } = await sb.auth.refreshSession();
-                            if (rErr) console.warn('[Save] refresh en reintento ' + attempt + ' falló:', rErr.message);
-                            else console.log('[Save] Token refrescado para reintento ' + attempt);
-                        } catch (e) {
-                            console.warn('[Save] refresh en reintento ' + attempt + ' excepción:', e);
-                        }
-                    }
-                    btnText.textContent = attempt === 1 ? 'Guardando local...' : 'Reintentando (' + attempt + '/' + maxAttempts + ')...';
-                    try {
-                        lastResult = await withTimeout(operation(), SAVE_TIMEOUT, opLabel + ' (intento ' + attempt + ')');
-                        // Si llegó aquí, no hubo timeout. Verificar si hay error.
-                        if (lastResult.error) {
-                            const msg = String(lastResult.error.message || '');
-                            const isAuth = msg.includes('JWT') || msg.includes('jwt') || msg.includes('401') ||
-                                           msg.includes('expired') || msg.includes('not authenticated');
-                            if (isAuth && attempt < maxAttempts) {
-                                // Intentar refresh de sesión y reintentar
-                                console.log('[Save] Error de auth en intento ' + attempt + ', refrescando sesión...');
-                                const { error: rErr } = await sb.auth.refreshSession();
-                                if (rErr) { return lastResult; } // no se pudo refrescar, devolver error
-                                continue; // reintentar con sesión nueva
-                            }
-                            // Error no recuperable (RLS, validación, etc.) — no reintentar
-                            return lastResult;
-                        }
-                        // Éxito
-                        return lastResult;
-                    } catch (err) {
-                        // Timeout o error de red — reintentar si quedan intentos
-                        lastResult = { error: { message: err.message || String(err) }, _networkError: true };
-                        const msg = String(err.message || err);
-                        const isRecoverable = msg.includes('Timeout') || msg.includes('network') ||
-                                              msg.includes('Network') || msg.includes('fetch') ||
-                                              msg.includes('Failed to fetch');
-                        if (!isRecoverable || attempt === maxAttempts) {
-                            console.warn('[Save] ' + opLabel + ' falló tras ' + attempt + ' intento(s):', msg);
-                            return lastResult;
-                        }
-                        // Continuar al siguiente intento
-                    }
-                }
-                return lastResult;
-            };
-
-            // ★ FIX [v2.0.15]: tras timeout/red, verificar si el cambio realmente
-            //   se aplicó consultando la BD. Solo encolar si NO se aplicó.
-            //   Esto evita duplicados (si el servidor sí procesó el UPDATE).
-            const verifyPlaceSaved = async (placeId, expectedData) => {
-                try {
-                    const { data, error } = await withTimeout(
-                        sb.from('places').select('name,description,updated_at').eq('id', placeId).maybeSingle(),
-                        10000,
-                        'verify'
-                    );
-                    if (error || !data) return false;
-                    // Si el nombre coincide, asumimos que el UPDATE se aplicó
-                    // (no podemos comparar updated_at porque puede ser igual)
-                    return data.name === expectedData.name;
-                } catch (e) {
-                    return false; // no se pudo verificar, asumir que no se guardó
-                }
-            };
+            const SAVE_TIMEOUT = 15000; // ★ 15s (antes 30s)
 
             try {
                 let opError = null;
-                let saveResult = null;
                 if (editingPlaceId) {
                     // UPDATE: el owner_id y status no se tocan al editar
                     const update = { ...data };
                     delete update.owner_id;
                     delete update.status;
-                    // ★ FIX [v2.0.17]: añadir .select() para que Supabase devuelva
-                    //   la fila actualizada. Sin .select(), un UPDATE que no cumple
-                    //   RLS devuelve { data: null, error: null, count: 0 } — el
-                    //   código cree que fue exitoso pero 0 filas fueron tocadas.
-                    //   Con .select(), si RLS bloquea, data viene vacío y podemos
-                    //   detectarlo y avisar al usuario.
-                    saveResult = await saveWithRetry(
-                        () => sb.from('places').update(update).eq('id', editingPlaceId).select(),
-                        'UPDATE'
-                    );
-                    opError = saveResult.error;
-                    // ★ FIX [v2.0.17]: verificar que el UPDATE realmente tocó filas.
-                    //   Si saveResult.data es null o array vacío, RLS bloqueó el
-                    //   update silenciosamente. Avise al usuario en vez de mentirle.
-                    if (!opError) {
-                        const updatedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
-                        if (updatedRows === 0) {
-                            console.error('[Save] UPDATE devolvió 0 filas. editingPlaceId:', editingPlaceId, 'currentUser.id:', currentUser?.id);
-                            console.error('[Save] Posible RLS denial: auth.uid() != owner_id. Verifica que el local te pertenece.');
-                            opError = { message: 'No se pudo actualizar el local: es posible que no te pertenezca o que la sesión haya cambiado. Recarga la página e inténtalo de nuevo.' };
-                        } else {
-                            console.log('[Save] UPDATE exitoso. Filas afectadas:', updatedRows, '| ID:', saveResult.data[0]?.id);
-                            showToast('Local actualizado correctamente');
-                        }
+                    let r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE');
+                    // [F-5.6] Si error de auth, refresh + reintento único
+                    if (r.error && await handleAuthError(r.error)) {
+                        r = await withTimeout(sb.from('places').update(update).eq('id', editingPlaceId), SAVE_TIMEOUT, 'UPDATE retry');
                     }
+                    opError = r.error;
+                    if (!opError) showToast('Local actualizado correctamente');
                 } else {
-                    // ★ FIX [v2.0.17]: también añadir .select() al INSERT para
-                    //   recibir el ID del nuevo local y confirmar que se creó.
-                    saveResult = await saveWithRetry(
-                        () => sb.from('places').insert(data).select(),
-                        'INSERT'
-                    );
-                    opError = saveResult.error;
-                    if (!opError) {
-                        const insertedRows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
-                        if (insertedRows === 0) {
-                            console.error('[Save] INSERT devolvió 0 filas. Posible RLS denial.');
-                            opError = { message: 'No se pudo crear el local: permisos insuficientes (RLS). Verifica tu sesión.' };
-                        } else {
-                            console.log('[Save] INSERT exitoso. Nuevo ID:', saveResult.data[0]?.id);
-                            showToast('Local creado correctamente');
-                        }
+                    let r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT');
+                    if (r.error && await handleAuthError(r.error)) {
+                        r = await withTimeout(sb.from('places').insert(data), SAVE_TIMEOUT, 'INSERT retry');
                     }
+                    opError = r.error;
+                    if (!opError) showToast('Local creado correctamente');
                 }
                 if (opError) throw opError;
 
@@ -3731,49 +3294,17 @@
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
                 console.error('Places insert/update error:', err);
+                // [F-5.1+] Si el error es de red, encolar la operación para Background Sync
                 const rawMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Error desconocido');
-                const isTimeout = rawMsg.includes('Timeout');
-                const isOffline = !navigator.onLine;
+                // ★ FIX [v2.0.6]: distinguimos offline real (sin request en vuelo,
+                //   seguro encolar) de timeout (ambiguo, el request puede haber
+                //   completado en el servidor → no encolar para no duplicar).
                 const isNetworkError = rawMsg.includes('network') || rawMsg.includes('Network') ||
                                         rawMsg.includes('fetch') || rawMsg.includes('Failed to fetch');
+                const isTimeout = rawMsg.includes('Timeout');
+                const isOffline = !navigator.onLine;
 
-                // ★ FIX [v2.0.15]: tras timeout, verificar si el cambio realmente
-                //   se aplicó antes de encolar. Solo encolar si NO se aplicó.
-                if (isTimeout && editingPlaceId) {
-                    btnText.textContent = 'Verificando si se guardó...';
-                    const alreadySaved = await verifyPlaceSaved(editingPlaceId, data);
-                    if (alreadySaved) {
-                        // El UPDATE sí se aplicó en el servidor aunque hicimos timeout
-                        console.log('[Save] El UPDATE se aplicó en el servidor a pesar del timeout. No encolar.');
-                        showToast('Local actualizado (la conexión tardó pero se guardó)');
-                        editingPlaceId = null;
-                        resetPlaceForm();
-                        await clearPlaceDraft();
-                        _hasUnsavedChanges = false;
-                        try { await withTimeout(loadMyPlaces(), 15000, 'reload'); }
-                        catch (e) { console.warn('Recarga post-save falló:', e); }
-                        renderOverview();
-                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
-                        return;
-                    }
-                    // No se verificó o no se aplicó → encolar para reintento en background
-                    const updatePayload = { ...data };
-                    delete updatePayload.owner_id;
-                    delete updatePayload.status;
-                    const opId = await enqueueOperation('place_update',
-                        { id: editingPlaceId, data: updatePayload },
-                        { placeName: name }
-                    );
-                    if (opId) {
-                        showToast('Sin respuesta del servidor. Cambios encolados — se aplicarán cuando la conexión mejore');
-                        editingPlaceId = null;
-                        resetPlaceForm();
-                        await clearPlaceDraft();
-                        _hasUnsavedChanges = false;
-                        switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
-                        return;
-                    }
-                } else if (isOffline && !editingPlaceId) {
+                if (isOffline && !editingPlaceId) {
                     // INSERT estando offline: encolar es seguro (no hay request en vuelo)
                     const opId = await enqueueOperation('place_insert', data, { placeName: name });
                     if (opId) {
@@ -4154,8 +3685,6 @@
         };
 
         window.saveSubEdit = async function() {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('saveSubEdit')) return;
             const id = $('editSubId').value;
             const planMax = { free: 1, basic: 3, pro: 10, enterprise: 999 };
             const data = {
@@ -4389,8 +3918,6 @@
         }
 
         window.saveCollection = async function() {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('saveCollection')) return;
             const editId = $('colEditId').value;
             const newId = $('colId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
             const title = $('colTitle').value.trim();
@@ -4440,8 +3967,6 @@
         };
 
         window.deleteCollection = async function(id) {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('deleteCollection')) return;
             const c = allCollections.find(x => x.id === id);
             if (!c) return;
             if (!confirm('Eliminar la coleccion "' + c.title + '"? Esto tambien quitara todos los lugares vinculados.')) return;
@@ -4465,8 +3990,7 @@
             const sel = $('colPlaceSelect');
             sel.innerHTML = '<option value="">Seleccionar un lugar...</option>';
             allPlaces.forEach(p => {
-                // ★ FIX [v2.0.10] XSS: escapar p.name y p.category
-                sel.innerHTML += '<option value="' + escapeAttr(p.id) + '">' + escapeHtml(p.name) + ' (' + escapeHtml(p.category||'') + ')</option>';
+                sel.innerHTML += '<option value="' + p.id + '">' + p.name + ' (' + (p.category||'') + ')</option>';
             });
 
             $('colStaticId').value = '';
@@ -4490,8 +4014,7 @@
 
                 if (cp.place_id) {
                     const place = allPlaces.find(p => p.id === cp.place_id);
-                    // ★ FIX [v2.0.10] XSS: escapar name antes de concatenar al HTML
-                    name = escapeHtml(place ? place.name : cp.place_id.substring(0, 8) + '...');
+                    name = place ? place.name : cp.place_id.substring(0, 8) + '...';
                     typeLabel = '<span style="font-size:0.7rem;color:var(--secondary)">DB</span>';
                     removeFn = 'removePlaceFromCollection(\'db\',\'' + cp.id + '\')' ;
                 } else if (cp.static_place_id) {
@@ -4508,8 +4031,6 @@
         }
 
         window.addPlaceToCollection = async function() {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('addPlaceToCollection')) return;
             const colId = $('colPlacesEditId').value;
             const placeId = $('colPlaceSelect').value;
             if (!placeId) { showToast('Selecciona un lugar', true); return; }
@@ -4527,8 +4048,6 @@
         };
 
         window.addStaticPlaceToCollection = async function() {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('addStaticPlaceToCollection')) return;
             const colId = $('colPlacesEditId').value;
             const staticId = parseInt($('colStaticId').value);
             if (!staticId || staticId < 1) { showToast('Ingresa un ID valido (1-300)', true); return; }
@@ -4546,8 +4065,6 @@
         };
 
         window.removePlaceFromCollection = async function(type, id) {
-            // ★ FIX [v2.0.10] — defensa en profundidad: requiere admin
-            if (!requireAdmin('removePlaceFromCollection')) return;
             if (!confirm('Quitar este lugar de la coleccion?')) return;
             const { error } = await sb.from('collection_places').delete().eq('id', id);
             if (error) { showToast('Error: ' + error.message, true); return; }
@@ -4801,14 +4318,11 @@
                         }
                         // Si fue exitosa, recargar datos y actualizar badge
                         if (result.ok) {
-                            // ★ FIX [v2.0.10] no recargar datos si el usuario ya hizo logout
-                            if (currentUser) {
-                                showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
-                                await loadMyPlaces();
-                                renderOverview();
-                                if (isAdmin() && typeof loadAdminData === 'function') {
-                                    await loadAdminData();
-                                }
+                            showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
+                            await loadMyPlaces();
+                            renderOverview();
+                            if (isAdmin() && typeof loadAdminData === 'function') {
+                                await loadAdminData();
                             }
                             await updatePendingBadge();
                         }
