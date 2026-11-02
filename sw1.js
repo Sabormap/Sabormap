@@ -1,16 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.21 — bump de versión para forzar la descarga del dashboard.html
-    actualizado con sincronización de cache público compartido con la
-    home (index.html):
-      · Cuando el dashboard publica/edita/elimina un local, ahora también
-        actualiza el cache localStorage 'sabormap_published_places_cache'
-        que la home lee para mostrar locales offline.
-      · La home (app.js v2.0.21) hace cache-first: primero carga el cache
-        local, luego refresca desde Supabase si hay conexión.
-      · Resultado: el contador de locales es el mismo offline y online
-        (ya no aparece 256 vs 257).
-    Hereda todos los fixes v2.0.6 → v2.0.20.]
+   [v2.0.23 — bump de versión para forzar la descarga del dashboard.html
+    parcheado con los 8 fixes críticos de la v2.0.23:
+      · #1 refreshSession condicional (<60s) en vez de forzado
+      · #2 Eliminado doble enterDashboard() tras login
+      · #3 fetch con AbortController 20s en cliente Supabase
+      · #4 Recarga post-save en background (no bloquea botón)
+      · #5 Guard de reentrancia en handlePlaceSubmit
+      · #6 executeOp con .select() y detección de RLS silent denial
+      · #7 Exponential backoff en retry de cola (30s × 2^attempts)
+      · #8 Ops encoladas con user_id, filtradas en processQueueNow
+    Hereda todos los fixes v2.0.6 → v2.0.22.]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs críticos.
@@ -24,7 +24,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.21';
+const VERSION = 'v2.0.23';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
