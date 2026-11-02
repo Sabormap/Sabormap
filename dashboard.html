@@ -851,7 +851,7 @@
                     <i aria-hidden="true" class="fas fa-store"></i> Mis Locales
                     <span class="link-badge" id="placesCount">0</span>
                 </a>
-                <a role="button" tabindex="0" class="sidebar-link" data-panel="add-place" onclick="switchPanel('add-place',this)">
+                <a role="button" tabindex="0" class="sidebar-link" data-panel="add-place" onclick="startNewPlace()">
                     <i aria-hidden="true" class="fas fa-plus-circle"></i> Agregar Local
                 </a>
 
@@ -921,7 +921,7 @@
                         <i aria-hidden="true" class="fas fa-sun icon-sun"></i>
                     </button>
                     <button class="btn-icon" style="position:relative" aria-label="Notificaciones (no hay nuevas)" onclick="showToast('No hay notificaciones nuevas')"><i aria-hidden="true" class="fas fa-bell"></i><span class="notif-dot"></span></button>
-                    <button class="btn-primary btn-sm" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))">
+                    <button class="btn-primary btn-sm" onclick="startNewPlace()">
                         <i aria-hidden="true" class="fas fa-plus"></i> Nuevo Local
                     </button>
                 </div>
@@ -952,14 +952,14 @@
                             <h2 style="font-size:1.5rem;font-weight:700">Mis Locales</h2>
                             <p style="color:var(--muted);font-size:0.88rem;margin-top:4px">Gestiona tus restaurantes, bares y heladerias</p>
                         </div>
-                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
+                        <button class="btn-primary" onclick="startNewPlace()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
                     </div>
                     <div id="myPlacesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px"></div>
                     <div class="empty-state" id="myPlacesEmpty" style="display:none">
                         <i aria-hidden="true" class="fas fa-store-slash"></i>
                         <h3>Aún no tienes locales</h3>
                         <p>Comienza agregando tu primer restaurante, bar o heladeria.</p>
-                        <button class="btn-primary" onclick="switchPanel('add-place',document.querySelector('[data-panel=add-place]'))"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
+                        <button class="btn-primary" onclick="startNewPlace()"><i aria-hidden="true" class="fas fa-plus"></i> Agregar Local</button>
                     </div>
                 </div>
             </div>
@@ -1090,21 +1090,39 @@
                         </div>
 
                         <div style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
+                            <!-- [v2.0.22] Badge visual de modo edición: cuando se está
+                                 editando un local existente, este badge aparece arriba
+                                 del todo del bloque de botones para que el usuario sepa
+                                 claramente que está EDITANDO, no creando. -->
+                            <div id="editingBadge" style="display:none;align-items:center;gap:8px;padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;font-size:0.82rem;color:var(--accent-2)">
+                                <i aria-hidden="true" class="fas fa-pen-to-square"></i>
+                                <span>Editando: <strong id="editingBadgeName" style="color:var(--cream)">—</strong></span>
+                                <button type="button" class="btn-icon" style="margin-left:auto;width:28px;height:28px;font-size:0.7rem" onclick="cancelEditing()" aria-label="Cancelar edición y volver a crear local nuevo" title="Cancelar edición y volver a crear">
+                                    <i aria-hidden="true" class="fas fa-times"></i>
+                                </button>
+                            </div>
                             <!-- [v2.0.19] Indicador de draft local: muestra al usuario
                                  cuándo se salvó su borrador por última vez. -->
                             <div id="draftIndicator" style="display:none;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);justify-content:flex-end;padding:0 4px" aria-live="polite">
                                 <i aria-hidden="true" class="fas fa-cloud-arrow-up"></i>
                                 <span class="draft-text">Borrador guardado</span>
                             </div>
-                            <!-- [v2.0.20] Dos botones separados:
+                            <!-- [v2.0.22] Tres botones separados:
                                  · "Guardar Borrador": solo salva en localStorage/IndexedDB,
                                    sin tocar el servidor. No requiere conexión. No valida
                                    campos obligatorios (deja guardar lo que haya).
+                                 · "Cargar Borrador": carga el último draft guardado para
+                                   este local (o uno nuevo si no hay editingPlaceId). Útil
+                                   cuando el usuario vuelve al formulario y quiere continuar
+                                   donde lo dejó sin tener que confirmar el modal de inicio.
                                  · "Publicar": valida campos obligatorios, sube al servidor
                                    con status='published' (si es nuevo) o actualiza el
                                    existente. Si no hay conexión, encola la operación. -->
                             <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
                                 <button type="button" class="btn-secondary" onclick="switchPanel('my-places',document.querySelector('[data-panel=my-places]'))">Cancelar</button>
+                                <button type="button" class="btn-secondary" id="placeLoadDraftBtn" onclick="handleLoadDraft(event)" title="Cargar el último borrador guardado">
+                                    <i aria-hidden="true" class="fas fa-folder-open"></i> <span>Cargar Borrador</span>
+                                </button>
                                 <button type="button" class="btn-success" id="placeDraftBtn" onclick="handlePlaceDraft(event)">
                                     <i aria-hidden="true" class="fas fa-cloud-arrow-up"></i> <span id="placeDraftText">Guardar Borrador</span>
                                 </button>
@@ -1115,7 +1133,7 @@
                             <!-- Tip contextual para que el usuario entienda la diferencia -->
                             <div style="display:flex;align-items:flex-start;gap:6px;font-size:0.72rem;color:var(--muted);justify-content:flex-end;padding:0 4px;line-height:1.4;text-align:right">
                                 <i aria-hidden="true" class="fas fa-info-circle" style="margin-top:2px;flex-shrink:0"></i>
-                                <span>"Guardar Borrador" deja el local en tu dispositivo (offline). "Publicar Local" lo envía al servidor y lo hace visible en SaborMap.</span>
+                                <span>"Guardar Borrador" deja el local en tu dispositivo (offline). "Cargar Borrador" recupera lo último guardado. "Publicar Local" lo envía al servidor y lo hace visible en SaborMap.</span>
                             </div>
                         </div>
                     </form>
@@ -3116,8 +3134,47 @@
             renderLinksEditor();
             // [v2.0.19] Ocultar indicador de draft al limpiar el form
             updateDraftIndicator('cleared');
+            // [v2.0.22] Ocultar badge "Editando" y restaurar sidebar link
+            updateEditingBadge();
             _hasUnsavedChanges = false;
         }
+
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.22] startNewPlace — botón "Agregar Local" / "Nuevo Local"
+           ────────────────────────────────────────────────────────────────
+           Cuando el usuario hace clic en "Agregar Local" del sidebar, o en
+           "Nuevo Local" del top-bar, NO debe continuar editando el local
+           que tenía cargado. Esta función:
+
+             1. Si estaba editando un local y tiene cambios sin guardar,
+                ofrece guardarlos como draft antes de salir.
+             2. Limpia editingPlaceId → vuelve a modo "Agregar Local".
+             3. Resetea el form.
+             4. Cambia al panel add-place.
+
+           Antes de este fix, el usuario hacía clic en "Agregar Local" y
+           el form seguía mostrando los datos del local que estaba editando
+           (porque switchPanel NO resetea si editingPlaceId != null). */
+        window.startNewPlace = function() {
+            if (editingPlaceId) {
+                /* Estaba editando — ofrecer guardar como draft antes de salir. */
+                if (_hasUnsavedChanges) {
+                    const ok = confirm(
+                        'Estabas editando un local y tienes cambios sin guardar.\n\n' +
+                        '¿Guardar como borrador antes de crear un local nuevo?\n\n' +
+                        '(Si dices No, los cambios se pierden)'
+                    );
+                    if (ok) {
+                        try { savePlaceDraft(); } catch (e) {}
+                        showToast('Borrador guardado del local anterior');
+                    }
+                }
+                editingPlaceId = null;
+                $('editPlaceId').value = '';
+            }
+            resetPlaceForm();
+            switchPanel('add-place', document.querySelector('[data-panel=add-place]'));
+        };
 
         window.editPlace = async function(id) {
             const place = myPlaces.find(p => p.id === id);
@@ -3139,6 +3196,81 @@
             initImageGrid();
             renderMenuEditor();
             renderLinksEditor();
+
+            /* ★ [v2.0.22] Mostrar el badge "Editando: nombre" y cambiar el
+               sidebar link a "Editar Local" para que el usuario sepa
+               claramente que está EDITANDO, no creando. */
+            updateEditingBadge();
+
+            /* ★ [v2.0.22] ANTES de cambiar al panel add-place, verificar si
+               hay un draft guardado MÁS RECIENTE que los datos del servidor
+               para este local. Si lo hay, preguntar si restaurarlo (esto
+               soluciona el bug de perder cambios al editar: si el usuario
+               editó antes y NO publicó, el draft tiene sus cambios no
+               guardados y ahora se los respetamos en vez de pisarlos con
+               los datos viejos del servidor). */
+            try {
+                const draft = await loadPlaceDraft();
+                if (draft && draft.savedAt) {
+                    const draftTime = new Date(draft.savedAt).getTime();
+                    const placeTime = place.updated_at
+                        ? new Date(place.updated_at).getTime()
+                        : (place.created_at ? new Date(place.created_at).getTime() : 0);
+                    /* Si el draft es más reciente que el último update del
+                       servidor (o el servidor no tiene updated_at), ofrecer
+                       restaurar. Una diferencia de 60s evita falsos positivos
+                       por clock skew entre cliente y servidor. */
+                    if (draftTime > placeTime + 60000) {
+                        const draftLocal = new Date(draft.savedAt).toLocaleString('es-CU', {
+                            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                        });
+                        const ok = confirm(
+                            'Tienes un borrador guardado de este local MÁS RECIENTE que los datos del servidor\n' +
+                            '(guardado el ' + draftLocal + ').\n\n' +
+                            '¿Quieres recuperar tu borrador con los cambios no publicados?\n\n' +
+                            '(Si dices No, se cargan los datos actuales del servidor.)'
+                        );
+                        if (ok) {
+                            /* Restaurar el draft (igual que handleLoadDraft pero
+                               sin preguntar de nuevo). */
+                            fields.forEach(f => {
+                                const el = $('f-' + f);
+                                if (el && draft[f] !== undefined) el.value = draft[f];
+                            });
+                            placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
+                            placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
+                            placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
+                            if (Array.isArray(draft.imageMeta)) {
+                                placeImages = draft.imageMeta
+                                    .filter(m => m && m.kind === 'url')
+                                    .map(m => m.url);
+                                const lostFiles = draft.imageMeta.filter(m => m && m.kind === 'file');
+                                if (lostFiles.length > 0) {
+                                    setTimeout(() => showToast('Se perdieron ' + lostFiles.length + ' imagen(es) no subidas del borrador. Vuelve a subirlas.', true), 1200);
+                                }
+                            }
+                            renderTags();
+                            initImageGrid();
+                            renderMenuEditor();
+                            renderLinksEditor();
+                            _hasUnsavedChanges = false;
+                            updateDraftIndicator('saved');
+                            showToast('Borrador recuperado (más reciente que el servidor)');
+                        } else {
+                            /* El usuario eligió NO restaurar. Como los datos
+                               del servidor ya están cargados, eliminamos el
+                               draft viejo para que no vuelva a molestar. */
+                            try {
+                                await clearPlaceDraft();
+                            } catch (e) {}
+                            _hasUnsavedChanges = false;
+                        }
+                    }
+                }
+            } catch (draftErr) {
+                console.warn('[editPlace] Error verificando draft:', draftErr);
+            }
+
             switchPanel('add-place', document.querySelector('[data-panel=add-place]'));
         };
 
@@ -3250,6 +3382,144 @@
                 btnText.textContent = originalText;
             }
         };
+
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.22] handleLoadDraft — botón "Cargar Borrador"
+           ────────────────────────────────────────────────────────────────
+           Carga explícitamente el último draft guardado para el contexto
+           actual (local nuevo o local en edición). A diferencia del auto-
+           restore de checkDraftOnPanelSwitch, este botón:
+             · NO pregunta confirmación (el usuario ya la dio al clicar).
+             · NO importa cuánto tiempo haya pasado (carga igual aunque
+               el draft tenga 1 semana).
+             · SI hay datos sin guardar en el form actual, SÍ pregunta
+               antes de pisarlos (no queremos perder cambios nuevos).
+             · SI no hay draft, avisa al usuario con un toast claro. */
+        window.handleLoadDraft = async function(e) {
+            if (e) e.preventDefault();
+            const btn = $('placeLoadDraftBtn');
+            if (btn) {
+                btn.disabled = true;
+                const span = btn.querySelector('span');
+                const orig = span ? span.textContent : '';
+                if (span) span.textContent = 'Cargando...';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    if (span) span.textContent = orig;
+                }, 800);
+            }
+
+            /* Si hay cambios sin guardar en el form, preguntar antes de pisar. */
+            if (_hasUnsavedChanges) {
+                const ok = confirm('Tienes cambios sin guardar en el formulario.\n\n¿Quieres reemplazarlos con el borrador guardado?');
+                if (!ok) return;
+            }
+
+            const draft = await loadPlaceDraft();
+            if (!draft || !draft.savedAt) {
+                showToast('No hay borrador guardado para cargar.', true);
+                return;
+            }
+
+            /* Restaurar el draft en el formulario. */
+            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+            fields.forEach(f => {
+                const el = $('f-' + f);
+                if (el && draft[f] !== undefined) el.value = draft[f];
+            });
+            placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
+            placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
+            placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
+            /* Recuperar URLs de imágenes (las File no se pueden recuperar). */
+            if (Array.isArray(draft.imageMeta)) {
+                placeImages = draft.imageMeta
+                    .filter(m => m && m.kind === 'url')
+                    .map(m => m.url);
+                const lostFiles = draft.imageMeta.filter(m => m && m.kind === 'file');
+                if (lostFiles.length > 0) {
+                    setTimeout(() => showToast('Se perdieron ' + lostFiles.length + ' imagen(es) no subidas del borrador. Vuelve a subirlas.', true), 800);
+                }
+            }
+            renderTags();
+            renderMenuEditor();
+            renderLinksEditor();
+            initImageGrid();
+            _hasUnsavedChanges = false;
+            updateDraftIndicator('saved');
+            const t = new Date(draft.savedAt).toLocaleTimeString('es-CU', { hour: '2-digit', minute: '2-digit' });
+            showToast('Borrador cargado (guardado a las ' + t + ')');
+        };
+
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.22] cancelEditing — sale del modo edición sin guardar
+           ────────────────────────────────────────────────────────────────
+           Cuando el usuario está editando un local y quiere salir del
+           modo edición (sin Publicar), este botón:
+             · Limpia editingPlaceId (vuelve a modo "Agregar Local").
+             · Resetea el formulario.
+             · NO borra el draft (por si quiere recuperarlo después). */
+        window.cancelEditing = function() {
+            if (_hasUnsavedChanges) {
+                const ok = confirm('Estás editando un local y tienes cambios sin guardar.\n\n¿Salir del modo edición? (los cambios quedan en el borrador local)');
+                if (!ok) return;
+                /* Asegurar que el draft esté guardado antes de salir. */
+                try { savePlaceDraft(); } catch (e) {}
+            }
+            editingPlaceId = null;
+            $('editPlaceId').value = '';
+            resetPlaceForm();
+            updateEditingBadge();
+            showToast('Saliste del modo edición. Ahora estás creando un local nuevo.');
+        };
+
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.22] updateEditingBadge — muestra/oculta el badge "Editando"
+           ────────────────────────────────────────────────────────────────
+           Cuando se está editando un local existente (editingPlaceId != null),
+           muestra el badge arriba del bloque de botones con el nombre del
+           local. Cuando no, lo oculta.
+
+           También actualiza el texto del sidebar link "Agregar Local"
+           para que cambie a "Editar Local" cuando esté en modo edición.
+           Esto soluciona la confusión del usuario: "me manda a la pestaña
+           agregar local y no a editar local". */
+        function updateEditingBadge() {
+            const badge = $('editingBadge');
+            if (!badge) return;
+            if (editingPlaceId) {
+                const place = myPlaces.find(p => String(p.id) === String(editingPlaceId));
+                const name = place ? (place.name || 'Sin nombre') : 'Local';
+                badge.style.display = 'flex';
+                const nameEl = $('editingBadgeName');
+                if (nameEl) nameEl.textContent = name;
+                /* Cambiar el texto del sidebar link a "Editar Local". */
+                const sidebarLink = document.querySelector('.sidebar-link[data-panel="add-place"] .link-label-text') ||
+                                   document.querySelector('.sidebar-link[data-panel="add-place"]');
+                if (sidebarLink) {
+                    /* El texto del sidebar link es "Agregar Local" — lo
+                       reemplazamos por "Editar Local" mientras editingPlaceId
+                       esté seteado. */
+                    const linkEl = document.querySelector('.sidebar-link[data-panel="add-place"]');
+                    if (linkEl) {
+                        const iconHtml = '<i aria-hidden="true" class="fas fa-pen-to-square"></i> ';
+                        /* Solo reemplazamos si no fue ya reemplazado. */
+                        if (!linkEl.dataset.originalLabel) {
+                            linkEl.dataset.originalLabel = linkEl.innerHTML;
+                        }
+                        linkEl.innerHTML = iconHtml + 'Editar Local';
+                    }
+                }
+            } else {
+                badge.style.display = 'none';
+                /* Restaurar el texto original del sidebar link. */
+                const linkEl = document.querySelector('.sidebar-link[data-panel="add-place"]');
+                if (linkEl && linkEl.dataset.originalLabel) {
+                    linkEl.innerHTML = linkEl.dataset.originalLabel;
+                    delete linkEl.dataset.originalLabel;
+                }
+            }
+        }
+        window.updateEditingBadge = updateEditingBadge;
 
         window.handlePlaceSubmit = async function(e) {
             e.preventDefault();
