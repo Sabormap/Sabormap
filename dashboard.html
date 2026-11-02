@@ -1659,12 +1659,38 @@
            INICIALIZACION — SIN redeclarar
         ======================================== */
         const { createClient } = supabase;
+        // ★ FIX [v2.0.23] fetch con AbortController de 20s para TODAS las
+        //   requests a Supabase. Antes, cuando el gateway se caía o la red
+        //   se degradaba, los fetch quedaban colgados indefinidamente y el
+        //   withTimeout del cliente no los cancelaba de verdad (solo
+        //   ignoraba el resultado). Resultado: INSERTs "fantasmas" que
+        //   completaban minutos después, creando duplicados.
+        //   Ahora: fetch aborta a los 20s y lanza AbortError que el
+        //   catch del save trata como timeout/network error.
+        function _saborMapFetch(url, opts) {
+            opts = opts || {};
+            if (!opts.signal) {
+                const controller = new AbortController();
+                opts._sabormapController = controller;
+                opts.signal = controller.signal;
+                setTimeout(() => controller.abort(), 20000);
+            }
+            return fetch(url, opts).catch(err => {
+                if (err && err.name === 'AbortError') {
+                    throw new Error('Timeout (20s): el servidor no respondió.');
+                }
+                throw err;
+            });
+        }
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
                 detectSessionInUrl: false,
                 flowType: 'pkce'
+            },
+            global: {
+                fetch: _saborMapFetch
             }
         });
 
@@ -1988,6 +2014,10 @@
                     type: type,
                     payload: payload,
                     metadata: metadata || {},
+                    // ★ FIX [v2.0.23] user_id para filtrar ops cross-user.
+                    //   Sin esto, ops del usuario A podían procesarse cuando
+                    //   el usuario B entraba, causando RLS denials silenciosos.
+                    user_id: currentUser ? currentUser.id : null,
                     status: 'pending',
                     created_at: new Date().toISOString(),
                     attempts: 0,
@@ -2019,10 +2049,42 @@
             return new Promise((resolve) => {
                 const tx = db.transaction('ops', 'readonly');
                 const req = tx.objectStore('ops').getAll();
-                req.onsuccess = () => resolve(req.result || []);
+                req.onsuccess = () => {
+                    const all = req.result || [];
+                    // ★ FIX [v2.0.23] Solo devolver ops del usuario actual.
+                    //   Ops de otros usuarios se quedan en la BD pero no se procesan.
+                    const uid = currentUser ? currentUser.id : null;
+                    resolve(all.filter(o => o.user_id === uid || (!o.user_id && !uid)));
+                };
                 req.onerror = () => resolve([]);
             });
         }
+
+        /* ★ FIX [v2.0.23] Limpiar ops huérfanas al hacer logout.
+           Las ops 'pending'/'retry' de un usuario anterior se quedaban
+           en IndexedDB para siempre, consumiendo espacio y confundiendo
+           al siguiente usuario que entrara (veía ops ajenas en el badge). */
+        async function clearOpsForCurrentUser() {
+            const db = await openOpsDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+                const tx = db.transaction('ops', 'readwrite');
+                const store = tx.objectStore('ops');
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const all = req.result || [];
+                    const uid = currentUser ? currentUser.id : null;
+                    all.forEach(op => {
+                        if (op.user_id && op.user_id !== uid) {
+                            store.delete(op.id);
+                        }
+                    });
+                };
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
+        window.clearOpsForCurrentUser = clearOpsForCurrentUser;
 
         async function deleteOp(id) {
             const db = await openOpsDB();
@@ -2266,25 +2328,28 @@
                 let result;
                 switch (type) {
                     case 'place_insert':
-                        result = await sb.from('places').insert(payload);
+                        // ★ FIX [v2.0.23] .select() para detectar RLS silent denial.
+                        //   Sin esto, un INSERT bloqueado por RLS devolvia 0 filas
+                        //   pero se interpretaba como exito.
+                        result = await sb.from('places').insert(payload).select();
                         break;
                     case 'place_update':
-                        result = await sb.from('places').update(payload.data).eq('id', payload.id);
+                        result = await sb.from('places').update(payload.data).eq('id', payload.id).select();
                         break;
                     case 'place_delete':
-                        result = await sb.from('places').delete().eq('id', payload.id);
+                        result = await sb.from('places').delete().eq('id', payload.id).select();
                         break;
                     case 'place_publish':
-                        result = await sb.from('places').update({ status: 'published' }).eq('id', payload.id);
+                        result = await sb.from('places').update({ status: 'published' }).eq('id', payload.id).select();
                         break;
                     case 'place_unpublish':
-                        result = await sb.from('places').update({ status: 'draft' }).eq('id', payload.id);
+                        result = await sb.from('places').update({ status: 'draft' }).eq('id', payload.id).select();
                         break;
                     case 'profile_update':
-                        result = await sb.from('profiles').update(payload.data).eq('id', payload.id);
+                        result = await sb.from('profiles').update(payload.data).eq('id', payload.id).select();
                         break;
                     default:
-                        return { ok: false, fatal: true, error: 'Tipo de operación desconocido: ' + type };
+                        return { ok: false, fatal: true, error: 'Tipo de operacion desconocida: ' + type };
                 }
                 if (result.error) {
                     // Errores de auth → reintentar; errores de validación → fatal
@@ -2293,12 +2358,25 @@
                                    msg.includes('expired') || msg.includes('not authenticated');
                     return { ok: false, fatal: !isAuth, error: msg };
                 }
+                // ★ FIX [v2.0.23] Detectar RLS silent denial: si la op afectó 0 filas
+                //   y era un UPDATE/DELETE/PUBLISH, significa que el usuario no es
+                //   dueño del local (RLS bloqueó silenciosamente). Tratar como fatal
+                //   para no reintentar infinitamente.
+                if (type !== 'place_insert' && type !== 'profile_update') {
+                    const affected = Array.isArray(result.data) ? result.data.length : 0;
+                    if (affected === 0) {
+                        return {
+                            ok: false,
+                            fatal: true,
+                            error: 'RLS: 0 filas afectadas. El local no te pertenece o fue borrado.'
+                        };
+                    }
+                }
                 return { ok: true };
             } catch (err) {
                 // Errores de red → reintentar
                 return { ok: false, fatal: false, error: err.message || String(err) };
-            }
-        }
+            }        }
 
         /* Helper: ejecutar operación con encolado automático si offline */
         async function runOrQueue(type, payload, metadata) {
@@ -2563,7 +2641,11 @@
                 });
                 if (error) throw error;
                 showAuthMsg('loginMessage', 'success', 'Inicio correcto. Redirigiendo...');
-                setTimeout(() => enterDashboard(), 500);
+                // ★ FIX [v2.0.23] NO llamar enterDashboard() aquí.
+                //   onAuthStateChange(SIGNED_IN) ya dispara enterDashboard().
+                //   Tener dos llamadas concurrentes causaba que loadMyPlaces() se
+                //   ejecutara dos veces y pisara el estado del dashboard justo
+                //   cuando el usuario intentaba guardar.
             } catch (err) {
                 showAuthMsg('loginMessage', 'error', err.message || 'Error al iniciar sesión');
             } finally { btn.classList.remove('loading'); }
@@ -2656,6 +2738,8 @@
             try { showView('login'); } catch (e) {}
             currentUser = null; userProfile = null; userSubscription = null;
             myPlaces = []; allPlaces = []; allProfiles = []; allSubs = []; allLogs = [];
+            // ★ FIX [v2.0.23] Limpiar ops huérfanas de sesiones anteriores.
+            try { await clearOpsForCurrentUser(); } catch (e) {}
             const badge = $('pendingOpsBadge');
             if (badge) badge.style.display = 'none';
             const banner = $('pendingBanner');
@@ -3521,11 +3605,25 @@
         }
         window.updateEditingBadge = updateEditingBadge;
 
+        // ★ FIX [v2.0.23] Guard de reentrancia: si el botón ya está
+        //   deshabilitado (save en curso), ignorar submit duplicado. Antes,
+        //   un doble clic rápido disparaba dos handles concurrentes que
+        //   competían por editingPlaceId y placeImages, corrompiendo estado.
+        let _placeSubmitInFlight = false;
+
         window.handlePlaceSubmit = async function(e) {
             e.preventDefault();
+            if (_placeSubmitInFlight) {
+                console.warn('[Save] Submit duplicado ignorado (save en curso).');
+                return;
+            }
+            _placeSubmitInFlight = true;
             const btn = $('placeSubmitBtn');
             const btnText = $('placeSubmitText');
             const originalText = btnText.textContent;
+            // Deshabilitar de inmediato para bloquear clics adicionales
+            // durante la validación y el savePlaceDraft (que son async).
+            btn.disabled = true;
 
             // ── 1. Validación de campos requeridos ───────────────────────
             const name = $('f-name').value.trim();
@@ -3699,20 +3797,32 @@
             // ── 4. INSERT o UPDATE ────────────────────────────────────────
             btnText.textContent = 'Guardando local...';
 
-            // ★ FIX [v2.0.16] PRE-REFRESH del token antes de guardar.
-            //   Síntoma: "tengo que recargar la página para que guarde".
-            //   El JWT casi expirado hace que el gateway de Supabase se
-            //   cuelgue sin responder. Forzar refresh elimina ese cuelgue.
+            // ★ FIX [v2.0.23] NO forzar refreshSession() antes de cada save.
+            //   El fix anterior (v2.0.16) llamaba refreshSession() antes de cada save,
+            //   pero chocaba con autoRefreshToken:true del cliente Supabase. Dos refreshes
+            //   simultáneos dejan el token en estado inválido mientras el save está en
+            //   vuelo → el gateway cuelga y el usuario ve "Guardando local..." eterno.
+            //
+            //   Fix nuevo: solo refrescar si el token expira en <60s. Si no, usar el
+            //   actual y confiar en autoRefreshToken para el resto.
             try {
-                btnText.textContent = 'Verificando sesión...';
-                const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
-                if (refreshErr) {
-                    console.warn('[Save] refreshSession previo falló (no bloqueante):', refreshErr.message);
-                } else if (refreshData?.session) {
-                    console.log('[Save] Token refrescado antes de guardar.');
+                const { data: sessionData } = await sb.auth.getSession();
+                const sess = sessionData?.session;
+                if (sess && sess.expires_at) {
+                    const msToExpiry = (sess.expires_at * 1000) - Date.now();
+                    if (msToExpiry < 60000) {
+                        btnText.textContent = 'Refrescando sesión...';
+                        const { error: refreshErr } = await sb.auth.refreshSession();
+                        if (refreshErr) {
+                            console.warn('[Save] refreshSession falló (token vencía en ' +
+                                Math.round(msToExpiry/1000) + 's):', refreshErr.message);
+                        } else {
+                            console.log('[Save] Token refrescado (vencía en <60s).');
+                        }
+                    }
                 }
             } catch (e) {
-                console.warn('[Save] Excepción en refreshSession previo (no bloqueante):', e);
+                console.warn('[Save] Excepción verificando sesión (no bloqueante):', e);
             }
             btnText.textContent = 'Guardando local...';
 
@@ -3788,11 +3898,24 @@
                 editingPlaceId = null;
                 resetPlaceForm();
                 _hasUnsavedChanges = false;
-                try {
-                    await withTimeout(loadMyPlaces(), 15000, 'reload');
-                } catch (reloadErr) {
-                    console.warn('Recarga post-save falló (no crítico):', reloadErr);
-                }
+                // ★ FIX [v2.0.23] NO bloquear el botón esperando loadMyPlaces().
+                //   El save ya confirmó éxito. La recarga se hace en background
+                //   y renderOverview() se llama cuando termine (sin timeout).
+                //   El botón se libera de inmediato (finally más abajo).
+                loadMyPlaces().then(() => {
+                    renderOverview();
+                    if (isAdmin() && typeof loadAdminData === 'function') {
+                        loadAdminData().then(() => {
+                            if ($('panel-admin-places').classList.contains('active')) {
+                                renderAdminPlaces();
+                            }
+                        });
+                    }
+                }).catch(err => {
+                    console.warn('[Save] Recarga post-save falló (no crítico):', err);
+                });
+                // Render inmediato con datos optimistas (el nuevo local ya está
+                // en myPlaces si vino de saveResult, o se agregará al terminar la recarga)
                 renderOverview();
                 switchPanel('my-places', document.querySelector('[data-panel=my-places]'));
             } catch (err) {
@@ -3876,6 +3999,7 @@
             } finally {
                 btn.disabled = false;
                 btnText.textContent = originalText;
+                _placeSubmitInFlight = false;
             }
         };
 
@@ -4667,14 +4791,29 @@
             initTags();
             initImageGrid();
 
-            // ★ FIX [v2.0.18]: reintentar la cola cada 30s si hay ops pendientes.
+            // ★ FIX [v2.0.23] Reintentar cola con exponential backoff.
+            //   Antes, el interval de 30s reintenta ops en 'retry' para siempre,
+            //   sin importar cuántas veces fallaron. Si el servidor está caído,
+            //   genera tráfico inútil y consume batería (crítico en móviles).
+            //   Ahora: cada op tiene su propio backoff basado en `attempts`.
+            //   Intervalo por op = 30s × 2^min(attempts, 5) → 30s, 60s, 2m, 4m, 8m, 16m.
             setInterval(() => {
                 if (!navigator.onLine) return;
                 if (typeof processQueueNow !== 'function') return;
                 getPendingOps().then(ops => {
-                    const pending = ops.filter(o => o.status === 'pending' || o.status === 'retry');
+                    const now = Date.now();
+                    const pending = ops.filter(o => {
+                        if (o.status !== 'pending' && o.status !== 'retry') return false;
+                        // Las 'pending' (nunca procesadas) se ejecutan de inmediato.
+                        if (o.status === 'pending') return true;
+                        // Las 'retry' respetan el backoff.
+                        const attempts = o.attempts || 0;
+                        const backoffMs = 30000 * Math.pow(2, Math.min(attempts, 5));
+                        const lastAttempt = o.last_attempt_at ? new Date(o.last_attempt_at).getTime() : 0;
+                        return (now - lastAttempt) >= backoffMs;
+                    });
                     if (pending.length > 0) {
-                        console.log('[Queue] Reintentando', pending.length, 'ops pendientes (interval 30s)');
+                        console.log('[Queue] Reintentando', pending.length, 'ops (backoff aplicado)');
                         processQueueNow();
                     }
                 });
