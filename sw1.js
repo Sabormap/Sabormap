@@ -1,6 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.23 — bump de versión para forzar la descarga del dashboard.html
+   [v2.0.27 — FIX CRÍTICO: scrollToMenuCat y 5 funciones más del editor de carta
+    no estaban expuestas a window (scope del IIFE). El onclick del HTML no las
+    encontraba y daba ReferenceError al hacer clic en los chips de categoría.
+    Ahora todas tienen window.nombreFuncion = nombreFuncion. Hereda v2.0.26.
+    colores por categoría en la barra de navegación (feature v2.0.26).
+    Cada chip toma un color distinto (paleta de 5: violeta, cian, rosa, ámbar, verde)
+    sincronizada con la paleta de la home pública. Hereda v2.0.25 (nav pegajosa),
+    v2.0.24 (botón Agotado) y v2.0.23 (8 fixes críticos).
     parcheado con los 8 fixes críticos de la v2.0.23:
       · #1 refreshSession condicional (<60s) en vez de forzado
       · #2 Eliminado doble enterDashboard() tras login
@@ -24,7 +31,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.23';
+const VERSION = 'v2.0.27';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
