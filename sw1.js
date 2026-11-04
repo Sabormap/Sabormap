@@ -1,23 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.27 — FIX CRÍTICO: scrollToMenuCat y 5 funciones más del editor de carta
-    no estaban expuestas a window (scope del IIFE). El onclick del HTML no las
-    encontraba y daba ReferenceError al hacer clic en los chips de categoría.
-    Ahora todas tienen window.nombreFuncion = nombreFuncion. Hereda v2.0.26.
-    colores por categoría en la barra de navegación (feature v2.0.26).
-    Cada chip toma un color distinto (paleta de 5: violeta, cian, rosa, ámbar, verde)
-    sincronizada con la paleta de la home pública. Hereda v2.0.25 (nav pegajosa),
-    v2.0.24 (botón Agotado) y v2.0.23 (8 fixes críticos).
-    parcheado con los 8 fixes críticos de la v2.0.23:
-      · #1 refreshSession condicional (<60s) en vez de forzado
-      · #2 Eliminado doble enterDashboard() tras login
-      · #3 fetch con AbortController 20s en cliente Supabase
-      · #4 Recarga post-save en background (no bloquea botón)
-      · #5 Guard de reentrancia en handlePlaceSubmit
-      · #6 executeOp con .select() y detección de RLS silent denial
-      · #7 Exponential backoff en retry de cola (30s × 2^attempts)
-      · #8 Ops encoladas con user_id, filtradas en processQueueNow
-    Hereda todos los fixes v2.0.6 → v2.0.22.]
+   [v2.0.30 — Botones flotantes de scroll SIMPLES en el editor de carta.
+    Dos botones siempre visibles (dentro del panel add-place):
+      · ↓ (violeta): baja al FINAL ABSOLUTO del <form> (block:'end').
+      · ↑ (cian):    sube al PRINCIPIO ABSOLUTO del <form> (block:'start').
+    SIN detección de posición, SIN listener de scroll, SIN toggle.
+    Se muestran al entrar a add-place, se ocultan al salir (hideScrollButtons).
+    Reemplaza la v2.0.29 (toggle de un solo botón con detección de posición,
+    considerada innecesariamente compleja). Hereda v2.0.27 (fix de window exports),
+    v2.0.26 (colores), v2.0.25 (nav pegajosa), v2.0.24 (botón Agotado),
+    v2.0.23 (8 fixes críticos).
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs críticos.
@@ -31,7 +23,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.27';
+const VERSION = 'v2.0.30';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
