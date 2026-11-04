@@ -374,6 +374,51 @@
         .menu-cat-nav-empty {
             display: none;
         }
+
+        /* ★ v2.0.30: Botones flotantes simples para subir y bajar.
+           Sin detección de posición, sin lógica compleja.
+           Dos botones fijos: uno baja al final, otro sube al principio. */
+        .scroll-btn {
+            position: fixed;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: #fff;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 35;
+            box-shadow: 0 8px 28px var(--accent-glow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .scroll-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 38px var(--accent-glow);
+        }
+        .scroll-btn:active {
+            transform: translateY(0) scale(1);
+        }
+        .scroll-btn.visible {
+            display: flex;
+        }
+        /* Botón de bajar: esquina inferior derecha */
+        .scroll-btn-down {
+            bottom: 24px;
+        }
+        /* Botón de subir: arriba del de bajar */
+        .scroll-btn-up {
+            bottom: 82px;
+            background: linear-gradient(135deg, var(--secondary), #0891b2);
+            box-shadow: 0 8px 28px var(--secondary-glow);
+        }
+        .scroll-btn-up:hover {
+            box-shadow: 0 12px 38px var(--secondary-glow);
+        }
         .menu-cat-chip {
             flex-shrink: 0;
             display: inline-flex;
@@ -3138,6 +3183,11 @@
                     return switchPanel('overview', document.querySelector('[data-panel=overview]'));
                 }
             }
+            /* ★ v2.0.28: Ocultar el botón flotante si salimos del add-place. */
+            if (panelId !== 'add-place') {
+                if (_scrollDownBtn) _scrollDownBtn.classList.remove('visible');
+                if (_scrollUpBtn) _scrollUpBtn.classList.remove('visible');
+            }
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             const panel = $('panel-' + panelId);
@@ -3159,6 +3209,13 @@
             if (panelId === 'my-places') renderMyPlaces();
             if (panelId === 'overview') renderOverview();
             if (panelId === 'add-place' && !editingPlaceId) resetPlaceForm();
+            if (panelId === 'add-place') {
+                /* ★ v2.0.30: Inicializar los botones flotantes de scroll (↓ final, ↑ inicio). */
+                setTimeout(setupScrollButtons, 100);
+            } else {
+                /* Si NO estamos en add-place, ocultar los botones flotantes. */
+                if (typeof hideScrollButtons === 'function') hideScrollButtons();
+            }
             if (panelId === 'admin-places') renderAdminPlaces();
             if (panelId === 'admin-subs') renderAdminSubs();
             if (panelId === 'admin-users') renderAdminUsers();
@@ -3427,6 +3484,66 @@
             /* Conectar observer después de que el DOM pinte las categorías. */
             setTimeout(setupMenuCatNavObserver, 0);
         }
+
+        /* ★ v2.0.30: Botones simples para subir y bajar el formulario.
+           SIN detección de posición. Dos botones fijos, ambos visibles a la vez:
+           - scroll-btn-down (↓): baja al FINAL ABSOLUTO del form (botón Publicar)
+           - scroll-btn-up    (↑): sube al PRINCIPIO ABSOLUTO del form (título)
+           Se muestran solo cuando el panel 'add-place' está activo.
+           No hay listener de scroll, no hay lógica de toggle, no hay umbrales. */
+        let _scrollDownBtn = null;
+        let _scrollUpBtn = null;
+
+        function setupScrollButtons() {
+            /* Crear botón de bajar si no existe. */
+            if (!_scrollDownBtn) {
+                _scrollDownBtn = document.createElement('button');
+                _scrollDownBtn.type = 'button';
+                _scrollDownBtn.className = 'scroll-btn scroll-btn-down visible';
+                _scrollDownBtn.innerHTML = '<i aria-hidden="true" class="fas fa-chevron-down"></i>';
+                _scrollDownBtn.title = 'Bajar al final del formulario';
+                _scrollDownBtn.setAttribute('aria-label', 'Bajar al final del formulario');
+                _scrollDownBtn.addEventListener('click', function() {
+                    /* Final ABSOLUTO del formulario: el propio <form> con block:'end'. */
+                    var form = document.getElementById('placeForm');
+                    if (form) {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    } else {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    }
+                });
+                document.body.appendChild(_scrollDownBtn);
+            }
+            /* Crear botón de subir si no existe. */
+            if (!_scrollUpBtn) {
+                _scrollUpBtn = document.createElement('button');
+                _scrollUpBtn.type = 'button';
+                _scrollUpBtn.className = 'scroll-btn scroll-btn-up visible';
+                _scrollUpBtn.innerHTML = '<i aria-hidden="true" class="fas fa-chevron-up"></i>';
+                _scrollUpBtn.title = 'Subir al principio del formulario';
+                _scrollUpBtn.setAttribute('aria-label', 'Subir al principio del formulario');
+                _scrollUpBtn.addEventListener('click', function() {
+                    /* Principio ABSOLUTO del formulario: el propio <form> con block:'start'. */
+                    var form = document.getElementById('placeForm');
+                    if (form) {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+                document.body.appendChild(_scrollUpBtn);
+            }
+            /* Ya están visibles por la clase 'visible' en el className de creación.
+               No se necesita listener de scroll: se muestran siempre que existan
+               y se ocultan en switchPanel() al salir de 'add-place'. */
+        }
+        /* Ocultar/mostrar los botones según el panel. Se llama desde switchPanel. */
+        function hideScrollButtons() {
+            if (_scrollDownBtn) _scrollDownBtn.classList.remove('visible');
+            if (_scrollUpBtn)   _scrollUpBtn.classList.remove('visible');
+        }
+        window.setupScrollButtons = setupScrollButtons;
+        window.hideScrollButtons = hideScrollButtons;
         window.renderMenuCatNav = renderMenuCatNav;
 
         function scrollToMenuCat(ci) {
