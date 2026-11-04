@@ -1,12 +1,17 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.6 — FIX DEFINITIVO del bug "256 vs 257 lugares":
-    places.js y app.js REMOVIDOS del PRECACHE. Antes, el precache guardaba
-    una versión vieja (con 256 lugares) y cuando la red fallaba o era
-    lenta (común en Cuba), networkFirst caía al caché y servía la versión
-    vieja. Ahora el único caché de places.js es RUNTIME_CACHE, que siempre
-    tiene la última versión fetched exitosamente.
-    Base v2.0.5: network-first para dashboard.html + todos los HTML]
+   [v2.0.13 — FIX del bug "Agotado no se actualiza en la home":
+    El código de app.js que renderiza el badge "Agotado" en la carta
+    pública ya estaba correcto desde v2.0.24, pero el navegador seguía
+    sirviendo la versión VIEJA de app.js desde el caché del SW anterior.
+    Este bump de VERSION fuerza la re-instalación del SW, lo que limpia
+    todos los caches viejos (RUNTIME_CACHE y STATIC_CACHE) y obliga al
+    navegador a descargar el app.js nuevo con el rendering del sold_out.
+    IMPORTANTE: también bumpear el cache-buster en index.html
+    (app.js?v=20251102 → app.js?v=20251103) para que el navegador
+    trate la URL como nueva y no use el caché HTTP.
+    Hereda v2.0.12 (fix animación contador 256 vs 257), v2.0.6 (places.js
+    y app.js fuera del PRECACHE), v2.0.5 (network-first para HTML).]
 
    Estrategia:
    · Precache tolerante del shell local (allSettled) + CDNs + woff2.
@@ -20,7 +25,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.12'; // ↑ súbelo en cada despliegue — v2.0.12: fix bug 256 vs 257 en app.js (animación del contador)
+const VERSION = 'v2.0.13'; // ↑ súbelo en cada despliegue — v2.0.13: fix bug "Agotado no se actualiza en la home" (cache SW viejo)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
@@ -96,6 +101,10 @@ self.addEventListener('activate', (event) => {
             keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))
         );
         await self.clients.claim();
+        // ★ v2.0.13: avisar a los clientes que hay nueva versión para que
+        // recarguen y obtengan el app.js con el fix del sold_out.
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        clients.forEach(c => c.postMessage({ type: 'sw-updated', version: VERSION }));
     })());
 });
 
