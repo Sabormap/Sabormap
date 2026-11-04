@@ -1145,9 +1145,13 @@
          nuevos cada vez que cambiás la versión. Combinado con el SW
          network-first + no-store, garantiza que siempre se vea la última
          versión. CAMBIA este número cada vez que edites places.js o app.js. -->
-    <script src="places.js?v=257"></script>
+    <script src="places.js?v=258"></script>
 
-    <script src="app.js?v=20251102"></script>
+    <!-- ★ v2.0.13: cache-buster bumpeado para forzar descarga del app.js
+         con el fix del rendering del badge "Agotado" en la carta pública.
+         Sin este bump, el navegador seguía sirviendo app.js?v=20251102
+         desde su caché HTTP aunque el archivo en el servidor fuera el nuevo. -->
+    <script src="app.js?v=20251103"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
