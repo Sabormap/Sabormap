@@ -465,6 +465,21 @@ function mapDbPlaceToPublic(p) {
             menu = [];
         }
     }
+    /* ★ FIX [sold_out-sync v2.0.14] Normalizar sold_out a booleano estricto en
+       cada item del menu. openMenuSubModal compara con `=== true`, asi que
+       si por algun path de serializacion (cache viejo, RLS, migracion manual)
+       llega como string "true", el badge no se renderiza. Es defensivo:
+       en condiciones normales Supabase preserva el tipo JSON, pero cuesta 4
+       lineas y elimina toda una clase de bugs silentes. */
+    if (Array.isArray(menu)) {
+        menu = menu.map(sec => ({
+            ...sec,
+            items: (sec.items || []).map(it => ({
+                ...it,
+                sold_out: it.sold_out === true || it.sold_out === 'true'
+            }))
+        }));
+    }
     let links = p.links;
     if (typeof links === 'string') {
         try {
@@ -1503,6 +1518,50 @@ function getSectionColorVars(sectionIndex) {
 function openMenuSubModal() {
     const p = currentModalPlace;
     if (!p || !p.menu) return;
+    /* ★ v2.0.24: Inyectar estilos para platos "Agotados" una sola vez.
+       Se inyectan en <head> para que persistan entre aperturas del modal. */
+    if (!document.getElementById('sabormap-menu-soldout-styles')) {
+        const style = document.createElement('style');
+        style.id = 'sabormap-menu-soldout-styles';
+        style.textContent = `
+            .menu-dish.menu-dish-sold-out {
+                opacity: 0.55;
+                position: relative;
+            }
+            .menu-dish.menu-dish-sold-out .menu-dish-name {
+                text-decoration: line-through;
+                text-decoration-color: rgba(239,68,68,0.6);
+                text-decoration-thickness: 2px;
+                opacity: 0.75;
+            }
+            .menu-dish.menu-dish-sold-out .menu-dish-price {
+                text-decoration: line-through;
+                text-decoration-color: rgba(239,68,68,0.6);
+                opacity: 0.65;
+            }
+            .menu-dish.menu-dish-sold-out .menu-dish-desc {
+                opacity: 0.55;
+            }
+            .menu-soldout-badge {
+                display: inline-block;
+                margin-left: 10px;
+                padding: 2px 9px;
+                background: rgba(239,68,68,0.15);
+                color: #ef4444;
+                border: 1px solid rgba(239,68,68,0.35);
+                border-radius: 5px;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                text-decoration: none !important;
+                vertical-align: middle;
+                line-height: 1.5;
+                white-space: nowrap;
+            }
+        `;
+        document.head.appendChild(style);
+    }
     document.getElementById('menuSubTitle').textContent = `Carta — ${p.name}`;
     // ★ FIX [v2.0.6]: removido el aviso "Carta de ejemplo — la carta real
     //   estará disponible próximamente" porque ya no aplica:
@@ -1544,9 +1603,14 @@ function openMenuSubModal() {
                     style="--section-color: ${secColor.color}; --section-glow: ${secColor.glow};">
             <h3 class="menu-section-title">${section.category}</h3>`;
         section.items.forEach(item => {
-            html += `<div class="menu-dish">
+            /* ★ v2.0.24: Si el plato está marcado como agotado en el
+               dashboard, se muestra tachado con badge "Agotado". */
+            const soldOut = item.sold_out === true;
+            const dishClass = soldOut ? 'menu-dish menu-dish-sold-out' : 'menu-dish';
+            const soldOutBadge = soldOut ? '<span class="menu-soldout-badge">Agotado</span>' : '';
+            html += `<div class="${dishClass}">
                 <div class="menu-dish-info">
-                    <div class="menu-dish-name">${item.name}</div>
+                    <div class="menu-dish-name">${item.name}${soldOutBadge}</div>
                     <div class="menu-dish-desc">${item.desc}</div>
                 </div>
                 <div class="menu-dish-price">${item.price}</div>
