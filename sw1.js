@@ -1,6 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.30 — Botones flotantes de scroll SIMPLES en el editor de carta.
+   [v2.0.32 — FIX: botones flotantes de scroll (subir/bajar) ya no aparecen
+    en la pantalla de login. setupScrollButtons los crea ocultos; switchPanel
+    los hace visibles solo en add-place; handleLogout y showSessionExpiredModal
+    los ocultan. Hereda v2.0.31 (fix sold_out-sync en cola offline).
+   [v2.0.31_OLD — FIX del bug "Agotado no se refleja en la home offline/encolado":
+    synchronize el cache publico (upsertPublicPlaceInCache) en processQueueNow
+    y en el handler execute-op tras una op exitosa. executeOp ahora devuelve
+    result.data para que los callers puedan reconstruir el place.
+    Hereda v2.0.30 (Botones flotantes de scroll SIMPLES en el editor de carta.
     Dos botones siempre visibles (dentro del panel add-place):
       · ↓ (violeta): baja al FINAL ABSOLUTO del <form> (block:'end').
       · ↑ (cian):    sube al PRINCIPIO ABSOLUTO del <form> (block:'start').
@@ -23,7 +31,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.30';
+const VERSION = 'v2.0.32';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
