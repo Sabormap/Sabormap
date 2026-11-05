@@ -319,6 +319,25 @@
         .delivery-rappi:hover { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.45); box-shadow: 0 4px 16px rgba(139,92,246,0.2); }
         .delivery-reserva { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.25); color: #22d3ee; }
         .delivery-reserva:hover { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.45); box-shadow: 0 4px 16px rgba(6,182,212,0.2); }
+        /* ★ v2.0.15: estilos del boton de WhatsApp. Antes no existian y el
+           boton heredaba estilos por defecto, sin color verde. Verde oficial
+           de WhatsApp: #25D366 (mas oscuro en hover: #1da851). */
+        .delivery-whatsapp { background: rgba(37,211,102,0.10); border-color: rgba(37,211,102,0.30); color: #25D366; }
+        .delivery-whatsapp:hover { background: rgba(37,211,102,0.18); border-color: rgba(37,211,102,0.55); color: #1da851; box-shadow: 0 4px 16px rgba(37,211,102,0.30); }
+        [data-theme="light"] .delivery-whatsapp { color: #16a34a; }
+        [data-theme="light"] .delivery-whatsapp:hover { color: #15803d; }
+        /* ★ v2.0.15 FIX icono roto: forzar la font Brands para los iconos
+           de marca (WhatsApp, Facebook, Instagram, etc.) aunque el HTML
+           use `fas` en vez de `fab`. Esto es un safety net; el fix principal
+           esta en app.js (iconPrefix() devuelve 'fab' para brand icons). */
+        .fa-whatsapp, .fa-facebook, .fa-facebook-f, .fa-facebook-messenger,
+        .fa-instagram, .fa-twitter, .fa-x-twitter, .fa-youtube,
+        .fa-tiktok, .fa-snapchat, .fa-telegram, .fa-linkedin,
+        .fa-pinterest, .fa-github, .fa-google, .fa-apple,
+        .fa-android, .fa-windows, .fa-amazon, .fa-spotify {
+            font-family: "Font Awesome 6 Brands" !important;
+            font-weight: 400 !important;
+        }
         /* [B-01] Botones de delivery/reserva desactivados durante la beta:
            se ven, pero apagados, sin hover y no son enlaces (ver DELIVERY_BETA_OFF en app.js) */
         .delivery-link.delivery-off,
@@ -1147,7 +1166,10 @@
          versión. CAMBIA este número cada vez que edites places.js o app.js. -->
     <script src="places.js?v=258"></script>
 
-    <!-- ★ v2.0.14: cache-buster bumpeado para forzar descarga del app.js
+    <!-- ★ v2.0.15: cache-buster bumpeado para forzar descarga del app.js
+         con el fix del icono de WhatsApp roto (fas -> fab para brand icons)
+         y el helper iconPrefix(). Hereda v2.0.14 (normalizacion sold_out). -->
+    <!-- ★ v2.0.14_OLD: cache-buster bumpeado para forzar descarga del app.js
          con el fix defensivo de normalizacion de sold_out en mapDbPlaceToPublic
          (tolera string "true" por si algun path de serializacion lo colara).
          Hereda v2.0.13 (fix rendering del badge "Agotado"). -->
@@ -1155,7 +1177,7 @@
          con el fix del rendering del badge "Agotado" en la carta pública.
          Sin este bump, el navegador seguía sirviendo app.js?v=20251102
          desde su caché HTTP aunque el archivo en el servidor fuera el nuevo. -->
-    <script src="app.js?v=20251104"></script>
+    <script src="app.js?v=20251105"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
