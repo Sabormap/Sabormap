@@ -1,6 +1,17 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw1.js — Service Worker del Dashboard SaborMap
-   [v2.0.32 — FIX: botones flotantes de scroll (subir/bajar) ya no aparecen
+   [v2.0.33 — FIX: botones flotantes de scroll (subir/bajar):
+    (1) tras logout+login los botones ya no reaparecian en add-place
+        porque las variables _scrollDownBtn/_scrollUpBtn se quedaban
+        apuntando a elementos huerfanos. Ahora handleLogout y
+        showSessionExpiredModal llaman a destroyScrollButtons() que
+        los remueve del DOM y nullifica las variables; setupScrollButtons
+        ademas verifica document.body.contains() para recrear si faltan.
+    (2) CSS responsive para mobile: <=768px botones 44x44 con right:16px,
+        <=480px botones 40x40. Antes eran 48x48 con right:24px y se veian
+        demasiado grandes y pegados al borde en celulares.
+    Hereda v2.0.32 (botones ocultos en pantalla de login).
+   [v2.0.32_OLD — FIX: botones flotantes de scroll (subir/bajar) ya no aparecen
     en la pantalla de login. setupScrollButtons los crea ocultos; switchPanel
     los hace visibles solo en add-place; handleLogout y showSessionExpiredModal
     los ocultan. Hereda v2.0.31 (fix sold_out-sync en cola offline).
@@ -31,7 +42,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.32';
+const VERSION = 'v2.0.33';
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
