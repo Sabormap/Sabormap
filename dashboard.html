@@ -2024,6 +2024,11 @@
         window.handleAuthError = handleAuthError;
 
         function showSessionExpiredModal() {
+            // ★ FIX [v2.0.32] Ocultar botones flotantes de scroll: aunque el
+            //   modal de sesion expirada tiene z-index 100 (mayor que los
+            //   botones z-index 35), los ocultamos por higiene y para evitar
+            //   que reciban foco fuera del modal.
+            if (typeof hideScrollButtons === 'function') hideScrollButtons();
             const msg = $('sessionExpiredMsg');
             if (msg) {
                 openModal('sessionExpiredModal');
@@ -2529,6 +2534,26 @@
                     const result = await executeOp(op);
                     if (result.ok) {
                         await deleteOp(op.id);
+
+                        // ★ FIX [sold_out-sync v2.0.31] Sincronizar el cache
+                        //   publico compartido con la home
+                        //   (localStorage['sabormap_published_places_cache']) tras
+                        //   procesar una op exitosa desde la cola offline. Sin este
+                        //   bloque, el badge "Agotado" (y cualquier otro cambio)
+                        //   se queda en Supabase pero la home nunca lo ve hasta su
+                        //   proximo loadPlacesFromSupabase() exitoso.
+                        //   Requiere que executeOp devuelva result.data (ver fix #1).
+                        try {
+                            if (op.type === 'place_delete' || op.type === 'place_unpublish') {
+                                removePublicPlaceFromCache(op.payload.id);
+                            } else if (
+                                (op.type === 'place_insert' || op.type === 'place_update' || op.type === 'place_publish') &&
+                                result.data && Array.isArray(result.data) && result.data[0]
+                            ) {
+                                upsertPublicPlaceInCache(result.data[0]);
+                            }
+                        } catch (e) { /* no critico */ }
+
                         // [v2.0.19] Limpiar el draft de localStorage asociado a
                         // esta op (si tenía metadata.draftLSKey).
                         try {
@@ -2617,7 +2642,15 @@
                         };
                     }
                 }
-                return { ok: true };
+                // ★ FIX [sold_out-sync v2.0.31] Devolver tambien result.data para que
+                //   los callers (processQueueNow y el handler execute-op del SW) puedan
+                //   llamar upsertPublicPlaceInCache(result.data[0]) y sincronizar el
+                //   cache publico compartido con la home (localStorage
+                //   'sabormap_published_places_cache'). Sin esto, el camino
+                //   offline/encolado NUNCA actualiza el localStorage compartido y el
+                //   badge "Agotado" (y cualquier otro cambio) no se refleja en la home
+                //   hasta el proximo loadPlacesFromSupabase() exitoso.
+                return { ok: true, data: result.data };
             } catch (err) {
                 // Errores de red → reintentar
                 return { ok: false, fatal: false, error: err.message || String(err) };
@@ -2976,6 +3009,9 @@
         ======================================== */
         window.handleLogout = async function() {
             // ★ FIX [v2.0.9] — Logout optimista e instantáneo.
+            // ★ FIX [v2.0.32] Ocultar botones flotantes de scroll del add-place
+            //   para que no se queden flotando sobre la pantalla de login.
+            if (typeof hideScrollButtons === 'function') hideScrollButtons();
             const dashWrap = $('dashboardWrap');
             const authScreen = $('authScreen');
             if (dashWrap) dashWrap.classList.remove('visible');
@@ -3211,7 +3247,13 @@
             if (panelId === 'add-place' && !editingPlaceId) resetPlaceForm();
             if (panelId === 'add-place') {
                 /* ★ v2.0.30: Inicializar los botones flotantes de scroll (↓ final, ↑ inicio). */
-                setTimeout(setupScrollButtons, 100);
+                /* ★ v2.0.32 FIX: forzar 'visible' tras crearlos, porque setupScrollButtons
+                   ahora los crea ocultos para evitar que se queden en la pantalla de login. */
+                setTimeout(function() {
+                    if (typeof setupScrollButtons === 'function') setupScrollButtons();
+                    if (_scrollDownBtn) _scrollDownBtn.classList.add('visible');
+                    if (_scrollUpBtn)   _scrollUpBtn.classList.add('visible');
+                }, 100);
             } else {
                 /* Si NO estamos en add-place, ocultar los botones flotantes. */
                 if (typeof hideScrollButtons === 'function') hideScrollButtons();
@@ -3499,7 +3541,7 @@
             if (!_scrollDownBtn) {
                 _scrollDownBtn = document.createElement('button');
                 _scrollDownBtn.type = 'button';
-                _scrollDownBtn.className = 'scroll-btn scroll-btn-down visible';
+                _scrollDownBtn.className = 'scroll-btn scroll-btn-down'; /* v2.0.32: sin 'visible', se añade solo en add-place */
                 _scrollDownBtn.innerHTML = '<i aria-hidden="true" class="fas fa-chevron-down"></i>';
                 _scrollDownBtn.title = 'Bajar al final del formulario';
                 _scrollDownBtn.setAttribute('aria-label', 'Bajar al final del formulario');
@@ -3518,7 +3560,7 @@
             if (!_scrollUpBtn) {
                 _scrollUpBtn = document.createElement('button');
                 _scrollUpBtn.type = 'button';
-                _scrollUpBtn.className = 'scroll-btn scroll-btn-up visible';
+                _scrollUpBtn.className = 'scroll-btn scroll-btn-up'; /* v2.0.32: sin 'visible', se añade solo en add-place */
                 _scrollUpBtn.innerHTML = '<i aria-hidden="true" class="fas fa-chevron-up"></i>';
                 _scrollUpBtn.title = 'Subir al principio del formulario';
                 _scrollUpBtn.setAttribute('aria-label', 'Subir al principio del formulario');
@@ -3533,9 +3575,14 @@
                 });
                 document.body.appendChild(_scrollUpBtn);
             }
-            /* Ya están visibles por la clase 'visible' en el className de creación.
-               No se necesita listener de scroll: se muestran siempre que existan
-               y se ocultan en switchPanel() al salir de 'add-place'. */
+            /* ★ v2.0.32 FIX: los botones se crean SIN la clase 'visible'.
+               Se añaden 'visible' explicitamente desde switchPanel() solo
+               cuando panelId === 'add-place'. Asi, si el usuario hace logout
+               o la sesion expira mientras esta en add-place, los botones no
+               se quedan flotando sobre la pantalla de login.
+               No se necesita listener de scroll: se muestran solo en add-place
+               y se ocultan en switchPanel() al salir, en handleLogout() y en
+               showSessionExpiredModal(). */
         }
         /* Ocultar/mostrar los botones según el panel. Se llama desde switchPanel. */
         function hideScrollButtons() {
@@ -5559,6 +5606,25 @@
                         // limpiar el draft asociado a esta operación (si tenía).
                         if (result.ok) {
                             showToast('Operación sincronizada: ' + (data.op.metadata && data.op.metadata.placeName || data.op.type));
+
+                            // ★ FIX [sold_out-sync v2.0.31] Igual que en
+                            //   processQueueNow (fix #2), hay que reflejar el cambio
+                            //   en el cache publico compartido con la home.
+                            //   Background Sync pasa por aqui, no por processQueueNow,
+                            //   asi que sin este bloque el path SW-sync quedaria sin
+                            //   sincronizar (mismo bug que el que se arregla en
+                            //   processQueueNow).
+                            try {
+                                if (data.op.type === 'place_delete' || data.op.type === 'place_unpublish') {
+                                    removePublicPlaceFromCache(data.op.payload.id);
+                                } else if (
+                                    (data.op.type === 'place_insert' || data.op.type === 'place_update' || data.op.type === 'place_publish') &&
+                                    result.data && Array.isArray(result.data) && result.data[0]
+                                ) {
+                                    upsertPublicPlaceInCache(result.data[0]);
+                                }
+                            } catch (e) { /* no critico */ }
+
                             // [v2.0.19] Limpiar el draft de localStorage asociado
                             // a esta op (si existe). Solo operaciones place_insert /
                             // place_update tienen draftId en metadata.
