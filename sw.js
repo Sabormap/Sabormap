@@ -1,6 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.14 — FIX del bug "Agotado no se refleja en la home offline/encolado":
+   [v2.0.15 — FIX del icono de WhatsApp roto en la home + boton verde:
+    app.js usaba `<i class="fas fa-whatsapp">` pero fa-whatsapp es un
+    BRAND icon de FA6 que requiere `fab`. Ahora iconPrefix() devuelve
+    'fab' para brand icons. Ademas, CSS de index.html anade .delivery-whatsapp
+    con color verde oficial (#25D366) y un safety net que fuerza la font
+    Brands para los brand icons aunque el HTML use `fas`.
+    Hereda v2.0.14 (sincronizar cache público tras op exitosa en cola).
+   [v2.0.14_OLD — FIX del bug "Agotado no se refleja en la home offline/encolado":
     El dashboard ya sincronizaba el cache publico en el camino online, pero
     processQueueNow y el handler execute-op (Background Sync) NO llamaban
     upsertPublicPlaceInCache tras procesar una op exitosa. Ahora si.
@@ -32,7 +39,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.14'; // ↑ súbelo en cada despliegue — v2.0.14: fix bug "Agotado no se refleja en la home offline/encolado" (sincronizar cache público tras op exitosa en cola)
+const VERSION = 'v2.0.15'; // ↑ súbelo en cada despliegue — v2.0.15: fix icono WhatsApp roto + CSS .delivery-whatsapp verde
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
