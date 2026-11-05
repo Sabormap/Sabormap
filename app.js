@@ -1205,6 +1205,29 @@ document.addEventListener('keydown', (e) => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 });
 
+/* ★ FIX [v2.0.15] Helper para elegir el prefijo correcto de Font Awesome
+   segun si el icono es brand (fab) o solid (fas).
+   `fa-whatsapp`, `fa-facebook`, `fa-instagram`, etc. son BRAND icons
+   que en FA6 requieren el prefijo `fab` (Font Awesome Brands).
+   Si se usa `fas fa-whatsapp`, el navegador busca el glyph en la font
+   Solid y no lo encuentra -> icono roto (cuadrado vacio). */
+const BRAND_ICONS = new Set([
+    'fa-whatsapp', 'fa-facebook', 'fa-facebook-f', 'fa-facebook-messenger',
+    'fa-instagram', 'fa-twitter', 'fa-x-twitter', 'fa-youtube',
+    'fa-tiktok', 'fa-snapchat', 'fa-telegram', 'fa-linkedin',
+    'fa-pinterest', 'fa-github', 'fa-google', 'fa-apple',
+    'fa-android', 'fa-windows', 'fa-amazon', 'fa-spotify',
+    'fa-uber', 'fa-rappi', 'fa-pedidosya'
+]);
+function iconPrefix(icon) {
+    if (!icon) return 'fas';
+    const name = String(icon).trim().toLowerCase();
+    // Tambien aceptar variantes fa-brands-* o brands/*
+    if (BRAND_ICONS.has(name)) return 'fab';
+    return 'fas';
+}
+window.iconPrefix = iconPrefix;
+
 function openModal(id) {
     // Comparación flexible: los IDs estáticos son numéricos, los de DB son uuid strings.
     // dataset siempre devuelve strings, así que comparamos con String(pl.id).
@@ -1360,7 +1383,7 @@ function openModal(id) {
             <div class="drawer-delivery">
                 ${p.links.map(l => `
                     <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                        <i class="fas ${l.icon}"></i> ${l.platform}
+                        <i class="${iconPrefix(l.icon)} ${l.icon}"></i> ${l.platform}
                     </a>
                 `).join('')}
             </div>
@@ -1372,7 +1395,7 @@ function openModal(id) {
             <div class="drawer-delivery">
                 ${p.links.map(l => `
                     <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
-                        <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                        <i class="${iconPrefix(l.icon)} ${l.icon}" aria-hidden="true"></i> ${l.platform}
                     </span>
                 `).join('')}
             </div>
@@ -1387,7 +1410,7 @@ function openModal(id) {
             <div class="drawer-delivery">
                 ${p.links.map(l => `
                     <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                        <i class="fas ${l.icon}"></i> ${l.platform}
+                        <i class="${iconPrefix(l.icon)} ${l.icon}"></i> ${l.platform}
                     </a>
                 `).join('')}
             </div>
@@ -1659,14 +1682,14 @@ function openMenuSubModal() {
             // Botones activos: enlaces reales <a href>
             html += `<div class="delivery-section">${p.links.map(l => `
                 <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                    <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                    <i class="${iconPrefix(l.icon)} ${l.icon}" aria-hidden="true"></i> ${l.platform}
                 </a>
             `).join('')}</div>`;
         } else {
             // [B-01] Beta: botones deshabilitados con aviso
             html += `<div class="delivery-section">${p.links.map(l => `
                 <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
-                    <i class="fas ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                    <i class="${iconPrefix(l.icon)} ${l.icon}" aria-hidden="true"></i> ${l.platform}
                 </span>
             `).join('')}</div>
             <div class="delivery-off-note">
