@@ -1147,11 +1147,15 @@
          versión. CAMBIA este número cada vez que edites places.js o app.js. -->
     <script src="places.js?v=258"></script>
 
-    <!-- ★ v2.0.13: cache-buster bumpeado para forzar descarga del app.js
+    <!-- ★ v2.0.14: cache-buster bumpeado para forzar descarga del app.js
+         con el fix defensivo de normalizacion de sold_out en mapDbPlaceToPublic
+         (tolera string "true" por si algun path de serializacion lo colara).
+         Hereda v2.0.13 (fix rendering del badge "Agotado"). -->
+    <!-- ★ v2.0.13_OLD: cache-buster bumpeado para forzar descarga del app.js
          con el fix del rendering del badge "Agotado" en la carta pública.
          Sin este bump, el navegador seguía sirviendo app.js?v=20251102
          desde su caché HTTP aunque el archivo en el servidor fuera el nuevo. -->
-    <script src="app.js?v=20251103"></script>
+    <script src="app.js?v=20251104"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
