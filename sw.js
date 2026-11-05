@@ -1,6 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.13 — FIX del bug "Agotado no se actualiza en la home":
+   [v2.0.14 — FIX del bug "Agotado no se refleja en la home offline/encolado":
+    El dashboard ya sincronizaba el cache publico en el camino online, pero
+    processQueueNow y el handler execute-op (Background Sync) NO llamaban
+    upsertPublicPlaceInCache tras procesar una op exitosa. Ahora si.
+    Ademas, app.js v20251104 normaliza sold_out defensivamente en
+    mapDbPlaceToPublic (tolera string "true").
+    Hereda v2.0.13 (fix rendering del badge en app.js).]
+   [v2.0.13_OLD — FIX del bug "Agotado no se actualiza en la home":
     El código de app.js que renderiza el badge "Agotado" en la carta
     pública ya estaba correcto desde v2.0.24, pero el navegador seguía
     sirviendo la versión VIEJA de app.js desde el caché del SW anterior.
@@ -25,7 +32,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.13'; // ↑ súbelo en cada despliegue — v2.0.13: fix bug "Agotado no se actualiza en la home" (cache SW viejo)
+const VERSION = 'v2.0.14'; // ↑ súbelo en cada despliegue — v2.0.14: fix bug "Agotado no se refleja en la home offline/encolado" (sincronizar cache público tras op exitosa en cola)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
