@@ -419,6 +419,39 @@
         .scroll-btn-up:hover {
             box-shadow: 0 12px 38px var(--secondary-glow);
         }
+        /* ★ v2.0.33 FIX MOBILE: los botones flotantes eran demasiado
+           grandes (48x48) y pegados al borde (right:24px) en celulares.
+           En pantallas <=768px los hacemos 44x44 con right:16px y
+           bottom ajustado. En <=480px (celulares pequenos) los
+           reducimos a 40x40. */
+        @media (max-width: 768px) {
+            .scroll-btn {
+                right: 16px;
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                font-size: 1rem;
+            }
+            .scroll-btn-down { bottom: 16px; }
+            .scroll-btn-up   { bottom: 68px; }
+            .scroll-btn:hover {
+                transform: translateY(-2px) scale(1.04);
+            }
+        }
+        @media (max-width: 480px) {
+            .scroll-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+                box-shadow: 0 6px 20px var(--accent-glow);
+            }
+            .scroll-btn-down { bottom: 14px; }
+            .scroll-btn-up   { bottom: 62px; }
+            /* En mobile no agrandar tanto en hover (dedo gordo) */
+            .scroll-btn:hover {
+                transform: translateY(-2px) scale(1.02);
+            }
+        }
         .menu-cat-chip {
             flex-shrink: 0;
             display: inline-flex;
@@ -2028,7 +2061,10 @@
             //   modal de sesion expirada tiene z-index 100 (mayor que los
             //   botones z-index 35), los ocultamos por higiene y para evitar
             //   que reciban foco fuera del modal.
-            if (typeof hideScrollButtons === 'function') hideScrollButtons();
+            // ★ FIX [v2.0.33] DESTRUIR los botones para forzar recreate en el
+            //   proximo login (mismo motivo que handleLogout).
+            if (typeof destroyScrollButtons === 'function') destroyScrollButtons();
+            else if (typeof hideScrollButtons === 'function') hideScrollButtons();
             const msg = $('sessionExpiredMsg');
             if (msg) {
                 openModal('sessionExpiredModal');
@@ -3011,7 +3047,13 @@
             // ★ FIX [v2.0.9] — Logout optimista e instantáneo.
             // ★ FIX [v2.0.32] Ocultar botones flotantes de scroll del add-place
             //   para que no se queden flotando sobre la pantalla de login.
-            if (typeof hideScrollButtons === 'function') hideScrollButtons();
+            // ★ FIX [v2.0.33] DESTRUIR (no solo ocultar) los botones flotantes
+            //   para que se recreen desde cero en el proximo add-place tras
+            //   login. Sin esto, tras logout+login los botones podrian no
+            //   reaparecer si las variables _scrollDownBtn/_scrollUpBtn se
+            //   desincronizaron del DOM.
+            if (typeof destroyScrollButtons === 'function') destroyScrollButtons();
+            else if (typeof hideScrollButtons === 'function') hideScrollButtons();
             const dashWrap = $('dashboardWrap');
             const authScreen = $('authScreen');
             if (dashWrap) dashWrap.classList.remove('visible');
@@ -3537,6 +3579,17 @@
         let _scrollUpBtn = null;
 
         function setupScrollButtons() {
+            /* ★ v2.0.33 FIX: verificar que los botones existen en el DOM,
+               no solo que la variable no es null. Si por cualquier motivo
+               el boton fue removido del DOM (logout, reload parcial, etc.),
+               la variable sigue apuntando a un elemento huerfano y el
+               `if (!_scrollDownBtn)` no recreaba. Ahora forzamos recreate. */
+            if (_scrollDownBtn && !document.body.contains(_scrollDownBtn)) {
+                _scrollDownBtn = null;
+            }
+            if (_scrollUpBtn && !document.body.contains(_scrollUpBtn)) {
+                _scrollUpBtn = null;
+            }
             /* Crear botón de bajar si no existe. */
             if (!_scrollDownBtn) {
                 _scrollDownBtn = document.createElement('button');
@@ -3589,8 +3642,24 @@
             if (_scrollDownBtn) _scrollDownBtn.classList.remove('visible');
             if (_scrollUpBtn)   _scrollUpBtn.classList.remove('visible');
         }
+        /* ★ v2.0.33 FIX: destruir los botones del DOM y nullificar las
+           variables. Se llama desde handleLogout() y showSessionExpiredModal()
+           para forzar que setupScrollButtons() los recree desde cero en el
+           proximo ingreso a add-place. Sin esto, tras logout+login los
+           botones podrian no reaparecer si las variables se desincronizaron. */
+        function destroyScrollButtons() {
+            if (_scrollDownBtn) {
+                try { _scrollDownBtn.remove(); } catch (e) {}
+                _scrollDownBtn = null;
+            }
+            if (_scrollUpBtn) {
+                try { _scrollUpBtn.remove(); } catch (e) {}
+                _scrollUpBtn = null;
+            }
+        }
         window.setupScrollButtons = setupScrollButtons;
         window.hideScrollButtons = hideScrollButtons;
+        window.destroyScrollButtons = destroyScrollButtons;
         window.renderMenuCatNav = renderMenuCatNav;
 
         function scrollToMenuCat(ci) {
