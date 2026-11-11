@@ -1582,6 +1582,27 @@ function openMenuSubModal() {
                 line-height: 1.5;
                 white-space: nowrap;
             }
+            /* ★ v2.0.16: Diferenciacion visual de precios por moneda.
+               CUP  → cyan (var(--secondary)) — estilo actual sin cambios.
+               USD  → amber (var(--amber))    — etiqueta "USD" al lado del precio.
+               MLC  → pink  (var(--pink))     — etiqueta "MLC".
+               EUR  → pink  (var(--pink))     — etiqueta "EUR".
+               La etiqueta es un span pequeño, mayusculas, peso menor,
+               alineado junto al precio sin romper el layout flex existente.
+               Usa variables CSS existentes → compatible con tema claro/oscuro. */
+            .menu-dish-price-cup { color: var(--secondary); }
+            .menu-dish-price-usd { color: var(--amber); }
+            .menu-dish-price-mlc { color: var(--pink); }
+            .menu-dish-price-eur { color: var(--pink); }
+            .menu-price-currency {
+                font-size: 0.6rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                opacity: 0.85;
+                white-space: nowrap;
+                text-decoration: inherit;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -1631,12 +1652,26 @@ function openMenuSubModal() {
             const soldOut = item.sold_out === true;
             const dishClass = soldOut ? 'menu-dish menu-dish-sold-out' : 'menu-dish';
             const soldOutBadge = soldOut ? '<span class="menu-soldout-badge">Agotado</span>' : '';
+            /* ★ v2.0.16: Precio con etiqueta de moneda y color diferenciado.
+               CUP  → número + "CUP" (cyan).
+               USD  → número + "USD" (amber).
+               MLC  → número + "MLC" (pink).
+               EUR  → número + "EUR" (pink).
+               Cualquier otra moneda → número + etiqueta (color cyan por
+               defecto del .menu-dish-price base).
+               ★ v2.0.17: CUP también lleva etiqueta (antes se mostraba solo
+               el número). Ahora todas las monedas muestran su sufijo, así
+               el usuario ve claramente "$350 CUP" vs "$10 USD" y no hay
+               ambigüedad entre monedas. */
+            const currency = String(item.currency || 'CUP').toUpperCase();
+            const priceCurrencyClass = 'menu-dish-price-' + currency.toLowerCase();
+            const priceLabel = '<span class="menu-price-currency">' + currency + '</span>';
             html += `<div class="${dishClass}">
                 <div class="menu-dish-info">
                     <div class="menu-dish-name">${item.name}${soldOutBadge}</div>
                     <div class="menu-dish-desc">${item.desc}</div>
                 </div>
-                <div class="menu-dish-price">${item.price}</div>
+                <div class="menu-dish-price ${priceCurrencyClass}">${item.price}${priceLabel}</div>
             </div>`;
         });
         // [v2.0.9/2.0.10/2.0.11] Botón "Siguiente categoría →" al final de cada sección.
