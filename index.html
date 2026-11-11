@@ -308,7 +308,7 @@
         .menu-dish-info { flex: 1; min-width: 0; }
         .menu-dish-name { font-weight: 600; font-size: 0.95rem; color: var(--cream); margin-bottom: 4px; }
         .menu-dish-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
-        .menu-dish-price { font-weight: 700; font-size: 1rem; color: var(--secondary); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+        .menu-dish-price { font-weight: 700; font-size: 1rem; color: var(--secondary); white-space: nowrap; flex-shrink: 0; margin-top: 2px; display: inline-flex; align-items: baseline; gap: 4px; }
         .delivery-section { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
         .delivery-link { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: all 0.3s cubic-bezier(0.22,1,0.36,1); cursor: pointer; border: 1px solid; }
         .delivery-link:hover { transform: translateY(-2px); }
@@ -1177,7 +1177,19 @@
          con el fix del rendering del badge "Agotado" en la carta pública.
          Sin este bump, el navegador seguía sirviendo app.js?v=20251102
          desde su caché HTTP aunque el archivo en el servidor fuera el nuevo. -->
-    <script src="app.js?v=20251105"></script>
+    <!-- ★ v2.0.17: cache-buster bumpeado para forzar descarga del app.js con
+         el cambio de que CUP también lleva etiqueta de moneda en la carta
+         pública. Antes (v2.0.16) el CUP se mostraba sin sufijo (solo el
+         número); ahora todas las monedas muestran su etiqueta:
+           · CUP → "$350 CUP" (cian)
+           · USD → "$10 USD" (ámbar)
+           · MLC → "$5 MLC" (rosa)
+           · EUR → "$8 EUR" (rosa)
+         Sin este bump, el navegador y el SW viejo seguirían sirviendo
+         app.js?v=20251106 desde el caché. RECUERDA: también bumpear
+         VERSION en sw.js (v2.0.16 → v2.0.17) para que el SW se reinstale
+         y limpie los caches viejos. -->
+    <script src="app.js?v=20251107"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
