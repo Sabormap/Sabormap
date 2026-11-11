@@ -1,6 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════════
    sw.js — Service Worker de Sabormap
-   [v2.0.15 — FIX del icono de WhatsApp roto en la home + boton verde:
+   [v2.0.17 — Bump de VERSION para forzar reinstall del SW y limpieza de
+    caches viejos (sabormap-static-v2.0.16 y sabormap-runtime-v2.0.16).
+    Necesario para que los usuarios vean el cambio de que CUP también
+    lleva etiqueta de moneda en la carta pública (app.js v2.0.17):
+      · CUP  → etiqueta "CUP", color var(--secondary) (cian)
+      · USD  → etiqueta "USD", color var(--amber) (ámbar)
+      · MLC  → etiqueta "MLC", color var(--pink) (rosa)
+      · EUR  → etiqueta "EUR", color var(--pink) (rosa)
+    Antes (v2.0.16) el CUP se mostraba sin etiqueta (solo el número),
+    lo que generaba ambigüedad visual entre "$350 CUP" y "$10 USD".
+    Ahora todas las monedas muestran su sufijo.
+    IMPORTANTE: también se bumpeó el cache-buster en index.html
+    (app.js?v=20251106 → app.js?v=20251107) para que la URL sea nueva.
+    Hereda v2.0.16 (diferenciación de colores y alineación baseline).
+   [v2.0.16_OLD — Bump de VERSION para forzar reinstall del SW y limpieza de
+    caches viejos (sabormap-static-v2.0.15 y sabormap-runtime-v2.0.15).
+    Necesario para que los usuarios vean el fix de diferenciación visual
+    de precios por moneda en la carta pública (app.js v2.0.16):
+      · CUP  → sin etiqueta, color var(--secondary) (cian)
+      · USD  → etiqueta "USD", color var(--amber) (ámbar)
+      · MLC  → etiqueta "MLC", color var(--pink) (rosa)
+      · EUR  → etiqueta "EUR", color var(--pink) (rosa)
+    Sin este bump, el SW viejo seguía sirviendo app.js?v=20251105
+    desde RUNTIME_CACHE y la diferenciación nunca llegaba al navegador.
+    También se bumpeó el cache-buster en index.html
+    (app.js?v=20251105 → app.js?v=20251106) y se añadió inline-flex
+    + baseline al .menu-dish-price para alineación tipográfica limpia.
+    Hereda v2.0.15 (fix icono WhatsApp roto + CSS .delivery-whatsapp verde).
+   [v2.0.15_OLD — FIX del icono de WhatsApp roto en la home + boton verde:
     app.js usaba `<i class="fas fa-whatsapp">` pero fa-whatsapp es un
     BRAND icon de FA6 que requiere `fab`. Ahora iconPrefix() devuelve
     'fab' para brand icons. Ademas, CSS de index.html anade .delivery-whatsapp
@@ -39,7 +67,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.15'; // ↑ súbelo en cada despliegue — v2.0.15: fix icono WhatsApp roto + CSS .delivery-whatsapp verde
+const VERSION = 'v2.0.17'; // ↑ súbelo en cada despliegue — v2.0.17: CUP también lleva etiqueta de moneda (todas las monedas muestran sufijo)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
