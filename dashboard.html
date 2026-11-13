@@ -2176,7 +2176,7 @@
            Es seguro llamarlo en cada keystroke (debounced arriba). */
         async function savePlaceDraft() {
             try {
-                if (!placeForm) return;
+                if (!$('placeForm')) return;
                 const data = collectPlaceFormData();
                 data.id = editingPlaceId || 'new';
                 data.editingPlaceId = editingPlaceId || null;
@@ -4422,15 +4422,43 @@
             // durante la validación y el savePlaceDraft (que son async).
             btn.disabled = true;
 
-            // ── 1. Validación de campos requeridos ───────────────────────
-            const name = $('f-name').value.trim();
-            const category = $('f-category').value;
-            const neighborhood = $('f-neighborhood').value;
+            // ★ FIX [v2.0.35] H1: helper para abortar validación sin dejar el
+            //   botón clavado. Antes, los `return` tempranos de validación
+            //   saltaban el `finally` del try/catch de INSERT/UPDATE y dejaban
+            //   _placeSubmitInFlight=true + btn.disabled=true para siempre.
+            //   Síntoma: el usuario fallaba una validación (p.ej. nombre vacío),
+            //   corregía el campo y volvía a clickear "Publicar Local", pero el
+            //   botón no respondía porque el guard de reentrancia bloqueaba el
+            //   segundo submit. Recargar la página era la única forma de
+            //   rehabilitarlo. Ahora abort() resetea el estado antes de salir.
+            const abort = (msg, fieldEl) => {
+                if (msg) showToast(msg, true);
+                if (fieldEl && fieldEl.focus) fieldEl.focus();
+                btn.disabled = false;
+                btnText.textContent = originalText;
+                _placeSubmitInFlight = false;
+            };
 
-            if (!name) { showToast('El nombre del local es obligatorio', true); $('f-name').focus(); return; }
-            if (name.length > 100) { showToast('El nombre no puede exceder 100 caracteres', true); $('f-name').focus(); return; }
-            if (!category) { showToast('Selecciona una categoría', true); $('f-category').focus(); return; }
-            if (!neighborhood) { showToast('Selecciona un municipio', true); $('f-neighborhood').focus(); return; }
+            // ── 1. Validación de campos requeridos ───────────────────────
+            // ★ FIX [v2.0.35]: lookup defensivo — si el nodo fue reemplazado
+            //   (p.ej. por un widget de terceros), $() devuelve null y .value
+            //   lanzaría TypeError. Abortamos con mensaje claro en lugar de
+            //   dejar el botón clavado por un error no capturado.
+            const nameEl = $('f-name');
+            const categoryEl = $('f-category');
+            const neighborhoodEl = $('f-neighborhood');
+            if (!nameEl || !categoryEl || !neighborhoodEl) {
+                abort('Error de estructura del formulario. Recarga la página e inténtalo de nuevo.', null);
+                return;
+            }
+            const name = nameEl.value.trim();
+            const category = categoryEl.value;
+            const neighborhood = neighborhoodEl.value;
+
+            if (!name) { abort('El nombre del local es obligatorio', nameEl); return; }
+            if (name.length > 100) { abort('El nombre no puede exceder 100 caracteres', nameEl); return; }
+            if (!category) { abort('Selecciona una categoría', categoryEl); return; }
+            if (!neighborhood) { abort('Selecciona un municipio', neighborhoodEl); return; }
 
             // ★ FIX [v2.0.19]: SALVAR EL DRAFT PRIMERO, ANTES DE CUALQUIER COSA.
             //   No importa si hay o no hay conexión: primero garantizamos que
@@ -4449,8 +4477,7 @@
             // [F-1.2] Validación de teléfono cubano si el campo no está vacío
             const phone = (($('f-phone') || {}).value || '').trim();
             if (phone && !/^\+53\s[5-7]\s\d{6,7}$/.test(phone)) {
-                showToast('Teléfono inválido. Formato esperado: +53 5 1234567', true);
-                $('f-phone').focus();
+                abort('Teléfono inválido. Formato esperado: +53 5 1234567', $('f-phone'));
                 return;
             }
 
@@ -4460,8 +4487,7 @@
             //   en borradores rápidos). 10 caracteres es suficiente para evitar spam.
             const description = (($('f-description') || {}).value || '').trim();
             if (description && description.length < 10) {
-                showToast('La descripción debe tener al menos 10 caracteres o dejarla vacía', true);
-                $('f-description').focus();
+                abort('La descripción debe tener al menos 10 caracteres o dejarla vacía', $('f-description'));
                 return;
             }
 
@@ -4470,7 +4496,7 @@
                 const maxPlaces = userSubscription && userSubscription.max_places ? userSubscription.max_places : 1;
                 // Si el admin está creando un local propio, respeta el max_places; si excede, mostrar upgrade
                 if (!isAdmin() && myPlaces.length >= maxPlaces) {
-                    showToast('Has alcanzado el límite de ' + maxPlaces + ' locales de tu plan ' + (userSubscription.plan || 'free') + '. Considera mejorar tu suscripción.', true);
+                    abort('Has alcanzado el límite de ' + maxPlaces + ' locales de tu plan ' + (userSubscription.plan || 'free') + '. Considera mejorar tu suscripción.', null);
                     return;
                 }
             }
