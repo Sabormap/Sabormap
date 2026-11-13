@@ -1301,6 +1301,53 @@
                             </div>
                         </div>
 
+                        <!-- ═══════════════════════════════════════════════════
+                             [v2.0.34] UBICACIÓN (GOOGLE MAPS)
+                             — Campos OPCIONALES (no required) para que no
+                               rompa el flujo de creación de locales sin
+                               coordenadas.
+                             — Si la columna gmaps_url no existe aún en
+                               Supabase, el INSERT la ignora silenciosamente
+                               gracias a que el mapDbPlaceToPublic de la home
+                               hace || ''.
+                             — El "helper link" abre Google Maps con lo que
+                               ya cargó el dueño (URL o lat/lng) para que
+                               verifique antes de publicar.
+                             ═══════════════════════════════════════════════════ -->
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
+                            <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-map-location-dot" style="color:var(--accent)"></i> Ubicación (Google Maps) <span style="font-weight:400;color:var(--muted);font-size:0.78rem;margin-left:auto">opcional</span></h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="f-lat">Latitud</label>
+                                    <input type="text" class="form-input" id="f-lat" placeholder="Ej: 23.1358" inputmode="decimal" autocomplete="off">
+                                    <div class="form-hint">Decimal con punto. Ej: <code>23.1358</code>. Negative para Oeste: <code>-82.3629</code>.</div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="f-lng">Longitud</label>
+                                    <input type="text" class="form-input" id="f-lng" placeholder="Ej: -82.3629" inputmode="decimal" autocomplete="off">
+                                    <div class="form-hint">Para La Habana siempre es negativo (Oeste).</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="f-gmaps_url">URL de Google Maps <span style="font-weight:400;color:var(--muted)">(opcional, tiene prioridad sobre lat/lng)</span></label>
+                                <input type="url" class="form-input" id="f-gmaps_url" placeholder="https://www.google.com/maps/place/..." autocomplete="off">
+                                <div class="form-hint">Si la pegas, se usa esta URL tal cual en el botón "Ubicación" de la home. Útil si el local no tiene coordenadas exactas pero sí un place ID.</div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="f-plus_code">Plus Code <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+                                    <input type="text" class="form-input" id="f-plus_code" placeholder="Ej: 76MV4JRQ+R6" autocomplete="off">
+                                    <div class="form-hint">Código corto visible en la ficha del local.</div>
+                                </div>
+                                <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end">
+                                    <label class="form-label" style="margin-bottom:8px">Verificar ubicación</label>
+                                    <a id="f-gmaps-helper" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;width:fit-content">
+                                        <i aria-hidden="true" class="fas fa-external-link-alt"></i> Abrir en Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px">
                             <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i aria-hidden="true" class="fas fa-align-left" style="color:var(--secondary)"></i> Descripcion</h3>
                             <div class="form-group">
@@ -2547,6 +2594,11 @@
                 lat: data.lat || null,
                 lng: data.lng || null,
                 plus_code: data.plus_code || null,
+                // ★ [v2.0.34] gmaps_url: si la columna no existe en Supabase,
+                //   este campo es ignorado por el INSERT. En el cache público
+                //   se conserva para que la home lo use si el local no tiene
+                //   lat/lng pero sí URL.
+                gmaps_url: data.gmaps_url || null,
                 delivery_enabled: !!data.delivery_enabled,
                 status: data.status || 'published',
                 owner_id: data.owner_id,
@@ -2713,7 +2765,8 @@
         window.runOrQueue = runOrQueue;
 
         function collectPlaceFormData() {
-            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+            // ★ [v2.0.34] Añadidos: lat, lng, gmaps_url, plus_code (todos opcionales).
+            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note','lat','lng','gmaps_url','plus_code'];
             const data = {};
             fields.forEach(f => { data[f] = (($('f-' + f) || {}).value || '').trim(); });
             data.tags = placeTags.slice();
@@ -3318,6 +3371,61 @@
             $('sidebarOverlay').classList.toggle('show');
         };
 
+        /* ════════════════════════════════════════════════════════════════
+           [v2.0.34] UBICACIÓN (Google Maps) — helper link dinámico
+           ───────────────────────────────────────────────────────────────
+           El anchor `#f-gmaps-helper` se actualiza en vivo cuando el
+           dueño escribe en #f-gmaps_url, #f-lat o #f-lng. Así puede
+           verificar la ubicación antes de publicar.
+
+           Prioridad para construir el href:
+             1) Si #f-gmaps_url no está vacío → usarlo tal cual.
+             2) Si #f-lat y #f-lng son numéricos → maps?q=lat,lng
+             3) Si hay un name + address cargados en el form → maps?q=name, address
+             4) Default → https://www.google.com/maps (buscador vacío)
+           
+           No llama a Supabase, no rompe el autosave, no es required.
+           ════════════════════════════════════════════════════════════════ */
+        function updateGmapsHelperHref() {
+            const link = $('f-gmaps-helper');
+            if (!link) return;
+            const url = (($('f-gmaps_url') || {}).value || '').trim();
+            const lat = (($('f-lat') || {}).value || '').trim();
+            const lng = (($('f-lng') || {}).value || '').trim();
+            const name = (($('f-name') || {}).value || '').trim();
+            const address = (($('f-address') || {}).value || '').trim();
+
+            let href;
+            if (url) {
+                // URL completa: la usamos tal cual (validamos que empiece con http).
+                href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+            } else if (lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
+                href = 'https://www.google.com/maps?q=' + encodeURIComponent(parseFloat(lat) + ',' + parseFloat(lng));
+            } else if (name || address) {
+                href = 'https://www.google.com/maps?q=' + encodeURIComponent((name + ' ' + address).trim());
+            } else {
+                href = 'https://www.google.com/maps';
+            }
+            link.setAttribute('href', href);
+        }
+        window.updateGmapsHelperHref = updateGmapsHelperHref;
+
+        function initGmapsHelperListener() {
+            // Si el form no está en el DOM todavía (raro), salir.
+            const form = $('placeForm');
+            if (!form) return;
+            // Listener delegado: cualquier input de los 4 campos dispara
+            // el refresh del helper link. También escuchamos name/address
+            // porque son parte del fallback cuando no hay URL ni coords.
+            ['f-gmaps_url','f-lat','f-lng','f-name','f-address'].forEach(id => {
+                const el = $(id);
+                if (el && !el.dataset.gmapsHelperBound) {
+                    el.dataset.gmapsHelperBound = '1';
+                    el.addEventListener('input', updateGmapsHelperHref);
+                }
+            });
+        }
+
         /* ========================================
            PLACE FORM: Tags
         ======================================== */
@@ -3885,6 +3993,11 @@
             initImageGrid();
             renderMenuEditor();
             renderLinksEditor();
+            // ★ [v2.0.34] Resetear el helper link de Google Maps a su
+            //   href por defecto. form.reset() NO dispara eventos 'input',
+            //   así que sin esta llamada el link quedaría apuntando a la
+            //   última URL cargada en modo edición.
+            if (typeof updateGmapsHelperHref === 'function') updateGmapsHelperHref();
             // [v2.0.19] Ocultar indicador de draft al limpiar el form
             updateDraftIndicator('cleared');
             // [v2.0.22] Ocultar badge "Editando" y restaurar sidebar link
@@ -3937,8 +4050,15 @@
             $('formTitle').textContent = 'Editar Local';
             $('placeSubmitText').textContent = place.status === 'published' ? 'Actualizar Publicado' : 'Publicar Local';
 
-            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+            // ★ [v2.0.34] Añadidos: lat, lng, gmaps_url, plus_code.
+            //   Como son opcionales, place[f] puede ser undefined; el `|| ''`
+            //   los deja vacíos en el input. La columna gmaps_url puede no
+            //   existir aún en Supabase; en ese caso place.gmaps_url es
+            //   undefined y el input queda vacío (sin error).
+            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note','lat','lng','gmaps_url','plus_code'];
             fields.forEach(f => { const el = $('f-' + f); if (el && place[f] !== undefined) el.value = place[f] || ''; });
+            // Forzar refresh del helper link ahora que ya tenemos los datos cargados.
+            if (typeof updateGmapsHelperHref === 'function') updateGmapsHelperHref();
 
             placeTags = place.tags ? [...place.tags] : [];
             placeImages = place.images ? [...place.images] : [];
@@ -4006,6 +4126,11 @@
                             initImageGrid();
                             renderMenuEditor();
                             renderLinksEditor();
+                            // ★ [v2.0.34] Refresh del helper link: el draft
+                            //   acaba de pisar los datos del servidor, así que
+                            //   el href del botón "Abrir en Google Maps" tiene
+                            //   que recalcularse con los nuevos valores.
+                            if (typeof updateGmapsHelperHref === 'function') updateGmapsHelperHref();
                             _hasUnsavedChanges = false;
                             updateDraftIndicator('saved');
                             showToast('Borrador recuperado (más reciente que el servidor)');
@@ -4175,11 +4300,14 @@
             }
 
             /* Restaurar el draft en el formulario. */
-            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+            // ★ [v2.0.34] Añadidos: lat, lng, gmaps_url, plus_code.
+            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note','lat','lng','gmaps_url','plus_code'];
             fields.forEach(f => {
                 const el = $('f-' + f);
                 if (el && draft[f] !== undefined) el.value = draft[f];
             });
+            // ★ [v2.0.34] Refresh del helper link tras restaurar el draft.
+            if (typeof updateGmapsHelperHref === 'function') updateGmapsHelperHref();
             placeTags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
             placeMenu = Array.isArray(draft.menu) ? JSON.parse(JSON.stringify(draft.menu)) : [];
             placeLinks = Array.isArray(draft.links) ? JSON.parse(JSON.stringify(draft.links)) : [];
@@ -4400,6 +4528,32 @@
                 status:         'published'
             };
 
+            // ════════════════════════════════════════════════════════════════
+            // ★ [v2.0.34] UBICACIÓN (Google Maps) — campos opcionales.
+            //   Sólo se envían al servidor si el dueño los llenó. Si los 4
+            //   quedan vacíos, NO se agregan al payload (así Supabase recibe
+            //   el mismo shape que antes y no rompe RLS ni CHECKs).
+            //   lat/lng: se convierten a Number o null. Si el input está
+            //   vacío o no es numérico, se envían como null (la columna es
+            //   double precision y acepta NULL).
+            //   gmaps_url / plus_code: strings vacíos se envían como null
+            //   para no llenar la BD con ''.
+            //   No son required: el flujo de crear un local sin coordenadas
+            //   sigue funcionando igual que antes.
+            // ════════════════════════════════════════════════════════════════
+            const rawLat = (($('f-lat') || {}).value || '').trim();
+            const rawLng = (($('f-lng') || {}).value || '').trim();
+            const latNum = rawLat ? parseFloat(rawLat) : null;
+            const lngNum = rawLng ? parseFloat(rawLng) : null;
+            // Validación defensiva: si el usuario escribió "abc", parseFloat
+            // devuelve NaN. Lo tratamos como null (no bloqueamos el save).
+            data.lat = (latNum !== null && !isNaN(latNum)) ? latNum : null;
+            data.lng = (lngNum !== null && !isNaN(lngNum)) ? lngNum : null;
+            const gmapsUrlVal = (($('f-gmaps_url') || {}).value || '').trim();
+            data.gmaps_url = gmapsUrlVal ? gmapsUrlVal : null;
+            const plusCodeVal = (($('f-plus_code') || {}).value || '').trim();
+            data.plus_code = plusCodeVal ? plusCodeVal : null;
+
             // ★ DEBUG: log del payload final para inspección en consola
             console.info('[Sabormap Dashboard] Payload a guardar:', {
                 name: data.name,
@@ -4555,6 +4709,58 @@
                             //   en otra pestaña (o está offline), verá este local de inmediato.
                             if (saveResult.data && saveResult.data[0]) {
                                 upsertPublicPlaceInCache(saveResult.data[0]);
+                            }
+                        }
+                    }
+                }
+
+                /* ════════════════════════════════════════════════════════════════
+                   ★ [v2.0.34] TOLERANCIA: si la columna `gmaps_url` no existe
+                   aún en el schema de Supabase, el INSERT/UPDATE devuelve un
+                   error tipo "Could not find the 'gmaps_url' column of
+                   'places' in the schema cache" o similar. En ese caso
+                   removemos `gmaps_url` del payload y reintentamos UNA vez.
+                   Esto protege el flujo de save: el resto de los campos
+                   (lat, lng, plus_code, name, etc.) se guardan correctamente.
+                   El usuario ve un toast avisando que la URL se perdió.
+
+                   IMPORTANTE: si el local está en modo edición (UPDATE),
+                   también removemos gmaps_url del objeto `update` ya
+                   construido arriba, pero como `data` es la fuente y el
+                   `update` se hizo con `{ ...data }`, basta con borrar
+                   de `data` y reconstruir.
+                   ════════════════════════════════════════════════════════════════ */
+                if (opError) {
+                    const errMsg = String((opError && opError.message) || (opError.toString && opError.toString()) || '');
+                    if (errMsg.indexOf('gmaps_url') !== -1) {
+                        console.warn('[Save] Columna gmaps_url no existe en Supabase. Reintentando sin ella. Error original:', errMsg);
+                        // Remover el campo del payload para el retry.
+                        delete data.gmaps_url;
+                        if (editingPlaceId) {
+                            const updateRetry = { ...data };
+                            delete updateRetry.owner_id;
+                            delete updateRetry.status;
+                            saveResult = await withTimeout(
+                                sb.from('places').update(updateRetry).eq('id', editingPlaceId).select(),
+                                SAVE_TIMEOUT, 'UPDATE (retry sin gmaps_url)'
+                            );
+                        } else {
+                            saveResult = await withTimeout(
+                                sb.from('places').insert(data).select(),
+                                SAVE_TIMEOUT, 'INSERT (retry sin gmaps_url)'
+                            );
+                        }
+                        opError = saveResult.error;
+                        if (!opError) {
+                            const rows = Array.isArray(saveResult.data) ? saveResult.data.length : 0;
+                            if (rows === 0) {
+                                opError = { message: 'No se pudo guardar el local tras reintentar. Revisa permisos (RLS).' };
+                            } else {
+                                console.log('[Save] Retry sin gmaps_url exitoso. Filas:', rows);
+                                showToast('Local guardado. La URL de Google Maps no se guardó porque la columna gmaps_url aún no existe en la base de datos. lat/lng y demás campos sí se guardaron. Contacta al admin para agregar la columna.', true);
+                                if (saveResult.data && saveResult.data[0]) {
+                                    upsertPublicPlaceInCache(saveResult.data[0]);
+                                }
                             }
                         }
                     }
@@ -5461,6 +5667,10 @@
             // Iniciar tags e imagenes
             initTags();
             initImageGrid();
+            // ★ [v2.0.34] Listener del helper link de Google Maps: actualiza
+            //   el href del botón "Abrir en Google Maps" en vivo mientras el
+            //   dueño escribe en lat/lng/gmaps_url/name/address.
+            initGmapsHelperListener();
 
             // ★ FIX [v2.0.23] Reintentar cola con exponential backoff.
             //   Antes, el interval de 30s reintenta ops en 'retry' para siempre,
@@ -5564,7 +5774,8 @@
 
                         if (shouldRestore) {
                             // Restaurar campos
-                            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note'];
+                            // ★ [v2.0.34] Añadidos: lat, lng, gmaps_url, plus_code.
+                            const fields = ['name','category','neighborhood','address','phone','description','price_range','schedule','must_order','editor_note','lat','lng','gmaps_url','plus_code'];
                             fields.forEach(f => {
                                 const el = $('f-' + f);
                                 if (el && draft[f] !== undefined) el.value = draft[f];
@@ -5588,6 +5799,9 @@
                             renderMenuEditor();
                             renderLinksEditor();
                             initImageGrid();
+                            // ★ [v2.0.34] Refresh del helper link tras restaurar
+                            //   el draft desde el panel switch (auto-restore).
+                            if (typeof updateGmapsHelperHref === 'function') updateGmapsHelperHref();
                             _hasUnsavedChanges = false;  // ya restaurado
                             updateDraftIndicator('saved');
                             showToast('Borrador recuperado (guardado a las ' + timeLabel + ')');
