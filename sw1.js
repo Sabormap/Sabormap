@@ -42,7 +42,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.33';
+const VERSION = 'v2.0.34'; // ↑ súbelo en cada despliegue — v2.0.34: dashboard permite editar lat/lng/gmaps_url/plus_code; helper link de Google Maps
 const STATIC_CACHE = `sabormap-dashboard-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-dashboard-runtime-${VERSION}`;
 
