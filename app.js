@@ -606,6 +606,10 @@ function saveCachedPublishedPlaces(dbPlaces) {
             lat: p.lat,
             lng: p.lng,
             plus_code: p.plus_code,
+            // ★ [v2.0.18] gmaps_url: opcional, puede no existir la columna en
+            //   Supabase todavía. Lo guardamos en el cache para que la home
+            //   lo vea offline; si llega como undefined, || '' lo deja en ''.
+            gmaps_url: p.gmaps_url || '',
             delivery_enabled: p.delivery_enabled,
             status: p.status
         }));
@@ -1350,9 +1354,23 @@ function openModal(id) {
     // ═══════════════════════════════════════════
     // BOTÓN UBICACIÓN — Google Maps
     // ═══════════════════════════════════════════
-    if (p.lat && p.lng) {
+    // ★ [v2.0.18] Ampliamos la condición: el botón "Ubicación" ahora aparece
+    //   también cuando el local NO tiene lat/lng pero SÍ tiene gmapsUrl
+    //   (p.ej. un local de Supabase al que el dueño le pegó la URL completa
+    //   de Google Maps sin calcular coordenadas). Antes, sin lat/lng el
+    //   botón nunca se mostraba y el usuario no llegaba al mapa.
+    //   Orden de prioridad para construir la URL final:
+    //     1) p.gmapsUrl propio del local (respeta el que cargó el dueño)
+    //     2) https://www.google.com/maps?q=<lat>,<lng> si hay coords
+    //     3) https://www.google.com/maps?q=<name>,<address> como fallback
+    //   No rompe nada: si lat/lng están presentes el comportamiento es
+    //   idéntico al anterior.
+    if (p.lat && p.lng || p.gmapsUrl) {
         // [T-09] Se respeta el gmapsUrl propio del local si existe; si no, se genera
-        const gmapsUrl = p.gmapsUrl || ('https://www.google.com/maps?q=' + encodeURIComponent(p.name + ', ' + p.address));
+        const gmapsUrl = p.gmapsUrl
+            || (p.lat && p.lng
+                ? ('https://www.google.com/maps?q=' + encodeURIComponent(p.lat + ',' + p.lng))
+                : ('https://www.google.com/maps?q=' + encodeURIComponent(p.name + ', ' + p.address)));
         html += `
         <div class="drawer-section" style="animation-delay:0.32s;">
             <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="drawer-ubicacion-btn">
