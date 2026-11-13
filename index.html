@@ -1189,7 +1189,13 @@
          app.js?v=20251106 desde el caché. RECUERDA: también bumpear
          VERSION en sw.js (v2.0.16 → v2.0.17) para que el SW se reinstale
          y limpie los caches viejos. -->
-    <script src="app.js?v=20251107"></script>
+    <!-- ★ v2.0.18: cache-buster bumpeado para forzar descarga del app.js con
+         el cambio aditivo de que el botón "Ubicación" también aparece cuando
+         el local tiene gmaps_url sin lat/lng (p.ej. locales de Supabase
+         donde el dueño cargó solo la URL de Google Maps). También se añadió
+         gmaps_url al saveCachedPublishedPlaces() para que sobreviva offline.
+         RECUERDA: también bumpear VERSION en sw.js (v2.0.17 → v2.0.18). -->
+    <script src="app.js?v=20251108"></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
