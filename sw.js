@@ -67,7 +67,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.17'; // ↑ súbelo en cada despliegue — v2.0.17: CUP también lleva etiqueta de moneda (todas las monedas muestran sufijo)
+const VERSION = 'v2.0.18'; // ↑ súbelo en cada despliegue — v2.0.18: botón "Ubicación" de la home también aparece con gmaps_url (sin lat/lng); gmaps_url entra en cache público
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
