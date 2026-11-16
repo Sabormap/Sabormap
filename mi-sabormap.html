@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Mi SaborMap — Panel de comensal</title>
+    <meta name="description" content="Tus favoritos, reseñas y perfil en SaborMap.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://cfmqwnfimpfuivqmsxju.supabase.co https://*.supabase.co; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co wss://cfmqwnfimpfuivqmsxju.supabase.co https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="theme-color" content="#0b0e17" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mi SaborMap">
+    <link rel="icon" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
+    <style>
+        /* ═══ Mismo sistema visual que la home (index.html) ═══ */
+        :root, [data-theme="dark"] {
+            --bg:#0b0e17; --surface:#111628; --card:#171d35; --card-hover:#1e254a;
+            --accent:#8b5cf6; --accent-2:#a78bfa; --accent-glow:rgba(139,92,246,0.3);
+            --accent-soft:rgba(139,92,246,0.08);
+            --secondary:#06b6d4; --secondary-soft:rgba(6,182,212,0.08); --secondary-glow:rgba(6,182,212,0.2);
+            --cream:#f1f5f9; --muted:#94a3b8; --muted-2:#6b7a99;
+            --border:#2a2f4a; --border-soft:#1e2540;
+            --pink:#ec4899; --amber:#f59e0b;
+            --header-bg:rgba(11,14,23,0.85);
+            --green:#22c55e; --red:#ef4444;
+            --noise-opacity:0.04;
+            --shadow-card:0 1px 0 rgba(255,255,255,0.02) inset, 0 24px 60px -20px rgba(0,0,0,0.6);
+            --shadow-hover:0 30px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,92,246,0.15);
+            --shadow-sm:0 4px 14px rgba(0,0,0,0.3);
+            --shadow-md:0 8px 24px rgba(0,0,0,0.4);
+            --shadow-lg:0 20px 50px -10px rgba(0,0,0,0.6), 0 0 30px var(--accent-glow);
+        }
+        [data-theme="light"] {
+            --bg:#f8fafc; --surface:#ffffff; --card:#ffffff; --card-hover:#f1f5f9;
+            --accent:#7c3aed; --accent-2:#8b5cf6; --accent-glow:rgba(124,58,237,0.15);
+            --accent-soft:rgba(124,58,237,0.06);
+            --secondary:#0891b2; --secondary-soft:rgba(8,145,178,0.06); --secondary-glow:rgba(8,145,178,0.12);
+            --cream:#1e293b; --muted:#64748b; --muted-2:#94a3b8;
+            --border:#e2e8f0; --border-soft:#eef2f6;
+            --pink:#db2777; --amber:#d97706;
+            --header-bg:rgba(248,250,252,0.9);
+            --green:#059669; --red:#dc2626;
+            --noise-opacity:0.02;
+            --shadow-card:0 1px 0 rgba(0,0,0,0.02) inset, 0 12px 30px -10px rgba(15,23,42,0.08);
+            --shadow-hover:0 18px 40px -12px rgba(15,23,42,0.12), 0 0 0 1px rgba(124,58,237,0.12);
+            --shadow-sm:0 2px 8px rgba(15,23,42,0.06);
+            --shadow-md:0 6px 16px rgba(15,23,42,0.1);
+            --shadow-lg:0 16px 40px -10px rgba(15,23,42,0.15), 0 0 30px var(--accent-glow);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--cream);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.005em;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+        .font-display { font-family: 'Playfair Display', Georgia, serif; letter-spacing: -0.015em; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* BG blobs + noise — mismo patrón que la home */
+        .bg-blob { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.5; pointer-events: none; z-index: 0; animation: blobFloat 22s ease-in-out infinite alternate; }
+        .blob-1 { width: 600px; height: 600px; background: var(--accent-glow); top: -15%; left: -10%; }
+        .blob-2 { width: 500px; height: 500px; background: var(--secondary-glow); bottom: 5%; right: -10%; animation-delay: -8s; }
+        .blob-3 { width: 350px; height: 350px; background: rgba(139,92,246,0.15); top: 40%; left: 30%; animation-delay: -15s; }
+        [data-theme="light"] .blob-3 { background: rgba(124,58,237,0.08); }
+        [data-theme="light"] .bg-blob { opacity: 0.4; }
+        @keyframes blobFloat {
+            0%   { transform: translate(0,0) scale(1); }
+            33%  { transform: translate(40px,-50px) scale(1.08); }
+            66%  { transform: translate(-30px,30px) scale(0.92); }
+            100% { transform: translate(20px,-20px) scale(1.03); }
+        }
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            opacity: var(--noise-opacity);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 256px;
+            transition: opacity 0.4s ease;
+        }
+
+        /* Topbar — mismo header que la home */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: var(--header-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.4s ease;
+        }
+        .topbar-inner {
+            max-width: 1280px; margin: 0 auto; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .topbar-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+        .topbar-logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.05rem; color: #fff;
+            box-shadow: 0 4px 14px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .topbar-logo-text { font-weight: 700; font-size: 1.05rem; }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: var(--muted); text-decoration: none;
+            font-size: 0.88rem; font-weight: 500;
+            transition: color 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .nav-link:hover { color: var(--cream); }
+
+        /* Toggle de tema */
+        .theme-toggle {
+            width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--cream); cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; position: relative; overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent); background: var(--card-hover);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+            transform: translateY(-1px);
+        }
+        .theme-toggle .icon-sun, .theme-toggle .icon-moon {
+            position: absolute; transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        [data-theme="dark"]  .theme-toggle .icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
+        [data-theme="dark"]  .theme-toggle .icon-sun  { opacity: 0; transform: rotate(180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-sun  { opacity: 1; transform: rotate(0deg) scale(1); }
+
+        /* Botones */
+        .btn {
+            padding: 9px 16px; border-radius: 12px;
+            border: 1px solid var(--border); background: var(--card);
+            color: var(--cream); font-family: inherit;
+            font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+            transition: all 0.25s ease; text-decoration: none;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--card-hover); box-shadow: 0 0 0 4px var(--accent-soft); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: #fff; border: none;
+            box-shadow: 0 6px 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .btn-primary:hover {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-2), #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .btn-danger {
+            background: rgba(239,68,68,0.08);
+            border-color: rgba(239,68,68,0.3);
+            color: #f87171;
+        }
+        .btn-danger:hover {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            border-color: var(--red);
+            box-shadow: 0 0 0 4px rgba(239,68,68,0.1);
+        }
+        .btn-sm { padding: 7px 13px; font-size: 0.78rem; border-radius: 10px; }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: calc(100vh - 64px);
+            position: relative; z-index: 2;
+        }
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            position: sticky; top: 64px;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-section {
+            font-size: 0.66rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.14em;
+            color: var(--muted-2);
+            padding: 18px 14px 8px;
+            opacity: 0.8;
+        }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 11px;
+            color: var(--muted); font-size: 0.88rem; font-weight: 500;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.2s ease; margin-bottom: 2px;
+            border: none; background: none;
+            width: 100%; text-align: left; font-family: inherit;
+            position: relative;
+        }
+        .sidebar-link:hover { color: var(--cream); background: rgba(139,92,246,0.06); }
+        .sidebar-link.active {
+            color: #fff;
+            background: linear-gradient(90deg, rgba(139,92,246,0.18), rgba(139,92,246,0.06));
+        }
+        .sidebar-link.active::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 22px;
+            background: linear-gradient(180deg, var(--accent), var(--accent-2));
+            border-radius: 0 3px 3px 0;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        [data-theme="light"] .sidebar-link.active { color: var(--accent); background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(124,58,237,0.04)); }
+        .sidebar-link i { width: 18px; text-align: center; font-size: 0.95rem; }
+        .sidebar-user {
+            margin-top: auto;
+            padding: 14px 14px 4px;
+            border-top: 1px solid var(--border-soft);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-avatar {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--secondary), #0891b2);
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.92rem; flex-shrink: 0;
+            box-shadow: 0 4px 16px var(--secondary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+            position: relative; overflow: hidden;
+        }
+        .sidebar-user-info { min-width: 0; flex: 1; }
+        .sidebar-user-name {
+            font-size: 0.86rem; font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sidebar-user-email {
+            font-size: 0.72rem; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .main {
+            padding: 32px 32px 64px;
+            max-width: 1100px; margin: 0 auto; width: 100%;
+        }
+        .panel { display: none; animation: panelIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .panel.active { display: block; }
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .panel-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.85rem; font-weight: 700;
+            margin-bottom: 6px; letter-spacing: -0.02em;
+        }
+        .panel-subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 28px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 18px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: linear-gradient(160deg, var(--card) 0%, var(--card-hover) 100%);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 22px;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: var(--shadow-card);
+            position: relative; overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139,92,246,0.35);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-card-glow {
+            position: absolute; top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            border-radius: 50%; filter: blur(45px);
+            opacity: 0.5; pointer-events: none;
+        }
+        .stat-icon {
+            width: 42px; height: 42px; border-radius: 13px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; margin-bottom: 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.02em; }
+        .stat-label { color: var(--muted); font-size: 0.82rem; font-weight: 500; }
+
+        .places-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .place-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden;
+            transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: var(--shadow-card);
+            display: flex; flex-direction: column; cursor: pointer;
+        }
+        .place-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(139,92,246,0.4);
+            box-shadow: 0 20px 60px -15px rgba(0,0,0,0.4), 0 0 40px var(--accent-glow);
+            background: var(--card-hover);
+        }
+        .place-card-img-wrap { overflow: hidden; position: relative; }
+        .place-card-img-wrap::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(transparent, var(--card));
+            pointer-events: none;
+        }
+        .place-card:hover .place-card-img-wrap::after { background: linear-gradient(transparent, var(--card-hover)); }
+        .place-card-img {
+            width: 100%; aspect-ratio: 16/10; object-fit: cover;
+            background: var(--surface);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .place-card:hover .place-card-img { transform: scale(1.06); }
+        .place-card-img-fallback {
+            width: 100%; aspect-ratio: 16/10;
+            background: linear-gradient(135deg, var(--surface), var(--bg));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted-2); font-size: 2.5rem;
+        }
+        .place-card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+        .place-card-title {
+            font-size: 1.05rem; font-weight: 700;
+            margin-bottom: 6px; color: var(--cream); letter-spacing: -0.01em;
+        }
+        .place-card-meta {
+            font-size: 0.8rem; color: var(--muted);
+            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .place-card-actions { margin-top: auto; display: flex; gap: 8px; }
+        .place-card-actions .btn { flex: 1; justify-content: center; }
+
+        .reviews-list { display: flex; flex-direction: column; gap: 14px; }
+        .review-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 18px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.25s ease;
+        }
+        .review-card:hover { border-color: rgba(139,92,246,0.4); box-shadow: var(--shadow-hover); }
+        .review-card-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+            margin-bottom: 12px;
+        }
+        .review-card-place { font-size: 1rem; font-weight: 700; color: var(--cream); margin-bottom: 4px; }
+        .review-card-date { font-size: 0.76rem; color: var(--muted); }
+        .review-stars { color: var(--amber); font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 2px; }
+        .review-body {
+            font-size: 0.88rem; line-height: 1.6; color: var(--cream);
+            margin-bottom: 14px; white-space: pre-wrap; word-break: break-word;
+        }
+        .review-status {
+            display: inline-block; padding: 4px 12px; border-radius: 100px;
+            font-size: 0.72rem; font-weight: 600; margin-bottom: 10px;
+        }
+        .review-status.published { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+        .review-status.pending   { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+        .review-status.removed   { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .review-status.flagged   { background: rgba(244,63,94,0.12); color: var(--pink); border: 1px solid rgba(244,63,94,0.25); }
+        .review-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .form-section {
+            background: linear-gradient(160deg, var(--card) 0%, var(--card-hover) 100%);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 24px;
+            margin-bottom: 18px; box-shadow: var(--shadow-card);
+        }
+        .form-section-title {
+            font-size: 1rem; font-weight: 700;
+            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .form-section-title i { color: var(--accent); }
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block; font-size: 0.82rem; font-weight: 600;
+            color: var(--cream); margin-bottom: 6px;
+        }
+        .form-input, .form-textarea {
+            width: 100%;
+            background: var(--card-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 11px 14px;
+            color: var(--cream); font-family: inherit;
+            font-size: 0.9rem; outline: none;
+            transition: all 0.25s ease;
+        }
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+            background: var(--card);
+        }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-hint { font-size: 0.74rem; color: var(--muted); margin-top: 4px; }
+        .checkbox-row {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; padding: 8px 0;
+        }
+        .checkbox-row input[type=checkbox] {
+            width: 18px; height: 18px;
+            accent-color: var(--accent); cursor: pointer;
+        }
+        .checkbox-row span { font-size: 0.88rem; color: var(--cream); }
+
+        .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+        .empty i { font-size: 3rem; color: var(--muted-2); margin-bottom: 16px; display: block; }
+        .empty h3 { font-size: 1.1rem; color: var(--cream); margin-bottom: 8px; }
+        .empty p { font-size: 0.88rem; margin-bottom: 20px; }
+
+        .toast {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--card);
+            border: 1px solid var(--accent);
+            color: var(--cream); padding: 12px 20px;
+            border-radius: 14px; font-size: 0.86rem; font-weight: 500;
+            z-index: 300; opacity: 0;
+            transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 14px 50px rgba(0,0,0,0.6), 0 0 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.04);
+            display: flex; align-items: center; gap: 10px;
+            max-width: 90vw;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.toast-error { border-color: var(--red); }
+        .toast i { color: var(--accent); }
+        .toast.toast-error i { color: var(--red); }
+
+        .loading-wrap { text-align: center; padding: 60px 20px; color: var(--muted); }
+        .spinner-lg {
+            width: 36px; height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(5, 7, 15, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; padding: 20px;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: linear-gradient(180deg, var(--surface) 0%, var(--card) 100%);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            max-width: 480px; width: 100%; padding: 28px;
+            transform: scale(0.96) translateY(8px);
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 60px var(--accent-glow);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+        .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+        .star-input { display: flex; gap: 6px; margin: 8px 0 14px; }
+        .star-input i {
+            font-size: 1.6rem; color: var(--border);
+            cursor: pointer; transition: color 0.2s;
+        }
+        .star-input i.active { color: var(--amber); }
+        .star-input i:hover { color: var(--amber); }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar {
+                position: sticky; top: 64px; height: auto;
+                border-right: none; border-bottom: 1px solid var(--border);
+                padding: 12px; overflow-x: auto; overflow-y: hidden;
+                flex-direction: row;
+            }
+            .sidebar-section { display: none; }
+            .sidebar-nav { display: flex; gap: 4px; padding: 0; flex: 1; }
+            .sidebar-link { flex: 0 0 auto; padding: 8px 14px; font-size: 0.82rem; }
+            .sidebar-link.active::before { display: none; }
+            .sidebar-user { display: none; }
+            .main { padding: 20px 16px 48px; }
+        }
+        @media (max-width: 600px) {
+            .topbar { padding: 0; }
+            .topbar-inner { padding: 12px 16px; }
+            .panel-title { font-size: 1.45rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .places-grid { grid-template-columns: 1fr; }
+            .stat-card { padding: 16px; }
+            .stat-value { font-size: 1.5rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Estadísticas SVG inline */
+        .chart-card {
+            background: linear-gradient(160deg, var(--card) 0%, var(--card-hover) 100%);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 22px;
+            box-shadow: var(--shadow-card); margin-bottom: 18px;
+        }
+        .chart-title {
+            font-size: 0.95rem; font-weight: 700;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chart-title i { color: var(--accent); font-size: 0.85rem; }
+        .chart-subtitle { font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; }
+        .chart-svg { width: 100%; height: auto; display: block; max-height: 220px; }
+        .chart-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 0.85rem; }
+        .chart-empty i { font-size: 2rem; color: var(--muted-2); margin-bottom: 10px; display: block; }
+        .stats-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+        @media (max-width: 700px) { .stats-charts-grid { grid-template-columns: 1fr; } }
+
+        .stat-hero { display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px; }
+        .stat-hero-value {
+            font-size: 2.4rem; font-weight: 800; line-height: 1;
+            color: var(--cream); letter-spacing: -0.02em;
+        }
+        .stat-hero-label { font-size: 0.86rem; color: var(--muted); }
+        .stat-hero-stars { color: var(--amber); font-size: 1rem; letter-spacing: 3px; margin-left: 8px; }
+
+        .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .bar-row-label {
+            font-size: 0.82rem; font-weight: 600;
+            color: var(--muted); width: 40px; text-align: right; flex-shrink: 0;
+        }
+        .bar-row-track {
+            flex: 1; height: 22px;
+            background: var(--card-hover);
+            border-radius: 6px; overflow: hidden; position: relative;
+        }
+        .bar-row-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            min-width: 2px;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .bar-row-value { font-size: 0.78rem; font-weight: 700; color: var(--cream); width: 32px; flex-shrink: 0; }
+
+        .activity-list { position: relative; padding-left: 28px; }
+        .activity-list::before {
+            content: ''; position: absolute;
+            left: 9px; top: 6px; bottom: 6px;
+            width: 2px; background: var(--border); border-radius: 1px;
+        }
+        .activity-item {
+            position: relative; padding: 12px 0;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .activity-item::before {
+            content: ''; position: absolute;
+            left: -28px; top: 16px;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            z-index: 1;
+        }
+        .activity-item.fav::before     { border-color: var(--pink); background: rgba(236,72,153,0.15); }
+        .activity-item.review::before { border-color: var(--amber); background: rgba(245,158,11,0.15); }
+        .activity-item.report::before { border-color: var(--red); background: rgba(239,68,68,0.15); }
+        .activity-item.profile::before{ border-color: var(--secondary); background: var(--secondary-soft); }
+        .activity-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0; margin-top: 2px;
+        }
+        .activity-icon.fav     { background: rgba(236,72,153,0.1); color: var(--pink); }
+        .activity-icon.review  { background: rgba(245,158,11,0.1); color: var(--amber); }
+        .activity-icon.report  { background: rgba(239,68,68,0.1); color: var(--red); }
+        .activity-icon.profile { background: var(--secondary-soft); color: var(--secondary); }
+        .activity-content { flex: 1; min-width: 0; }
+        .activity-text { font-size: 0.88rem; color: var(--cream); line-height: 1.45; }
+        .activity-text strong { font-weight: 700; }
+        .activity-meta { font-size: 0.74rem; color: var(--muted); margin-top: 3px; }
+
+        .config-section {
+            background: linear-gradient(160deg, var(--card) 0%, var(--card-hover) 100%);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 22px;
+            margin-bottom: 14px; box-shadow: var(--shadow-card);
+        }
+        .config-section-title {
+            font-size: 1rem; font-weight: 700;
+            margin-bottom: 6px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .config-section-title i { color: var(--accent); }
+        .config-section-desc { font-size: 0.84rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+        .config-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; padding: 12px 0;
+            border-top: 1px solid var(--border-soft);
+        }
+        .config-row:first-of-type { border-top: none; }
+        .config-row-info { flex: 1; min-width: 0; }
+        .config-row-label { font-size: 0.88rem; font-weight: 600; color: var(--cream); margin-bottom: 2px; }
+        .config-row-hint { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+        .config-row-action { flex-shrink: 0; }
+
+        .badge-status {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 100px;
+            font-size: 0.74rem; font-weight: 600;
+        }
+        .badge-status.verified   { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+        .badge-status.unverified { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+        .badge-status i { font-size: 0.72rem; }
+
+        .config-toggle {
+            position: relative; display: inline-block;
+            width: 42px; height: 24px; flex-shrink: 0;
+        }
+        .config-toggle input {
+            position: absolute; opacity: 0;
+            width: 100%; height: 100%; margin: 0; cursor: pointer;
+        }
+        .config-toggle-slider {
+            position: absolute; inset: 0;
+            background: var(--border);
+            border-radius: 24px;
+            transition: background 0.25s ease;
+            pointer-events: none;
+        }
+        .config-toggle-slider::before {
+            content: ''; position: absolute;
+            left: 3px; top: 3px;
+            width: 18px; height: 18px;
+            background: #fff; border-radius: 50%;
+            transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .config-toggle input:checked + .config-toggle-slider {
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+        }
+        .config-toggle input:checked + .config-toggle-slider::before { transform: translateX(18px); }
+        .config-toggle input:focus-visible + .config-toggle-slider {
+            outline: 2px solid var(--accent); outline-offset: 2px;
+        }
+        .config-toggle input:disabled + .config-toggle-slider { opacity: 0.5; cursor: not-allowed; }
+
+        .config-password-form {
+            display: flex; flex-direction: column; gap: 12px;
+            max-width: 360px;
+        }
+        .config-danger-zone {
+            border-color: rgba(239,68,68,0.25);
+            background: linear-gradient(160deg, rgba(239,68,68,0.04) 0%, rgba(239,68,68,0.02) 100%);
+        }
+        .config-danger-zone .config-section-title { color: #f87171; }
+        .config-danger-zone .config-section-title i { color: var(--red); }
+
+        .modal-input-group { margin-bottom: 14px; }
+        .modal-input-group label {
+            display: block; font-size: 0.82rem; font-weight: 600;
+            margin-bottom: 6px; color: var(--cream);
+        }
+        .modal-input {
+            width: 100%; background: var(--card-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 11px 14px;
+            color: var(--cream); font-family: inherit;
+            font-size: 0.9rem; outline: none; transition: all 0.2s;
+        }
+        .modal-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+            background: var(--card);
+        }
+
+        /* ═══ [v1.2 avatars] Avatar picker con preview ═══ */
+        .avatar-picker {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .avatar-preview {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.85rem;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .avatar-preview img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-preview.uploading {
+            opacity: 0.6;
+            animation: avatarPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes avatarPulse {
+            0%, 100% { box-shadow: 0 8px 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15); }
+            50%      { box-shadow: 0 8px 36px var(--accent-glow), 0 0 0 4px var(--accent), inset 0 1px 0 rgba(255,255,255,0.2); }
+        }
+        .avatar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .avatar-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: #fff;
+            border: none;
+            font-family: inherit;
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px var(--accent-glow);
+        }
+        .avatar-upload-btn:active { transform: translateY(0); }
+        .avatar-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .avatar-remove-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .avatar-remove-btn:hover {
+            color: #f87171;
+            border-color: rgba(239,68,68,0.4);
+            background: rgba(239,68,68,0.05);
+        }
+        .avatar-remove-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .avatar-hint {
+            font-size: 0.74rem;
+            color: var(--muted);
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+        /* Drag-over highlight */
+        .avatar-preview.dragging {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft), 0 12px 32px var(--accent-glow);
+            transform: scale(1.05);
+        }
+        /* === MIS LISTAS === */
+        .listas-create { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+        .listas-input { flex:1; min-width:220px; padding:11px 14px; border-radius:12px;
+            border:1px solid var(--border); background:var(--card); color:var(--cream); font-size:0.9rem; }
+        .listas-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        .listas-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; }
+        .lista-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; }
+        .lista-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+        .lista-card-name { font-size:1.05rem; font-weight:700; color:var(--cream); margin:0; }
+        .lista-card-count { font-size:0.78rem; color:var(--muted); margin:2px 0 0; }
+        .lista-card-actions { display:flex; gap:6px; flex-shrink:0; }
+        .lista-card-items { display:flex; flex-direction:column; gap:6px; }
+        .lista-item { display:flex; align-items:center; justify-content:space-between; gap:8px;
+            padding:8px 10px; border-radius:9px; background:var(--surface); }
+        .lista-item-name { color:var(--cream); text-decoration:none; font-size:0.85rem;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .lista-item-name:hover { color:var(--accent); }
+        .lista-card-empty { color:var(--muted); font-size:0.82rem; font-style:italic; padding:6px 2px; }
+        /* === MIS FOTOS === */
+        .fotos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+        .photo-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+        .photo-card-img-wrap { position:relative; aspect-ratio:4/3; background:var(--surface); }
+        .photo-card-img { width:100%; height:100%; object-fit:cover; display:block; }
+        .photo-status { position:absolute; top:8px; right:8px; padding:3px 9px; border-radius:999px;
+            font-size:0.68rem; font-weight:600; color:#fff; }
+        .photo-status.published { background:rgba(16,185,129,0.85); }
+        .photo-status.pending   { background:rgba(245,158,11,0.85); }
+        .photo-status.rejected  { background:rgba(239,68,68,0.85); }
+        .photo-card-body { padding:12px 14px; }
+        .photo-card-place { font-weight:600; font-size:0.88rem; color:var(--cream); margin-bottom:4px;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .photo-card-caption { font-size:0.8rem; color:var(--muted); margin:0 0 10px; line-height:1.5; }
+        /* === Recomendados (Inicio) === */
+        .place-card-link:hover .place-card-title { color:var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+    <div class="noise-overlay"></div>
+
+
+    <!-- TOPBAR — mismo header que la home -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="./" class="topbar-logo" aria-label="Volver a SaborMap">
+                <div class="topbar-logo-icon">S</div>
+                <span class="topbar-logo-text">Mi SaborMap</span>
+            </a>
+            <div class="topbar-actions">
+                <a href="./" class="nav-link" aria-label="Ir al directorio">
+                    <i class="fas fa-map" style="font-size:0.78rem"></i> <span>Ver mapa</span>
+                </a>
+                <button class="theme-toggle" onclick="toggleDashboardFoodieTheme()" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">
+                    <i aria-hidden="true" class="fas fa-moon icon-moon"></i>
+                    <i aria-hidden="true" class="fas fa-sun icon-sun"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="handleFoodieLogout()" aria-label="Cerrar sesión">
+                    <i class="fas fa-sign-out-alt"></i> <span>Salir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav" aria-label="Secciones del panel">
+                <div class="sidebar-section">Mi SaborMap</div>
+                <button class="sidebar-link active" data-panel="inicio" onclick="switchPanel('inicio', this)">
+                    <i class="fas fa-house"></i> Inicio
+                </button>
+                <button class="sidebar-link" data-panel="favoritos" onclick="switchPanel('favoritos', this)">
+                    <i class="fas fa-heart"></i> Favoritos
+                </button>
+                <button class="sidebar-link" data-panel="resenas" onclick="switchPanel('resenas', this)">
+                    <i class="fas fa-star"></i> Mis reseñas
+                </button>
+                <div class="sidebar-section">Dashboard</div>
+                <button class="sidebar-link" data-panel="estadisticas" onclick="switchPanel('estadisticas', this)">
+                    <i class="fas fa-chart-bar"></i> Estadísticas
+                </button>
+                <button class="sidebar-link" data-panel="actividad" onclick="switchPanel('actividad', this)">
+                    <i class="fas fa-timeline"></i> Actividad
+                </button>
+                <div class="sidebar-section">Cuenta</div>
+                <button class="sidebar-link" data-panel="perfil" onclick="switchPanel('perfil', this)">
+                    <i class="fas fa-user"></i> Mi perfil
+                </button>
+                <button class="sidebar-link" data-panel="configuracion" onclick="switchPanel('configuracion', this)">
+                    <i class="fas fa-gear"></i> Configuración
+                </button>
+                <button class="sidebar-link" onclick="handleFoodieLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </button>
+            </nav>
+            <div class="sidebar-user">
+                <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="sidebarUserName">Cargando...</div>
+                    <div class="sidebar-user-email" id="sidebarUserEmail">—</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <!-- INICIO -->
+            <section class="panel active" id="panel-inicio">
+                <h1 class="panel-title">Hola, <span id="welcomeName">comensal</span></h1>
+                <p class="panel-subtitle">Este es tu espacio en SaborMap. Aquí está lo que has guardado y compartido.</p>
+                <div class="stats-grid" id="statsGrid"></div>
+                <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:16px">Tus favoritos recientes</h2>
+                <div id="recentFavs"></div>
+                <h2 style="font-size:1.15rem;font-weight:700;margin:32px 0 4px">Recomendados para ti</h2>
+                <p class="panel-subtitle" style="margin-bottom:16px">Según las categorías que más guardas.</p>
+                <div id="recomendados" class="places-grid"></div>
+            </section>
+
+            <!-- FAVORITOS -->
+            <section class="panel" id="panel-favoritos">
+                <h1 class="panel-title">Favoritos</h1>
+                <p class="panel-subtitle">Los lugares a los que quieres volver. Se sincronizan entre todos tus dispositivos.</p>
+                <div id="favoritesGrid" class="places-grid"></div>
+                <div class="empty" id="favoritesEmpty" style="display:none">
+                    <i class="far fa-heart"></i>
+                    <h3>Aún no tienes favoritos</h3>
+                    <p>Explora el directorio y toca el corazón ❤️ de cualquier local para guardarlo aquí.</p>
+                    <a href="./" class="btn btn-primary"><i class="fas fa-map"></i> Explorar locales</a>
+                </div>
+            </section>
+
+            <!-- [v2.0.29] MIS LISTAS deshabilitado (se desarrollará más adelante).
+                 Se quitó el botón del sidebar, este panel y el case en switchPanel.
+                 Las funciones de soporte (renderListas, listCardHTML, handleCreateList,
+                 handleRemoveListItem) quedan dormidas en el script para reactivación. -->
+
+            <!-- MIS RESEÑAS -->
+            <section class="panel" id="panel-resenas">
+                <h1 class="panel-title">Mis reseñas</h1>
+                <p class="panel-subtitle">Lo que has dicho sobre los lugares que has visitado. Puedes editarlas o borrarlas cuando quieras.</p>
+                <div id="reviewsList" class="reviews-list"></div>
+                <div class="empty" id="reviewsEmpty" style="display:none">
+                    <i class="far fa-pen-to-square"></i>
+                    <h3>Aún no has escrito reseñas</h3>
+                    <p>Abre cualquier local y toca "Escribir reseña" para compartir tu experiencia con la comunidad.</p>
+                    <a href="./" class="btn btn-primary"><i class="fas fa-map"></i> Explorar locales</a>
+                </div>
+            </section>
+
+            <!-- [v2.0.29] MIS FOTOS deshabilitado (se desarrollará más adelante).
+                 Se quitó el botón del sidebar, este panel y el case en switchPanel.
+                 Las funciones de soporte (renderFotos, photoCardHTML, handleDeletePhoto)
+                 quedan dormidas en el script para reactivación. -->
+
+            <!-- ESTADÍSTICAS (v1.1 dashboard) -->
+            <section class="panel" id="panel-estadisticas">
+                <h1 class="panel-title">Estadísticas</h1>
+                <p class="panel-subtitle">Un vistazo a tu actividad gastronómica en SaborMap.</p>
+
+                <div class="stats-charts-grid">
+                    <!-- Rating distribution -->
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-star"></i> Distribución de tus ratings</h3>
+                        <p class="chart-subtitle">Cuántas reseñas diste con cada cantidad de estrellas.</p>
+                        <div class="stat-hero" id="avgRatingHero" style="display:none">
+                            <span class="stat-hero-value" id="avgRatingValue">0.0</span>
+                            <span class="stat-hero-label">/ 5 — promedio</span>
+                            <span class="stat-hero-stars" id="avgRatingStars">★★★★★</span>
+                        </div>
+                        <div id="ratingChart"></div>
+                    </div>
+
+                    <!-- Barrios más visitados -->
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-map-pin"></i> Barrios que más frecuentas</h3>
+                        <p class="chart-subtitle">Top 5 según tus favoritos guardados.</p>
+                        <div id="barriosChart"></div>
+                    </div>
+                </div>
+
+                <!-- Monthly activity (full width) -->
+                <div class="chart-card">
+                    <h3 class="chart-title"><i class="fas fa-calendar-days"></i> Actividad de los últimos 6 meses</h3>
+                    <p class="chart-subtitle">Favoritos guardados y reseñas escritas por mes.</p>
+                    <div id="monthlyChart"></div>
+                </div>
+
+                <!-- Tabla resumen -->
+                <div class="chart-card">
+                    <h3 class="chart-title"><i class="fas fa-list-ul"></i> Resumen completo</h3>
+                    <p class="chart-subtitle">Detalle de toda tu actividad en la plataforma.</p>
+                    <div id="statsSummary"></div>
+                </div>
+            </section>
+
+            <!-- ACTIVIDAD (v1.1 dashboard) -->
+            <section class="panel" id="panel-actividad">
+                <h1 class="panel-title">Actividad reciente</h1>
+                <p class="panel-subtitle">Todo lo que has hecho en SaborMap: favoritos, reseñas, reportes y cambios de perfil.</p>
+                <div id="activityList" class="activity-list">
+                    <div class="loading-wrap">
+                        <div class="spinner-lg"></div>
+                        <p>Cargando tu actividad…</p>
+                    </div>
+                </div>
+                <div class="empty" id="activityEmpty" style="display:none">
+                    <i class="fas fa-timeline"></i>
+                    <h3>Sin actividad todavía</h3>
+                    <p>En cuanto guardes un favorito o escribas una reseña, verás aquí tu historial.</p>
+                    <a href="./" class="btn btn-primary"><i class="fas fa-compass"></i> Explorar locales</a>
+                </div>
+            </section>
+
+            <!-- PERFIL -->
+            <section class="panel" id="panel-perfil">
+                <h1 class="panel-title">Mi perfil</h1>
+                <p class="panel-subtitle">Cómo te ven los demás comensales. Tu email nunca se muestra públicamente.</p>
+
+                <div class="form-section">
+                    <h2 class="form-section-title"><i class="fas fa-user-circle"></i> Datos públicos</h2>
+                    <div class="form-group">
+                        <label class="form-label">Apodo o nombre</label>
+                        <input type="text" class="form-input" id="profileDisplayName" maxlength="40" placeholder="Cómo quieres que te vean">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bio corta <span style="font-weight:400;color:var(--muted)">(opcional, máx. 280 caracteres)</span></label>
+                        <textarea class="form-textarea" id="profileBio" maxlength="280" placeholder="Ej: Amante de la cocina criolla. Siempre buscando un buen mojito."></textarea>
+                        <div class="form-hint"><span id="bioCount">0</span>/280</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Foto de perfil</label>
+                        <div class="avatar-picker">
+                            <div class="avatar-preview" id="avatarPreview" title="Arrastra una imagen aquí o haz clic en Cambiar">
+                                <span id="avatarInitials">?</span>
+                            </div>
+                            <div class="avatar-actions">
+                                <button type="button" class="avatar-upload-btn" id="avatarUploadBtn" onclick="document.getElementById('avatarFileInput').click()">
+                                    <i class="fas fa-camera"></i> <span id="avatarUploadLabel">Cambiar foto</span>
+                                </button>
+                                <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" onclick="handleRemoveAvatar()" style="display:none">
+                                    <i class="fas fa-trash"></i> Quitar foto
+                                </button>
+                                <div class="avatar-hint">JPG, PNG o WebP. Se recorta a 400×400 px. Máximo 5 MB.</div>
+                            </div>
+                            <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAvatarSelected(event)">
+                        </div>
+                    </div>
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="profileIsPublic" checked>
+                        <span>Mi perfil es público (otros comensales pueden ver tu apodo y bio)</span>
+                    </label>
+                    <div style="margin-top:18px">
+                        <button class="btn btn-primary" onclick="saveProfileFromForm()">
+                            <i class="fas fa-save"></i> Guardar cambios
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title"><i class="fas fa-envelope"></i> Email</h2>
+                    <div class="form-group">
+                        <label class="form-label">Email de la cuenta</label>
+                        <input type="email" class="form-input" id="profileEmail" disabled style="opacity:0.6">
+                        <div class="form-hint">El email no se puede cambiar. Si necesitas actualizarlo, escríbenos a sabormap1@gmail.com</div>
+                    </div>
+                </div>
+
+                <div class="form-section" style="border-color:rgba(239,68,68,0.2)">
+                    <h2 class="form-section-title" style="color:var(--red)"><i class="fas fa-trash-can"></i> Borrar cuenta</h2>
+                    <p style="font-size:0.86rem;color:var(--muted);margin-bottom:14px;line-height:1.5">
+                        Borrar tu cuenta elimina permanentemente tus favoritos, reseñas, fotos y datos de perfil. Esta acción no se puede deshacer.
+                    </p>
+                    <button class="btn btn-danger" onclick="requestAccountDeletion()">
+                        <i class="fas fa-trash-can"></i> Solicitar borrado de cuenta
+                    </button>
+                </div>
+            </section>
+
+            <!-- CONFIGURACIÓN (v1.1 dashboard) -->
+            <section class="panel" id="panel-configuracion">
+                <h1 class="panel-title">Configuración</h1>
+                <p class="panel-subtitle">Ajustes de seguridad, privacidad y datos de tu cuenta de comensal.</p>
+
+                <!-- Seguridad: cambiar contraseña -->
+                <div class="config-section">
+                    <h2 class="config-section-title"><i class="fas fa-key"></i> Seguridad</h2>
+                    <p class="config-section-desc">Cambia tu contraseña. Por seguridad, las demás sesiones abiertas se cerrarán automáticamente.</p>
+                    <div class="config-password-form">
+                        <div class="modal-input-group">
+                            <label>Nueva contraseña</label>
+                            <input type="password" class="modal-input" id="cfgNewPw" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                        </div>
+                        <div class="modal-input-group">
+                            <label>Confirmar contraseña</label>
+                            <input type="password" class="modal-input" id="cfgNewPwConfirm" placeholder="Repite la contraseña" autocomplete="new-password">
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="changePwFromConfig()">
+                                <i class="fas fa-key"></i> Cambiar contraseña
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email: verificación -->
+                <div class="config-section">
+                    <h2 class="config-section-title"><i class="fas fa-envelope"></i> Verificación de email</h2>
+                    <p class="config-section-desc">Solo las cuentas verificadas pueden escribir reseñas y reportar contenido abusivo.</p>
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Estado de tu email</div>
+                            <div class="config-row-hint" id="cfgEmailValue">Cargando…</div>
+                        </div>
+                        <div class="config-row-action">
+                            <span class="badge-status unverified" id="cfgEmailBadge">
+                                <i class="fas fa-clock"></i> Verificando
+                            </span>
+                        </div>
+                    </div>
+                    <div class="config-row" id="cfgResendRow" style="display:none">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Reenviar email de confirmación</div>
+                            <div class="config-row-hint">Si no te llegó o expiró, puedes solicitar uno nuevo las veces que necesites.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <button class="btn btn-sm" onclick="resendVerifyEmailFromConfig()">
+                                <i class="fas fa-paper-plane"></i> Reenviar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacidad y notificaciones -->
+                <div class="config-section">
+                    <h2 class="config-section-title"><i class="fas fa-bell"></i> Privacidad y notificaciones</h2>
+                    <p class="config-section-desc">Decide qué muestras y qué emails recibes. No vendemos ni compartimos tus datos con terceros.</p>
+
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Perfil público</div>
+                            <div class="config-row-hint">Si está activado, otros comensales pueden ver tu apodo y bio. Tu email nunca se muestra.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <label class="config-toggle">
+                                <input type="checkbox" id="cfgIsPublic" onchange="savePrefsFromConfig()">
+                                <span class="config-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Notificaciones por email</div>
+                            <div class="config-row-hint">Recibe avisos cuando alguien responda a tu reseña o el equipo modere contenido tuyo.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <label class="config-toggle">
+                                <input type="checkbox" id="cfgEmailNotifications" onchange="savePrefsFromConfig()">
+                                <span class="config-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Novedades y promociones</div>
+                            <div class="config-row-hint">Te avisamos cuando lancemos nuevas funciones o colaboraciones con locales. Opcional, off por defecto.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <label class="config-toggle">
+                                <input type="checkbox" id="cfgEmailMarketing" onchange="savePrefsFromConfig()">
+                                <span class="config-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mis datos -->
+                <div class="config-section">
+                    <h2 class="config-section-title"><i class="fas fa-download"></i> Tus datos</h2>
+                    <p class="config-section-desc">Cumplimos con el principio de portabilidad: puedes descargar todos tus datos en formato JSON cuando quieras.</p>
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Exportar mis datos</div>
+                            <div class="config-row-hint">Descarga un archivo JSON con tu perfil, favoritos, reseñas y reportes. Puedes abrirlo en cualquier editor de texto.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <button class="btn btn-sm" onclick="exportDataFromConfig()">
+                                <i class="fas fa-download"></i> Descargar JSON
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zona de peligro -->
+                <div class="config-section config-danger-zone">
+                    <h2 class="config-section-title"><i class="fas fa-triangle-exclamation"></i> Zona de peligro</h2>
+                    <p class="config-section-desc">Acciones irreversibles. Piénsalo dos veces antes de continuar.</p>
+                    <div class="config-row">
+                        <div class="config-row-info">
+                            <div class="config-row-label">Borrar mi cuenta</div>
+                            <div class="config-row-hint">Elimina permanentemente tus favoritos, reseñas, fotos y perfil. Te enviará un email para confirmar.</div>
+                        </div>
+                        <div class="config-row-action">
+                            <button class="btn btn-sm btn-danger" onclick="requestAccountDeletion()">
+                                <i class="fas fa-trash-can"></i> Solicitar borrado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: editar reseña -->
+    <div class="modal-overlay" id="editReviewModal" role="dialog" aria-modal="true">
+        <div class="modal-box">
+            <h2 class="modal-title">Editar reseña</h2>
+            <input type="hidden" id="editReviewId">
+            <div class="form-group">
+                <label class="form-label">Puntuación</label>
+                <div class="star-input" id="editStarInput" role="group" aria-label="Puntuación de la reseña">
+                    <i class="far fa-star" data-value="1" tabindex="0" role="button" aria-label="1 estrella" aria-pressed="false"></i>
+                    <i class="far fa-star" data-value="2" tabindex="0" role="button" aria-label="2 estrellas" aria-pressed="false"></i>
+                    <i class="far fa-star" data-value="3" tabindex="0" role="button" aria-label="3 estrellas" aria-pressed="false"></i>
+                    <i class="far fa-star" data-value="4" tabindex="0" role="button" aria-label="4 estrellas" aria-pressed="false"></i>
+                    <i class="far fa-star" data-value="5" tabindex="0" role="button" aria-label="5 estrellas" aria-pressed="false"></i>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tu reseña <span style="font-weight:400;color:var(--muted)">(máx. 2000 caracteres)</span></label>
+                <textarea class="form-textarea" id="editReviewBody" maxlength="2000" rows="5" placeholder="Cuenta tu experiencia: qué pediste, cómo fue el servicio, etc."></textarea>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+                <button class="btn" onclick="closeEditReviewModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveReviewEdit()"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="appToast" role="alert" aria-live="polite"></div>
+
+    <!-- ═══ Scripts ═══ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
+    <!-- places.js se incluye para resolver los IDs estáticos en favoritos/reseñas -->
+    <script src="places.js?v=258"></script>
+    <script src="foodies-app.js?v=6"></script>
+    <script>
+
+        // Toggle de tema — mismo comportamiento que toggleTheme() de la home
+        (function() {
+            try {
+                const saved = localStorage.getItem('sabormap-theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+
+        function toggleDashboardFoodieTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('sabormap-theme', next); } catch (e) {}
+            document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+                m.setAttribute('content', next === 'dark' ? '#0b0e17' : '#7c3aed');
+            });
+            showToast(next === 'dark' ? 'Tema oscuro activado' : 'Tema claro activado');
+        }
+        window.toggleDashboardFoodieTheme = toggleDashboardFoodieTheme;
+
+        // Estado del panel
+        let stats = { favoritos: 0, resenas: 0, publicadas: 0, pendientes: 0, listas: 0, fotos: 0 };
+        let currentReviews = [];
+        let currentFavorites = [];
+        let currentCollections = [];
+        let currentPhotos = [];
+        let editReviewRating = 0;
+
+        // ═══ Inicialización ═══
+        (async function() {
+            // Requerir sesión; si no hay, redirige a cuenta.html
+            const ok = await initFoodieAuth(true);
+            if (!ok) return;
+
+            // Poblar sidebar
+            const name = foodieProfile.display_name || currentFoodie.email.split('@')[0];
+            $('sidebarUserName').textContent = name;
+            $('sidebarUserEmail').textContent = currentFoodie.email;
+            $('welcomeName').textContent = name.split(' ')[0];
+            // Pintar avatar del sidebar (foto si existe, iniciales si no)
+            updateSidebarAvatar();
+
+            // Cargar datos
+            try { await loadAllData(); } catch (e) { console.warn('[panel] loadAllData:', e); }
+            renderInicio();
+        })();
+
+        async function loadAllData() {
+            // [FIX v2.0.27] Cada carga aislada: si una falla (red/RLS), las demás
+            // siguen cargando y el panel no queda en blanco. Antes un reject abortaba
+            // TODO y renderInicio() nunca se llamaba → panel vacío sin toast.
+            const _safe = (arr) => Array.isArray(arr) ? arr : [];
+            try { currentFavorites   = _safe(await loadFoodieFavorites()); }   catch(e){ console.warn('[panel] loadFoodieFavorites:', e); currentFavorites = []; }
+            try { currentReviews     = _safe(await loadFoodieReviews()); }     catch(e){ console.warn('[panel] loadFoodieReviews:', e); currentReviews = []; }
+            // [v2.0.29] Mis listas / Mis fotos deshabilitados: no cargamos
+            //   collections ni photos (ahorra 2 queries/RLS por carga del panel).
+            //   currentCollections / currentPhotos quedan como [] (init arriba) y
+            //   stats.listas / stats.fotos en 0. Reactivar al volver a habilitar
+            //   los paneles.
+            // try { currentCollections = _safe(await loadFoodieCollections()); } catch(e){ console.warn('[panel] loadFoodieCollections:', e); currentCollections = []; }
+            // try { currentPhotos      = _safe(await loadFoodiePhotos()); }      catch(e){ console.warn('[panel] loadFoodiePhotos:', e); currentPhotos = []; }
+            stats.favoritos   = currentFavorites.length;
+            stats.resenas     = currentReviews.length;
+            stats.publicadas  = currentReviews.filter(r => r.status === 'published').length;
+            stats.pendientes  = currentReviews.filter(r => r.status === 'pending').length;
+            // stats.listas = currentCollections.length;  // [v2.0.29] deshabilitado
+            // stats.fotos  = currentPhotos.length;       // [v2.0.29] deshabilitado
+        }
+
+        // ═══ Switch panels ═══
+        function switchPanel(panelId, btn) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            const target = $('panel-' + panelId);
+            if (target) target.classList.add('active');
+            if (btn) btn.classList.add('active');
+
+            if (panelId === 'inicio') renderInicio();
+            else if (panelId === 'favoritos') renderFavoritos();
+            else if (panelId === 'resenas') renderResenas();
+            else if (panelId === 'perfil') renderPerfil();
+
+            if (window.innerWidth <= 900) window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.switchPanel = switchPanel;
+
+        // ═══ Render INICIO ═══
+        function renderInicio() {
+            $('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-card-glow" style="background:${'rgba(244,63,94,0.2)'}"></div>
+                    <div class="stat-icon" style="background:var(--accent-soft);color:var(--accent)"><i class="fas fa-heart"></i></div>
+                    <div class="stat-value">${stats.favoritos}</div>
+                    <div class="stat-label">Favoritos guardados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-glow" style="background:rgba(245,158,11,0.15)"></div>
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:var(--amber)"><i class="fas fa-star"></i></div>
+                    <div class="stat-value">${stats.resenas}</div>
+                    <div class="stat-label">Reseñas escritas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-glow" style="background:rgba(34,197,94,0.15)"></div>
+                    <div class="stat-icon" style="background:rgba(34,197,94,0.1);color:var(--green)"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value">${stats.publicadas}</div>
+                    <div class="stat-label">Reseñas publicadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-glow" style="background:rgba(249,115,22,0.15)"></div>
+                    <div class="stat-icon" style="background:var(--secondary-soft);color:var(--secondary)"><i class="fas fa-clock"></i></div>
+                    <div class="stat-value">${stats.pendientes}</div>
+                    <div class="stat-label">Pendientes de moderación</div>
+                </div>
+            `;
+
+            // Favoritos recientes (los 4 primeros)
+            const recent = currentFavorites.slice(0, 4);
+            const container = $('recentFavs');
+            if (recent.length === 0) {
+                container.innerHTML = `
+                    <div class="empty" style="padding:40px 20px">
+                        <i class="far fa-heart"></i>
+                        <h3>Sin favoritos todavía</h3>
+                        <p>Toca el corazón en cualquier local del directorio para empezar tu colección.</p>
+                        <a href="./" class="btn btn-primary"><i class="fas fa-compass"></i> Explorar locales</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="places-grid">${recent.map(favCardHTML).join('')}</div>`;
+            }
+            renderRecomendados();
+        }
+
+        // ═══ Render FAVORITOS ═══
+        let _renderFavGen = 0; // [v2.0.28/U-03] token de generación anti-stale-DOM
+        async function renderFavoritos() {
+            const gen = ++_renderFavGen;
+            const grid = $('favoritesGrid');
+            const empty = $('favoritesEmpty');
+            if (currentFavorites.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            grid.innerHTML = currentFavorites.map(favCardHTML).join('');
+            // Resolver places reales para enriquecer las tarjetas (placeholder + imagen)
+            currentFavorites.forEach(async (fav) => {
+                const place = await fetchPlaceById(fav.place_id, fav.place_source);
+                // [v2.0.28/U-03] si llegó un re-render (p. ej. removeFav) o un
+                //   cambio de panel mientras este fetch estaba en vuelo, abortar:
+                //   no sobreescribir tarjetas nuevas con datos obsoletos.
+                if (gen !== _renderFavGen) return;
+                if (!place) return;
+                const card = grid.querySelector(`.place-card[data-fav-id="${fav.id}"]`);
+                if (!card) return;
+                card.querySelector('.place-card-title').textContent = place.name;
+                card.querySelector('.place-card-meta').innerHTML = `
+                    <i class="fas fa-map-pin"></i> ${escapeHtml(place.neighborhood || '')}
+                    ${place.category ? `· <span style="text-transform:capitalize">${escapeHtml(place.category)}</span>` : ''}
+                `;
+                const imgWrap = card.querySelector('.place-card-img-wrap');
+                const img = place.images && place.images[0];
+                if (img) {
+                    imgWrap.innerHTML = `<img src="${escapeHtml(img)}" alt="${escapeHtml(place.name)}" class="place-card-img" loading="lazy">`;
+                } else {
+                    imgWrap.innerHTML = `<div class="place-card-img-fallback"><i class="fas fa-utensils"></i></div>`;
+                }
+                const verBtn = card.querySelector('.ver-mapa-btn');
+                if (verBtn) verBtn.href = `./?place=${encodeURIComponent(place.id)}`;
+            });
+        }
+
+        function favCardHTML(fav) {
+            const name = fav.place_name_snapshot || 'Local';
+            return `
+                <article class="place-card" data-fav-id="${fav.id}" data-place-id="${escapeHtml(fav.place_id)}">
+                    <div class="place-card-img-wrap">
+                        <div class="place-card-img-fallback"><i class="fas fa-utensils"></i></div>
+                    </div>
+                    <div class="place-card-body">
+                        <h3 class="place-card-title">${escapeHtml(name)}</h3>
+                        <p class="place-card-meta"><i class="fas fa-map-pin"></i> Cargando…</p>
+                        <div class="place-card-actions">
+                            <a href="./?place=${encodeURIComponent(fav.place_id)}" class="btn btn-sm ver-mapa-btn"><i class="fas fa-map"></i> Ver en mapa</a>
+                            <button class="btn btn-sm btn-danger" onclick="removeFav('${fav.id}', '${escapeHtml(fav.place_id)}')">
+                                <i class="fas fa-heart-crack"></i> Quitar
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        async function removeFav(favId, placeId) {
+            const ok = await removeFavorite(placeId);
+            if (ok) {
+                currentFavorites = currentFavorites.filter(f => f.id !== favId);
+                stats.favoritos = currentFavorites.length;
+                renderFavoritos();
+                renderInicio();
+                showToast('Quitado de favoritos');
+            }
+        }
+        window.removeFav = removeFav;
+
+        // ═══ Render RESEÑAS ═══
+        let _renderResenasGen = 0; // [v2.0.28/U-03] token de generación anti-stale-DOM
+        async function renderResenas() {
+            const gen = ++_renderResenasGen;
+            const list = $('reviewsList');
+            const empty = $('reviewsEmpty');
+            if (currentReviews.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            list.innerHTML = currentReviews.map(reviewCardHTML).join('');
+            // Resolver nombre del place para cada reseña
+            currentReviews.forEach(async (r) => {
+                const place = await fetchPlaceById(r.place_id, r.place_source);
+                // [v2.0.28/U-03] abortar si llegó un re-render mientras el fetch
+                //   estaba en vuelo (no sobreescribir tarjetas nuevas).
+                if (gen !== _renderResenasGen) return;
+                const card = list.querySelector(`.review-card[data-review-id="${r.id}"]`);
+                if (!card) return;
+                const placeName = place ? place.name : (r.place_name_snapshot || 'Local');
+                card.querySelector('.review-card-place').textContent = placeName;
+            });
+        }
+
+        function reviewCardHTML(r) {
+            const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            const _okStatusR = ['published','pending','removed','flagged']; // [FIX v2.0.27] allowlist: evita clase/status arbitrario desde la BD
+            const _safeStatusR = _okStatusR.includes(r.status) ? r.status : 'pending';
+            const statusLabel = { published: 'Publicada', pending: 'Pendiente', removed: 'Eliminada', flagged: 'Marcada' }[_safeStatusR] || 'Pendiente';
+            return `
+                <article class="review-card" data-review-id="${r.id}">
+                    <div class="review-card-head">
+                        <div>
+                            <div class="review-card-place">Cargando…</div>
+                            <div class="review-card-date">${formatDate(r.created_at)}</div>
+                        </div>
+                        <span class="review-status ${_safeStatusR}">${escapeHtml(statusLabel)}</span>
+                    </div>
+                    <div class="review-stars">${stars}</div>
+                    ${r.body ? `<p class="review-body">${escapeHtml(r.body)}</p>` : '<p class="review-body" style="color:var(--muted);font-style:italic">Sin texto</p>'}
+                    <div class="review-actions">
+                        ${r.status !== 'removed' ? `
+                            <button class="btn btn-sm" onclick="openEditReviewModal('${r.id}')"><i class="fas fa-pen"></i> Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteReviewById('${r.id}')"><i class="fas fa-trash"></i> Borrar</button>
+                        ` : ''}
+                    </div>
+                </article>
+            `;
+        }
+
+        async function deleteReviewById(reviewId) {
+            const ok = await deleteReview(reviewId);
+            if (ok) {
+                currentReviews = currentReviews.filter(r => r.id !== reviewId);
+                stats.resenas = currentReviews.length;
+                stats.publicadas = currentReviews.filter(r => r.status === 'published').length;
+                renderResenas();
+                renderInicio();
+            }
+        }
+        window.deleteReviewById = deleteReviewById;
+
+        // ═══ Editar reseña (modal) ═══
+        // [v2.0.28/A-05] Accesibilidad: focus trap + restore en el modal de reseña.
+        let _lastFocusBeforeModal = null;
+        function _editModalFocusables() {
+            const box = document.querySelector('#editReviewModal .modal-box');
+            if (!box) return [];
+            return Array.from(box.querySelectorAll('[tabindex="0"], button, textarea, input, a[href]'))
+                .filter(el => !el.disabled && el.offsetParent !== null);
+        }
+
+        function openEditReviewModal(reviewId) {
+            const r = currentReviews.find(x => x.id === reviewId);
+            if (!r) return;
+            $('editReviewId').value = reviewId;
+            $('editReviewBody').value = r.body || '';
+            editReviewRating = r.rating;
+            updateStarInput(r.rating);
+            // [v2.0.28/A-05] guardar el foco previo y moverlo al primer control.
+            _lastFocusBeforeModal = document.activeElement;
+            $('editReviewModal').classList.add('open');
+            // Foco al primer elemento operable (la 1ª estrella o el textarea).
+            setTimeout(() => {
+                const f = _editModalFocusables();
+                if (f.length) { try { f[0].focus(); } catch (e) {} }
+            }, 60);
+        }
+        window.openEditReviewModal = openEditReviewModal;
+
+        function closeEditReviewModal() {
+            $('editReviewModal').classList.remove('open');
+            // [v2.0.28/A-05] devolver el foco al botón que abrió el modal.
+            if (_lastFocusBeforeModal && typeof _lastFocusBeforeModal.focus === 'function') {
+                try { _lastFocusBeforeModal.focus(); } catch (e) {}
+            }
+            _lastFocusBeforeModal = null;
+        }
+        window.closeEditReviewModal = closeEditReviewModal;
+
+        function updateStarInput(rating) {
+            document.querySelectorAll('#editStarInput i').forEach(star => {
+                const v = parseInt(star.dataset.value);
+                const active = v <= rating;
+                star.className = active ? 'fas fa-star active' : 'far fa-star';
+                star.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+
+        document.querySelectorAll('#editStarInput i').forEach(star => {
+            star.addEventListener('click', () => {
+                editReviewRating = parseInt(star.dataset.value);
+                updateStarInput(editReviewRating);
+            });
+            star.addEventListener('mouseenter', () => {
+                const v = parseInt(star.dataset.value);
+                document.querySelectorAll('#editStarInput i').forEach(s => {
+                    const sv = parseInt(s.dataset.value);
+                    s.className = sv <= v ? 'fas fa-star' : 'far fa-star';
+                });
+            });
+            // [v2.0.28/A-05] teclado: Enter/Espacio selecciona; flechas suben/bajan
+            //   y mueven el foco a la estrella correspondiente.
+            star.addEventListener('keydown', (e) => {
+                const v = parseInt(star.dataset.value);
+                let next = v;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    next = v;
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    next = Math.min(5, v + 1);
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    next = Math.max(1, v - 1);
+                } else {
+                    return;
+                }
+                editReviewRating = next;
+                updateStarInput(editReviewRating);
+                const tgt = document.querySelector(`#editStarInput i[data-value="${next}"]`);
+                if (tgt) { try { tgt.focus(); } catch (e2) {} }
+            });
+        });
+        document.getElementById('editStarInput').addEventListener('mouseleave', () => updateStarInput(editReviewRating));
+
+        async function saveReviewEdit() {
+            const reviewId = $('editReviewId').value;
+            const body = $('editReviewBody').value.trim();
+            if (editReviewRating < 1) { showToast('Selecciona una puntuación', true); return; }
+            if (body.length > 2000) { showToast('La reseña no puede exceder 2000 caracteres', true); return; }
+            const ok = await updateReview(reviewId, { rating: editReviewRating, body: body });
+            if (ok) {
+                // Actualizar en memoria
+                const r = currentReviews.find(x => x.id === reviewId);
+                if (r) { r.rating = editReviewRating; r.body = body; }
+                closeEditReviewModal();
+                renderResenas();
+            }
+        }
+        window.saveReviewEdit = saveReviewEdit;
+
+        // Cerrar modal con Esc + focus trap (Tab/Shift+Tab cicla dentro)
+        document.addEventListener('keydown', (e) => {
+            const modal = $('editReviewModal');
+            if (!modal || !modal.classList.contains('open')) return;
+            if (e.key === 'Escape') {
+                closeEditReviewModal();
+            } else if (e.key === 'Tab') {
+                // [v2.0.28/A-05] mantener el foco dentro del modal.
+                const f = _editModalFocusables();
+                if (f.length === 0) return;
+                const first = f[0], last = f[f.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+        });
+        $('editReviewModal').addEventListener('click', (e) => {
+            if (e.target === $('editReviewModal')) closeEditReviewModal();
+        });
+
+        // ═══ Render LISTAS ═══
+        function renderListas() {
+            const grid = $('listasGrid');
+            const empty = $('listasEmpty');
+            if (currentCollections.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            grid.innerHTML = currentCollections.map(listCardHTML).join('');
+        }
+
+        function listCardHTML(col) {
+            const items = Array.isArray(col.list_items) ? col.list_items : [];
+            return `
+                <article class="lista-card" data-list-id="${col.id}">
+                    <div class="lista-card-head">
+                        <div>
+                            <h3 class="lista-card-name">${escapeHtml(col.name)}</h3>
+                            <p class="lista-card-count">${items.length} ${items.length === 1 ? 'lugar' : 'lugares'}</p>
+                        </div>
+                        <div class="lista-card-actions">
+                            <button class="btn btn-sm" onclick="handleRenameList('${col.id}')" aria-label="Renombrar lista"><i class="fas fa-pen"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="handleDeleteList('${col.id}')" aria-label="Borrar lista"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="lista-card-items">
+                        ${items.length === 0
+                            ? `<p class="lista-card-empty">Sin lugares todavía. Abre un local en el mapa y toca "Añadir a lista".</p>`
+                            : items.map(it => `
+                                <div class="lista-item">
+                                    <a href="./?place=${encodeURIComponent(it.place_id)}" class="lista-item-name">${escapeHtml(it.place_name_snapshot || 'Local')}</a>
+                                    <button class="btn btn-sm btn-danger" onclick="handleRemoveListItem('${it.id}','${col.id}')" aria-label="Quitar de la lista"><i class="fas fa-xmark"></i></button>
+                                </div>`).join('')}
+                    </div>
+                </article>`;
+        }
+
+        async function handleCreateList() {
+            const input = $('newListName');
+            const name = input.value.trim();
+            if (!name) { showToast('Escribe un nombre para la lista', true); input.focus(); return; }
+            const created = await createCollection(name);
+            if (created) {
+                input.value = '';
+                currentCollections.unshift(created);
+                stats.listas = currentCollections.length;
+                renderListas();
+                renderInicio();
+            }
+        }
+        window.handleCreateList = handleCreateList;
+
+        async function handleDeleteList(id) {
+            const ok = await deleteCollection(id);
+            if (ok) {
+                currentCollections = currentCollections.filter(c => c.id !== id);
+                stats.listas = currentCollections.length;
+                renderListas();
+                renderInicio();
+            }
+        }
+        window.handleDeleteList = handleDeleteList;
+
+        async function handleRenameList(id) {
+            const c = currentCollections.find(x => x.id === id);
+            const currentName = c ? c.name : '';
+            const newName = prompt('Nuevo nombre de la lista:', currentName);
+            if (newName === null) return;
+            const ok = await renameCollection(id, newName);
+            if (ok) {
+                if (c) c.name = newName.trim();
+                renderListas();
+            }
+        }
+        window.handleRenameList = handleRenameList;
+
+        async function handleRemoveListItem(itemId, collectionId) {
+            const ok = await removePlaceFromCollection(itemId);
+            if (ok) {
+                const c = currentCollections.find(x => x.id === collectionId);
+                if (c && Array.isArray(c.list_items)) {
+                    c.list_items = c.list_items.filter(it => it.id !== itemId);
+                }
+                renderListas();
+            }
+        }
+        window.handleRemoveListItem = handleRemoveListItem;
+
+        // ═══ Render FOTOS ═══
+        let _renderFotosGen = 0; // [v2.0.28/U-03] token de generación anti-stale-DOM
+        function renderFotos() {
+            const gen = ++_renderFotosGen;
+            const grid = $('fotosGrid');
+            const empty = $('fotosEmpty');
+            if (currentPhotos.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            grid.innerHTML = currentPhotos.map(photoCardHTML).join('');
+            // Hidratar nombre del place si no hay snapshot
+            currentPhotos.forEach(async (ph) => {
+                if (ph.place_name_snapshot) return;
+                const place = await fetchPlaceById(ph.place_id, ph.place_source);
+                // [v2.0.28/U-03] abortar si llegó un re-render mientras el fetch
+                //   estaba en vuelo (no sobreescribir tarjetas nuevas).
+                if (gen !== _renderFotosGen) return;
+                const card = grid.querySelector(`.photo-card[data-photo-id="${ph.id}"] .photo-card-place`);
+                if (card) card.textContent = place ? place.name : 'Local';
+            });
+        }
+
+        function photoCardHTML(ph) {
+            const _okStatusP = ['published','pending','rejected']; // [FIX v2.0.27] allowlist
+            const _safeStatusP = _okStatusP.includes(ph.status) ? ph.status : 'pending';
+            const statusLabel = { published: 'Publicada', pending: 'Pendiente', rejected: 'Rechazada' }[_safeStatusP] || 'Pendiente';
+            return `
+                <article class="photo-card" data-photo-id="${ph.id}">
+                    <div class="photo-card-img-wrap">
+                        <img src="${escapeHtml(ph.url)}" alt="${escapeHtml(ph.caption || ph.place_name_snapshot || 'Foto')}" class="photo-card-img" loading="lazy">
+                        <span class="photo-status ${_safeStatusP}">${escapeHtml(statusLabel)}</span>
+                    </div>
+                    <div class="photo-card-body">
+                        <div class="photo-card-place">${escapeHtml(ph.place_name_snapshot || 'Cargando…')}</div>
+                        ${ph.caption ? `<p class="photo-card-caption">${escapeHtml(ph.caption)}</p>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="handleDeletePhoto('${ph.id}')"><i class="fas fa-trash"></i> Borrar</button>
+                    </div>
+                </article>`;
+        }
+
+        async function handleDeletePhoto(id) {
+            if (!confirm('¿Borrar esta foto? Se eliminará del panel y del almacenamiento.')) return; // [FIX v2.0.27] confirm antes de borrar (convención con deleteReview/deleteCollection)
+            const ok = await deletePlacePhoto(id);
+            if (ok) {
+                currentPhotos = currentPhotos.filter(p => p.id !== id);
+                stats.fotos = currentPhotos.length;
+                renderFotos();
+                renderInicio();
+            }
+        }
+        window.handleDeletePhoto = handleDeletePhoto;
+
+        // ═══ Recomendados para ti (en Inicio) ═══
+        function _normCatLocal(c) { return String(c || '').toLowerCase().trim(); }
+        function renderRecomendados() {
+            const container = $('recomendados');
+            if (!container) return;
+            if (typeof staticPlaces === 'undefined' || !Array.isArray(staticPlaces) || staticPlaces.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            if (currentFavorites.length === 0) {
+                container.innerHTML = `
+                    <div class="empty" style="padding:24px 16px;grid-column:1/-1">
+                        <i class="far fa-compass"></i>
+                        <h3>Guarda tu primer favorito</h3>
+                        <p>En cuanto guardes un local, te recomendaremos lugares similares según tus gustos.</p>
+                        <a href="./" class="btn btn-primary"><i class="fas fa-compass"></i> Explorar locales</a>
+                    </div>`;
+                return;
+            }
+            const favIds = new Set(currentFavorites.map(f => String(f.place_id)));
+            // Top categorías de los favoritos
+            const catCount = {};
+            currentFavorites.forEach(f => {
+                const p = staticPlaces.find(pl => String(pl.id) === String(f.place_id));
+                if (p && p.category) {
+                    const c = _normCatLocal(p.category);
+                    if (c) catCount[c] = (catCount[c] || 0) + 1;
+                }
+            });
+            const topCats = Object.entries(catCount).sort((a, b) => b[1] - a[1]).slice(0, 2).map(e => e[0]);
+            if (topCats.length === 0) { container.innerHTML = ''; return; }
+            const recs = staticPlaces.filter(p =>
+                topCats.includes(_normCatLocal(p.category)) && !favIds.has(String(p.id))
+            ).slice(0, 6);
+            if (recs.length === 0) {
+                container.innerHTML = `<p class="panel-subtitle" style="grid-column:1/-1">Ya guardaste todos los locales que tenemos en tus categorías favoritas. ¡Sigue explorando!</p>`;
+                return;
+            }
+            container.innerHTML = recs.map(p => `
+                <article class="place-card">
+                    <a href="./?place=${encodeURIComponent(p.id)}" class="place-card-link" style="display:block;text-decoration:none;color:inherit">
+                        <div class="place-card-img-wrap">
+                            ${p.images && p.images[0]
+                                ? `<img src="${escapeHtml(p.images[0])}" alt="${escapeHtml(p.name)}" class="place-card-img" loading="lazy">`
+                                : `<div class="place-card-img-fallback"><i class="fas fa-utensils"></i></div>`}
+                        </div>
+                        <div class="place-card-body">
+                            <h3 class="place-card-title">${escapeHtml(p.name)}</h3>
+                            <p class="place-card-meta"><i class="fas fa-map-pin"></i> ${escapeHtml(p.neighborhood || '')}</p>
+                            <span class="btn btn-sm btn-primary" style="margin-top:8px;display:inline-block"><i class="fas fa-map"></i> Ver en mapa</span>
+                        </div>
+                    </a>
+                </article>`).join('');
+        }
+
+        // ═══ Render PERFIL ═══
+        function renderPerfil() {
+            $('profileDisplayName').value = foodieProfile.display_name || '';
+            $('profileBio').value = foodieProfile.bio || '';
+            $('profileIsPublic').checked = foodieProfile.is_public !== false;
+            $('profileEmail').value = currentFoodie.email;
+            updateBioCount();
+            // Pintar preview del avatar (imagen si existe, iniciales si no)
+            updateAvatarPreview();
+        }
+
+        // ═══ Avatar preview + uploader ═══
+        function updateAvatarPreview() {
+            const preview = $('avatarPreview');
+            const initialsEl = $('avatarInitials');
+            const removeBtn = $('avatarRemoveBtn');
+            const uploadLabel = $('avatarUploadLabel');
+            if (!preview) return;
+            // Limpiar img previa
+            const oldImg = preview.querySelector('img');
+            if (oldImg) oldImg.remove();
+            const url = foodieProfile && foodieProfile.avatar_url ? foodieProfile.avatar_url : null;
+            if (url) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Foto de perfil de ' + (foodieProfile.display_name || '');
+                img.onerror = function() {
+                    // Si la imagen falla (404, conexión), mostrar iniciales en su lugar
+                    if (this.parentNode) this.parentNode.removeChild(this);
+                    initialsEl.style.display = '';
+                };
+                preview.appendChild(img);
+                initialsEl.style.display = 'none';
+                if (removeBtn) removeBtn.style.display = '';
+                if (uploadLabel) uploadLabel.textContent = 'Cambiar foto';
+            } else {
+                initialsEl.style.display = '';
+                initialsEl.textContent = getInitials(foodieProfile && foodieProfile.display_name || '?');
+                if (removeBtn) removeBtn.style.display = 'none';
+                if (uploadLabel) uploadLabel.textContent = 'Subir foto';
+            }
+        }
+
+        async function handleAvatarSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            // Limpiar el input para permitir re-seleccionar el mismo archivo
+            event.target.value = '';
+            await uploadAvatarFile(file);
+        }
+        window.handleAvatarSelected = handleAvatarSelected;
+
+        async function uploadAvatarFile(file) {
+            const preview = $('avatarPreview');
+            const btn = $('avatarUploadBtn');
+            const label = $('avatarUploadLabel');
+            // Estado: subiendo
+            preview.classList.add('uploading');
+            btn.disabled = true;
+            label.textContent = 'Subiendo…';
+            try {
+                const result = await uploadFoodieAvatar(file);
+                if (!result.ok) {
+                    showToast(result.error, true);
+                    return;
+                }
+                // Éxito: actualizar preview + sidebar + topbar
+                updateAvatarPreview();
+                updateSidebarAvatar();
+                showToast('Foto de perfil actualizada');
+            } finally {
+                preview.classList.remove('uploading');
+                btn.disabled = false;
+                label.textContent = foodieProfile && foodieProfile.avatar_url ? 'Cambiar foto' : 'Subir foto';
+            }
+        }
+
+        async function handleRemoveAvatar() {
+            if (!foodieProfile || !foodieProfile.avatar_url) return;
+            if (!confirm('¿Quitar tu foto de perfil? Volverás a ver tus iniciales.')) return;
+            const btn = $('avatarRemoveBtn');
+            btn.disabled = true;
+            try {
+                const result = await removeFoodieAvatar();
+                if (!result.ok) {
+                    showToast(result.error, true);
+                    return;
+                }
+                updateAvatarPreview();
+                updateSidebarAvatar();
+                showToast('Foto quitada');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        window.handleRemoveAvatar = handleRemoveAvatar;
+
+        // Update sidebar + topbar con avatar (si existe)
+        function updateSidebarAvatar() {
+            const sidebarAvatar = $('sidebarAvatar');
+            if (!sidebarAvatar) return;
+            // Limpiar img previa
+            const oldImg = sidebarAvatar.querySelector('img');
+            if (oldImg) oldImg.remove();
+            const url = foodieProfile && foodieProfile.avatar_url ? foodieProfile.avatar_url : null;
+            if (url) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Foto de perfil';
+                img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;';
+                img.onerror = function() {
+                    if (this.parentNode) this.parentNode.removeChild(this);
+                    $('sidebarAvatar').style.background = '';
+                    $('sidebarAvatar').textContent = getInitials(foodieProfile.display_name || '?');
+                };
+                sidebarAvatar.style.background = 'transparent';
+                sidebarAvatar.textContent = '';
+                sidebarAvatar.appendChild(img);
+            } else {
+                sidebarAvatar.style.background = '';
+                sidebarAvatar.textContent = getInitials(foodieProfile.display_name || '?');
+            }
+        }
+
+        // ─── Drag & drop sobre el preview ───────────────────────────────
+        document.addEventListener('dragover', function(e) {
+            const preview = $('avatarPreview');
+            if (!preview || !preview.contains(e.target)) return;
+            e.preventDefault();
+            preview.classList.add('dragging');
+        });
+        document.addEventListener('dragleave', function(e) {
+            const preview = $('avatarPreview');
+            if (!preview) return;
+            if (e.target === preview || preview.contains(e.target)) {
+                preview.classList.remove('dragging');
+            }
+        });
+        document.addEventListener('drop', function(e) {
+            const preview = $('avatarPreview');
+            if (!preview || !preview.contains(e.target)) return;
+            e.preventDefault();
+            preview.classList.remove('dragging');
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) uploadAvatarFile(file);
+        });
+
+        function updateBioCount() {
+            const v = $('profileBio').value;
+            $('bioCount').textContent = v.length;
+        }
+        $('profileBio').addEventListener('input', updateBioCount);
+
+        async function saveProfileFromForm() {
+            const displayName = $('profileDisplayName').value.trim();
+            if (displayName.length < 2) { showToast('El apodo debe tener al menos 2 caracteres', true); return; }
+            if (displayName.length > 40) { showToast('El apodo no puede exceder 40 caracteres', true); return; }
+            const bio = $('profileBio').value.trim();
+            if (bio.length > 280) { showToast('La bio no puede exceder 280 caracteres', true); return; }
+            // Nota: el avatar NO se toca aquí — se sube/borra en tiempo real
+            // desde el uploader del avatar picker.
+            const ok = await saveFoodieProfile({
+                display_name: displayName,
+                bio: bio,
+                is_public: $('profileIsPublic').checked
+            });
+            if (ok) {
+                // Actualizar UI
+                $('sidebarUserName').textContent = displayName;
+                $('welcomeName').textContent = displayName.split(' ')[0];
+                updateSidebarAvatar();
+            }
+        }
+        window.saveProfileFromForm = saveProfileFromForm;
+
+        function requestAccountDeletion() {
+            const ok = confirm(
+                'Vas a solicitar el borrado de tu cuenta de comensal.\n\n' +
+                'Esto eliminará permanentemente:\n' +
+                '· Todos tus favoritos\n' +
+                '· Todas tus reseñas\n' +
+                '· Tu foto de perfil y bio\n' +
+                '· Tu cuenta de autenticación\n\n' +
+                'Esta acción NO se puede deshacer.\n\n' +
+                'Para confirmar, escríbanos a sabormap1@gmail.com desde ' + currentFoodie.email + ' con el asunto "Borrar mi cuenta de comensal". Te responderemos en menos de 72 horas.'
+            );
+            if (ok) {
+                window.location.href = 'mailto:sabormap1@gmail.com?subject=Borrar%20mi%20cuenta%20de%20comensal&body=Quiero%20borrar%20mi%20cuenta%20de%20comensal%20con%20email%20' + encodeURIComponent(currentFoodie.email);
+            }
+        }
+        window.requestAccountDeletion = requestAccountDeletion;
+
+        /* ═══════════════════════════════════════════════════════════════════
+           [v1.1 dashboard] ESTADÍSTICAS, ACTIVIDAD, CONFIGURACIÓN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        // ─── Actualizar switchPanel para incluir las 3 secciones nuevas ───
+        const _origSwitchPanel = window.switchPanel;
+        window.switchPanel = function(panelId, btn) {
+            _origSwitchPanel(panelId, btn);
+            if (panelId === 'estadisticas') renderEstadisticas();
+            else if (panelId === 'actividad') renderActividad();
+            else if (panelId === 'configuracion') renderConfiguracion();
+        };
+
+        // ─── ESTADÍSTICAS ───────────────────────────────────────────────────
+        let statsLoaded = null;
+        async function renderEstadisticas() {
+            // Si ya están cargadas, no recargar (a menos que el usuario haga F5)
+            if (statsLoaded) { _paintEstadisticas(statsLoaded); return; }
+            const ratingChart = $('ratingChart');
+            const barriosChart = $('barriosChart');
+            const monthlyChart = $('monthlyChart');
+            const statsSummary = $('statsSummary');
+            // Mostrar "cargando" placeholders
+            [ratingChart, barriosChart, monthlyChart].forEach(el => {
+                if (el) el.innerHTML = '<div class="chart-empty"><div class="spinner-lg" style="margin:0 auto 14px;width:30px;height:30px;border-width:2px"></div>Cargando…</div>';
+            });
+            statsSummary.innerHTML = '<div class="chart-empty">Cargando…</div>';
+            const stats = await loadFoodieStats();
+            if (!stats) {
+                [ratingChart, barriosChart, monthlyChart, statsSummary].forEach(el => {
+                    if (el) el.innerHTML = '<div class="chart-empty"><i class="fas fa-triangle-exclamation"></i>No se pudieron cargar las estadísticas. Revisa tu conexión.</div>';
+                });
+                return;
+            }
+            statsLoaded = stats;
+            _paintEstadisticas(stats);
+        }
+
+        function _paintEstadisticas(stats) {
+            // ── 1. Distribución de ratings ──
+            const ratingChart = $('ratingChart');
+            const totalReviews = stats.ratingDist.reduce((a, b) => a + b, 0);
+            if (totalReviews === 0) {
+                ratingChart.innerHTML = '<div class="chart-empty"><i class="far fa-star"></i>Aún no has escrito reseñas. Cuando lo hagas, verás aquí cómo distribuyes tus ratings.</div>';
+                $('avgRatingHero').style.display = 'none';
+            } else {
+                $('avgRatingHero').style.display = 'flex';
+                $('avgRatingValue').textContent = stats.avgRating.toFixed(1);
+                const rounded = Math.round(stats.avgRating);
+                $('avgRatingStars').textContent = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+                const max = Math.max(...stats.ratingDist);
+                ratingChart.innerHTML = stats.ratingDist.map((count, i) => {
+                    const pct = max > 0 ? Math.max(2, (count / max) * 100) : 0;
+                    return `
+                        <div class="bar-row">
+                            <span class="bar-row-label">${i + 1}★</span>
+                            <div class="bar-row-track"><div class="bar-row-fill" style="width:${pct}%"></div></div>
+                            <span class="bar-row-value">${count}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ── 2. Barrios más visitados ──
+            const barriosChart = $('barriosChart');
+            if (stats.topBarrios.length === 0) {
+                barriosChart.innerHTML = '<div class="chart-empty"><i class="far fa-heart"></i>Aún no tienes favoritos. Cuando guardes algunos, verás aquí los barrios que más frecuentas.</div>';
+            } else {
+                const max = Math.max(...stats.topBarrios.map(b => b.count));
+                barriosChart.innerHTML = stats.topBarrios.map(b => {
+                    const pct = max > 0 ? Math.max(2, (b.count / max) * 100) : 0;
+                    return `
+                        <div class="bar-row">
+                            <span class="bar-row-label" style="width:auto;flex:0 1 110px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(b.name)}</span>
+                            <div class="bar-row-track"><div class="bar-row-fill" style="width:${pct}%"></div></div>
+                            <span class="bar-row-value">${b.count}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ── 3. Actividad mensual (SVG inline) ──
+            const monthlyChart = $('monthlyChart');
+            const maxMonth = Math.max(1, ...stats.months.map(m => Math.max(m.favoritos, m.resenas)));
+            const chartW = 600, chartH = 200, padL = 28, padB = 26, padT = 12, padR = 12;
+            const innerW = chartW - padL - padR;
+            const innerH = chartH - padT - padB;
+            const stepX = innerW / (stats.months.length - 1);
+            const yFor = (v) => padT + innerH - (v / maxMonth) * innerH;
+
+            // Líneas de grid (4 horizontales)
+            const gridLines = [];
+            for (let i = 0; i <= 4; i++) {
+                const y = padT + (i / 4) * innerH;
+                const val = Math.round(maxMonth - (i / 4) * maxMonth);
+                gridLines.push(`<line x1="${padL}" y1="${y}" x2="${chartW - padR}" y2="${y}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`);
+                gridLines.push(`<text x="${padL - 6}" y="${y + 3}" text-anchor="end" font-size="10" fill="var(--muted)">${val}</text>`);
+            }
+            // Eje X (labels de meses)
+            const xLabels = stats.months.map((m, i) => {
+                const x = padL + i * stepX;
+                return `<text x="${x}" y="${chartH - 8}" text-anchor="middle" font-size="10" fill="var(--muted)">${escapeHtml(m.label)}</text>`;
+            }).join('');
+            // Línea de favoritos
+            const favPath = stats.months.map((m, i) => {
+                const x = padL + i * stepX;
+                const y = yFor(m.favoritos);
+                return (i === 0 ? 'M' : 'L') + x + ',' + y;
+            }).join(' ');
+            // Línea de reseñas
+            const revPath = stats.months.map((m, i) => {
+                const x = padL + i * stepX;
+                const y = yFor(m.resenas);
+                return (i === 0 ? 'M' : 'L') + x + ',' + y;
+            }).join(' ');
+            // Puntos
+            const favPoints = stats.months.map((m, i) => {
+                const x = padL + i * stepX;
+                const y = yFor(m.favoritos);
+                return `<circle cx="${x}" cy="${y}" r="3" fill="#f43f5e" stroke="#fff" stroke-width="1.5"/>`;
+            }).join('');
+            const revPoints = stats.months.map((m, i) => {
+                const x = padL + i * stepX;
+                const y = yFor(m.resenas);
+                return `<circle cx="${x}" cy="${y}" r="3" fill="#f97316" stroke="#fff" stroke-width="1.5"/>`;
+            }).join('');
+            const hasActivity = stats.months.some(m => m.favoritos > 0 || m.resenas > 0);
+            if (!hasActivity) {
+                monthlyChart.innerHTML = '<div class="chart-empty"><i class="far fa-calendar"></i>Sin actividad en los últimos 6 meses. Cuando guardes un favorito o escribas una reseña, verás la evolución aquí.</div>';
+            } else {
+                monthlyChart.innerHTML = `
+                    <svg class="chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Gráfico de actividad mensual">
+                        ${gridLines.join('')}
+                        ${xLabels}
+                        <path d="${favPath}" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                        <path d="${revPath}" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                        ${favPoints}
+                        ${revPoints}
+                    </svg>
+                    <div style="display:flex;gap:18px;justify-content:center;margin-top:10px;font-size:0.78rem;color:var(--muted)">
+                        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#f43f5e;border-radius:50%"></span> Favoritos</span>
+                        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#f97316;border-radius:50%"></span> Reseñas</span>
+                    </div>
+                `;
+            }
+
+            // ── 4. Resumen completo (tabla) ──
+            const t = stats.total;
+            $('statsSummary').innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+                    ${_summaryItem('Favoritos guardados', t.favoritos, 'fa-heart', '#f43f5e')}
+                    ${_summaryItem('Reseñas escritas', t.resenas, 'fa-star', 'var(--amber)')}
+                    ${_summaryItem('Reseñas publicadas', t.resenas_publicadas, 'fa-check-circle', 'var(--green)')}
+                    ${_summaryItem('Reseñas pendientes', t.resenas_pendientes, 'fa-clock', 'var(--amber)')}
+                    ${_summaryItem('Reseñas marcadas', t.resenas_marcadas, 'fa-flag', 'var(--accent)')}
+                    ${_summaryItem('Reseñas eliminadas', t.resenas_eliminadas, 'fa-trash', 'var(--muted-2)')}
+                    ${_summaryItem('Reportes enviados', t.reportes, 'fa-shield-halved', 'var(--red)')}
+                    ${_summaryItem('Reportes abiertos', t.reportes_abiertos, 'fa-hourglass', 'var(--amber)')}
+                    ${_summaryItem('Reportes resueltos', t.reportes_resueltos, 'fa-check', 'var(--green)')}
+                </div>
+            `;
+        }
+
+        function _summaryItem(label, value, icon, color) {
+            return `
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--border-soft);border-radius:10px">
+                    <div style="width:32px;height:32px;border-radius:8px;background:${color}15;color:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i class="fas ${icon}" style="font-size:0.85rem"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700;line-height:1">${value}</div>
+                        <div style="font-size:0.74rem;color:var(--muted);margin-top:2px">${label}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── ACTIVIDAD (timeline) ───────────────────────────────────────────
+        async function renderActividad() {
+            const list = $('activityList');
+            const empty = $('activityEmpty');
+            list.innerHTML = '<div class="loading-wrap"><div class="spinner-lg"></div><p>Cargando tu actividad…</p></div>';
+            const events = await loadFoodieActivity(30);
+            if (events.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            list.innerHTML = events.map(_activityItemHTML).join('');
+        }
+
+        function _activityItemHTML(e) {
+            const date = new Date(e.ts).toLocaleDateString('es-CU', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            let icon, text, typeClass;
+            switch (e.type) {
+                case 'favorite':
+                    typeClass = 'fav';
+                    icon = '<i class="fas fa-heart"></i>';
+                    text = `Guardaste <strong>${escapeHtml(e.place_name)}</strong> en favoritos`;
+                    break;
+                case 'review':
+                    typeClass = 'review';
+                    icon = '<i class="fas fa-star"></i>';
+                    const stars = '★'.repeat(e.rating) + '☆'.repeat(5 - e.rating);
+                    if (e.status === 'removed') {
+                        text = `Borraste tu reseña de <strong>${escapeHtml(e.place_name)}</strong>`;
+                    } else if (e.status === 'pending') {
+                        text = `Escribiste una reseña de <strong>${escapeHtml(e.place_name)}</strong> <span style="color:var(--amber)">(${stars}, pendiente de moderación)</span>`;
+                    } else {
+                        text = `Reseñaste <strong>${escapeHtml(e.place_name)}</strong> con <span style="color:var(--amber)">${stars}</span>`;
+                    }
+                    break;
+                case 'report':
+                    typeClass = 'report';
+                    icon = '<i class="fas fa-flag"></i>';
+                    text = e.status === 'resolved'
+                        ? 'Tu reporte fue resuelto por el equipo'
+                        : e.status === 'dismissed'
+                            ? 'Tu reporte fue descartado'
+                            : 'Reportaste una reseña (en revisión)';
+                    break;
+                case 'profile':
+                    typeClass = 'profile';
+                    if (e.action === 'signup') {
+                        icon = '<i class="fas fa-flag-checkered"></i>';
+                        text = '¡Creaste tu cuenta de comensal! Bienvenido a SaborMap';
+                    } else {
+                        icon = '<i class="fas fa-user-pen"></i>';
+                        text = 'Actualizaste tu perfil';
+                    }
+                    break;
+                default:
+                    typeClass = 'profile';
+                    icon = '<i class="fas fa-circle"></i>';
+                    text = 'Actividad registrada';
+            }
+            return `
+                <div class="activity-item ${typeClass}">
+                    <div class="activity-icon ${typeClass}">${icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-text">${text}</div>
+                        <div class="activity-meta">${date}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
+        function renderConfiguracion() {
+            // Email verification
+            const verified = isEmailVerified();
+            const badge = $('cfgEmailBadge');
+            const value = $('cfgEmailValue');
+            const resendRow = $('cfgResendRow');
+            if (verified) {
+                badge.className = 'badge-status verified';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> Verificado';
+                value.textContent = 'Tu email está confirmado. Tienes acceso completo a la comunidad.';
+                resendRow.style.display = 'none';
+            } else {
+                badge.className = 'badge-status unverified';
+                badge.innerHTML = '<i class="fas fa-clock"></i> Sin verificar';
+                value.textContent = 'Algunas funciones (escribir reseñas, reportar) pueden estar limitadas hasta que confirmes tu email.';
+                resendRow.style.display = 'flex';
+            }
+            // Toggles
+            $('cfgIsPublic').checked = foodieProfile.is_public !== false;
+            $('cfgEmailNotifications').checked = foodieProfile.email_notifications !== false;
+            $('cfgEmailMarketing').checked = foodieProfile.email_marketing === true;
+            // Limpiar campos de password
+            $('cfgNewPw').value = '';
+            $('cfgNewPwConfirm').value = '';
+        }
+
+        async function changePwFromConfig() {
+            const newPw = $('cfgNewPw').value;
+            const confirm = $('cfgNewPwConfirm').value;
+            if (!newPw) { showToast('Escribe una contraseña nueva', true); return; }
+            if (newPw.length < 8) { showToast('La contraseña debe tener al menos 8 caracteres', true); return; }
+            if (newPw !== confirm) { showToast('Las contraseñas no coinciden', true); return; }
+            const result = await changeFoodiePassword(newPw, confirm);
+            if (result.ok) {
+                showToast('Contraseña actualizada correctamente');
+                $('cfgNewPw').value = '';
+                $('cfgNewPwConfirm').value = '';
+            } else {
+                showToast(result.error, true);
+            }
+        }
+        window.changePwFromConfig = changePwFromConfig;
+
+        async function resendVerifyEmailFromConfig() {
+            const result = await resendEmailVerification();
+            if (result.ok) {
+                if (result.already) {
+                    showToast('Tu email ya está verificado');
+                } else {
+                    showToast('Email de confirmación reenviado. Revisa tu bandeja de entrada y spam.');
+                }
+            } else {
+                showToast('No se pudo reenviar: ' + result.error, true);
+            }
+        }
+        window.resendVerifyEmailFromConfig = resendVerifyEmailFromConfig;
+
+        async function savePrefsFromConfig() {
+            const fields = {
+                is_public: $('cfgIsPublic').checked,
+                email_notifications: $('cfgEmailNotifications').checked,
+                email_marketing: $('cfgEmailMarketing').checked
+            };
+            const result = await updateFoodiePreferences(fields);
+            if (!result.ok) {
+                showToast('No se guardaron las preferencias: ' + result.error, true);
+                // Revertir el toggle que el usuario acaba de cambiar
+                $('cfgIsPublic').checked = foodieProfile.is_public !== false;
+                $('cfgEmailNotifications').checked = foodieProfile.email_notifications !== false;
+                $('cfgEmailMarketing').checked = foodieProfile.email_marketing === true;
+            }
+            // No mostramos toast de éxito para no spamear; el toggle visual es suficiente feedback
+        }
+        window.savePrefsFromConfig = savePrefsFromConfig;
+
+        async function exportDataFromConfig() {
+            showToast('Preparando tus datos…');
+            const result = await exportFoodieData();
+            if (!result.ok) {
+                showToast('No se pudo exportar: ' + result.error, true);
+            } else {
+                showToast('Descarga iniciada');
+            }
+        }
+        window.exportDataFromConfig = exportDataFromConfig;
+
+        // Invalidar cache de stats cuando el usuario publique/borre reseñas o favoritos
+        // desde otras secciones del panel (Favoritos / Mis reseñas).
+        // Enganchamos en removeFav y deleteReviewById existentes.
+        const _origRemoveFav = window.removeFav;
+        if (_origRemoveFav) {
+            window.removeFav = async function(favId, placeId) {
+                const ok = await _origRemoveFav(favId, placeId);
+                if (ok) { statsLoaded = null; }
+                return ok;
+            };
+        }
+        const _origDeleteReviewById = window.deleteReviewById;
+        if (_origDeleteReviewById) {
+            window.deleteReviewById = async function(reviewId) {
+                const ok = await _origDeleteReviewById(reviewId);
+                if (ok) { statsLoaded = null; }
+                return ok;
+            };
+        }
+    </script>
+</body>
+</html>

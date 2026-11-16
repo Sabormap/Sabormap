@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>SaborMap — Crear cuenta de comensal</title>
+    <meta name="description" content="Crea tu cuenta de comensal en SaborMap: guarda favoritos, escribe reseñas y descubre dónde comer bien en La Habana.">
+    <meta name="robots" content="index, follow">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://cfmqwnfimpfuivqmsxju.supabase.co https://*.supabase.co; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cfmqwnfimpfuivqmsxju.supabase.co wss://cfmqwnfimpfuivqmsxju.supabase.co https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="theme-color" content="#0b0e17" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SaborMap">
+    <link rel="icon" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
+    <style>
+        /* ═══ Mismo sistema visual que la home (index.html) ═══ */
+        :root, [data-theme="dark"] {
+            --bg:#0b0e17; --surface:#111628; --card:#171d35; --card-hover:#1e254a;
+            --accent:#8b5cf6; --accent-2:#a78bfa; --accent-glow:rgba(139,92,246,0.3);
+            --secondary:#06b6d4; --secondary-glow:rgba(6,182,212,0.2);
+            --cream:#f1f5f9; --muted:#94a3b8; --border:#2a2f4a; --border-soft:#1e2540;
+            --pink:#ec4899; --amber:#f59e0b;
+            --header-bg:rgba(11,14,23,0.85);
+            --green:#22c55e; --red:#ef4444;
+            --noise-opacity:0.04;
+            --shadow-card:0 1px 0 rgba(255,255,255,0.02) inset, 0 24px 60px -20px rgba(0,0,0,0.6);
+            --shadow-hover:0 30px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,92,246,0.15);
+        }
+        [data-theme="light"] {
+            --bg:#f8fafc; --surface:#ffffff; --card:#ffffff; --card-hover:#f1f5f9;
+            --accent:#7c3aed; --accent-2:#8b5cf6; --accent-glow:rgba(124,58,237,0.15);
+            --secondary:#0891b2; --secondary-glow:rgba(8,145,178,0.12);
+            --cream:#1e293b; --muted:#64748b; --border:#e2e8f0; --border-soft:#eef2f6;
+            --pink:#db2777; --amber:#d97706;
+            --header-bg:rgba(248,250,252,0.9);
+            --green:#059669; --red:#dc2626;
+            --noise-opacity:0.02;
+            --shadow-card:0 1px 0 rgba(0,0,0,0.02) inset, 0 12px 30px -10px rgba(15,23,42,0.08);
+            --shadow-hover:0 18px 40px -12px rgba(15,23,42,0.12), 0 0 0 1px rgba(124,58,237,0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--cream);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.005em;
+            overflow-x: hidden;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+        .font-display { font-family: 'Playfair Display', serif; letter-spacing: -0.015em; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* Bg blobs — mismo patrón que la home */
+        .bg-blob { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.5; pointer-events: none; z-index: 0; animation: blobFloat 22s ease-in-out infinite alternate; }
+        .blob-1 { width: 600px; height: 600px; background: var(--accent-glow); top: -15%; left: -10%; }
+        .blob-2 { width: 500px; height: 500px; background: var(--secondary-glow); bottom: 5%; right: -10%; animation-delay: -8s; }
+        .blob-3 { width: 350px; height: 350px; background: rgba(139,92,246,0.15); top: 40%; left: 30%; animation-delay: -15s; }
+        [data-theme="light"] .blob-3 { background: rgba(124,58,237,0.08); }
+        [data-theme="light"] .bg-blob { opacity: 0.4; }
+        @keyframes blobFloat {
+            0%   { transform: translate(0,0) scale(1); }
+            33%  { transform: translate(40px,-50px) scale(1.08); }
+            66%  { transform: translate(-30px,30px) scale(0.92); }
+            100% { transform: translate(20px,-20px) scale(1.03); }
+        }
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            opacity: var(--noise-opacity);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 256px;
+            transition: opacity 0.4s ease;
+        }
+        .animated-line { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), transparent); animation: lineShimmer 4s ease-in-out infinite; }
+        @keyframes lineShimmer { 0%,100% { opacity: 0.3; transform: scaleX(0.8); } 50% { opacity: 1; transform: scaleX(1); } }
+
+        /* ═══ Topbar minimal — mismo logo que la home ═══ */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: var(--header-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.4s ease;
+        }
+        .topbar-inner {
+            max-width: 1280px; margin: 0 auto; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;
+        }
+        .topbar-logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.1rem; color: #fff;
+            box-shadow: 0 4px 14px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .topbar-logo-text { font-weight: 700; font-size: 1.15rem; }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: var(--muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 500;
+            transition: color 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .nav-link:hover { color: var(--cream); }
+
+        /* Toggle de tema — mismo estilo que la home */
+        .theme-toggle {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--cream); cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; position: relative; overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            background: var(--card-hover);
+            box-shadow: 0 0 0 4px rgba(139,92,246,0.08);
+            transform: translateY(-1px);
+        }
+        .theme-toggle .icon-sun, .theme-toggle .icon-moon {
+            position: absolute; transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        [data-theme="dark"]  .theme-toggle .icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
+        [data-theme="dark"]  .theme-toggle .icon-sun  { opacity: 0; transform: rotate(180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-sun  { opacity: 1; transform: rotate(0deg) scale(1); }
+
+        /* ═══ Layout principal ═══ */
+        .auth-wrap {
+            position: relative; z-index: 2;
+            min-height: calc(100vh - 64px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 32px 24px;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 460px;
+            background: linear-gradient(160deg, var(--card) 0%, var(--surface) 100%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-card), 0 0 60px var(--accent-glow);
+            overflow: hidden;
+            position: relative;
+        }
+        .auth-container::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), transparent);
+            opacity: 0.6;
+        }
+
+        .auth-header {
+            padding: 36px 36px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-soft);
+        }
+        .auth-logo {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border-radius: 16px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.6rem; color: #fff;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 30px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .auth-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem; font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .auth-subtitle {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 320px; margin: 0 auto;
+        }
+
+        /* ═══ Tabs ═══ */
+        .auth-tabs {
+            display: flex;
+            padding: 0 36px;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-soft);
+            background: transparent;
+            position: relative; z-index: 2;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 14px 8px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .auth-tab:hover { color: var(--cream); }
+        .auth-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+            text-shadow: 0 0 18px var(--accent-glow);
+        }
+
+        /* ═══ Forms ═══ */
+        .auth-body { padding: 28px 36px 32px; position: relative; z-index: 2; }
+        .auth-form-inner { animation: authSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes authSlideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .auth-message {
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.84rem;
+            margin-bottom: 18px;
+            display: none;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.5;
+        }
+        .auth-message.show { display: flex; }
+        .auth-message.error {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+        }
+        .auth-message.success {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+        }
+        .auth-message i { margin-top: 2px; flex-shrink: 0; }
+
+        .input-group { margin-bottom: 16px; }
+        .input-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--cream);
+        }
+        .input-group label .required { color: var(--pink); margin-left: 2px; }
+        .input-wrap { position: relative; }
+        .input-wrap i.field-icon {
+            position: absolute;
+            left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+        .form-input {
+            width: 100%;
+            background: var(--card-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 13px 14px 13px 42px;
+            color: var(--cream);
+            font-family: inherit;
+            font-size: 0.92rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+        .form-input::placeholder { color: var(--muted); opacity: 0.7; }
+        .form-input:hover { border-color: var(--border-soft); }
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            background: var(--card);
+        }
+        .form-input:focus + i.field-icon,
+        .form-input:focus ~ i.field-icon { color: var(--accent); }
+        .toggle-pw {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none;
+            color: var(--muted); cursor: pointer;
+            font-size: 0.85rem; padding: 4px;
+            transition: color 0.2s;
+        }
+        .toggle-pw:hover { color: var(--accent); }
+
+        .pw-strength { display: flex; gap: 4px; margin-top: 8px; }
+        .pw-strength-bar {
+            flex: 1; height: 4px; border-radius: 2px;
+            background: var(--border); transition: background 0.3s;
+        }
+        .pw-strength-bar.weak   { background: var(--red); }
+        .pw-strength-bar.medium { background: var(--amber); }
+        .pw-strength-bar.strong { background: var(--green); }
+        .pw-strength-text {
+            font-size: 0.72rem;
+            margin-top: 6px;
+            color: var(--muted);
+            min-height: 1em;
+        }
+
+        .auth-forgot { text-align: right; margin-bottom: 18px; }
+        .auth-forgot a {
+            color: var(--accent);
+            font-size: 0.82rem;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .auth-forgot a:hover { color: var(--secondary); text-decoration: underline; }
+
+        /* Botón primario — mismo gradiente que el CTA de la home */
+        .auth-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 50%, #06b6d4 100%);
+            background-size: 200% 200%;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 8px 24px var(--accent-glow), 0 4px 12px var(--secondary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            position: relative; overflow: hidden;
+            animation: cta-shimmer 4s ease infinite;
+        }
+        @keyframes cta-shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50%      { background-position: 100% 50%; }
+        }
+        .auth-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px var(--accent-glow), 0 8px 20px var(--secondary-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .auth-submit:active { transform: translateY(0); }
+        .auth-submit.loading { pointer-events: none; opacity: 0.85; }
+        .auth-submit .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        .auth-submit.loading .spinner { display: block; }
+        .auth-submit.loading .btn-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .auth-divider {
+            display: flex; align-items: center; gap: 14px;
+            margin: 22px 0;
+        }
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .auth-divider span {
+            font-size: 0.78rem; color: var(--muted); white-space: nowrap;
+        }
+        .auth-switch {
+            text-align: center;
+            font-size: 0.86rem; color: var(--muted);
+        }
+        .auth-switch a {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .auth-switch a:hover { color: var(--secondary); }
+
+        /* Footer con link a dueños */
+        .auth-footer {
+            padding: 16px 36px 26px;
+            text-align: center;
+            border-top: 1px solid var(--border-soft);
+            background: transparent;
+        }
+        .auth-footer-link {
+            color: var(--muted);
+            font-size: 0.78rem;
+            text-decoration: none;
+            transition: color 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .auth-footer-link:hover { color: var(--accent); }
+        .auth-footer-link i { margin-right: 2px; }
+
+        /* ═══ Toast ═══ */
+        .toast {
+            position: fixed;
+            bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--card);
+            border: 1px solid var(--accent);
+            color: var(--cream);
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 0.86rem;
+            font-weight: 500;
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 14px 50px rgba(0,0,0,0.6), 0 0 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.04);
+            display: flex; align-items: center; gap: 10px;
+            max-width: 90vw;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.toast-error { border-color: var(--red); }
+        .toast i { color: var(--accent); }
+        .toast.toast-error i { color: var(--red); }
+
+        @media (max-width: 480px) {
+            .auth-header { padding: 28px 24px 20px; }
+            .auth-body { padding: 24px; }
+            .auth-tabs { padding: 0 24px; }
+            .auth-footer { padding: 16px 24px 24px; }
+            .auth-title { font-size: 1.45rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Topbar — mismo header que la home -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="./" class="topbar-logo" aria-label="SaborMap — Ir al inicio">
+                <div class="topbar-logo-icon">S</div>
+                <span class="topbar-logo-text">Sabormap</span>
+            </a>
+            <div class="topbar-actions">
+                <a href="./" class="nav-link">
+                    <i class="fas fa-arrow-left" style="font-size:0.78rem"></i> Volver al mapa
+                </a>
+                <button class="theme-toggle" onclick="toggleAuthTheme()" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">
+                    <i aria-hidden="true" class="fas fa-moon icon-moon"></i>
+                    <i aria-hidden="true" class="fas fa-sun icon-sun"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="auth-wrap">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">S</div>
+                <h1 class="auth-title font-display">SaborMap</h1>
+                <p class="auth-subtitle">Tu guía gastronómica de La Habana. Guarda favoritos, escribe reseñas y descubre dónde comer bien.</p>
+            </div>
+
+            <div class="auth-tabs" role="tablist">
+                <button class="auth-tab active" type="button" onclick="showView('login')" role="tab" aria-selected="true">Iniciar sesión</button>
+                <button class="auth-tab" type="button" onclick="showView('signup')" role="tab" aria-selected="false">Crear cuenta</button>
+                <button class="auth-tab" type="button" onclick="showView('forgot')" role="tab" aria-selected="false">Recuperar</button>
+            </div>
+
+            <div class="auth-body">
+                <!-- LOGIN -->
+                <div id="loginView" class="auth-form-inner">
+                    <div class="auth-message" id="loginMessage">
+                        <i class="fas fa-info-circle"></i>
+                        <span></span>
+                    </div>
+                    <form onsubmit="handleFoodieLogin(event)" novalidate>
+                        <div class="input-group">
+                            <label>Email <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="email" id="loginEmail" class="form-input" placeholder="tu@email.com" required autocomplete="email" autofocus>
+                                <i class="fas fa-envelope field-icon"></i>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Contraseña <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="password" id="loginPassword" class="form-input" placeholder="Tu contraseña" required autocomplete="current-password">
+                                <i class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-pw" onclick="togglePw('loginPassword', this)" aria-label="Mostrar/ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="auth-forgot">
+                            <a onclick="showView('forgot')">Olvidé mi contraseña</a>
+                        </div>
+                        <button type="submit" class="auth-submit" id="loginBtn">
+                            <span class="btn-text">Entrar</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                    <div class="auth-divider"><span>¿primera vez?</span></div>
+                    <p class="auth-switch">Crea tu cuenta gratis en 1 minuto. <a onclick="showView('signup')">Regístrate</a></p>
+                </div>
+
+                <!-- SIGNUP -->
+                <div id="signupView" class="auth-form-inner" style="display:none">
+                    <div class="auth-message" id="signupMessage">
+                        <i class="fas fa-info-circle"></i>
+                        <span></span>
+                    </div>
+                    <form onsubmit="handleFoodieSignup(event)" novalidate>
+                        <div class="input-group">
+                            <label>Apodo o nombre <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="text" id="signupDisplayName" class="form-input" placeholder="Yoli, FoodieHabana, Carlos R." required maxlength="40" autocomplete="nickname">
+                                <i class="fas fa-user field-icon"></i>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Email <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="email" id="signupEmail" class="form-input" placeholder="tu@email.com" required autocomplete="email">
+                                <i class="fas fa-envelope field-icon"></i>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Contraseña <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="password" id="signupPassword" class="form-input" placeholder="Mínimo 8 caracteres" required autocomplete="new-password" oninput="checkPwStrength(this.value)">
+                                <i class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-pw" onclick="togglePw('signupPassword', this)" aria-label="Mostrar/ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="pw-strength">
+                                <div class="pw-strength-bar" id="pwBar1"></div>
+                                <div class="pw-strength-bar" id="pwBar2"></div>
+                                <div class="pw-strength-bar" id="pwBar3"></div>
+                                <div class="pw-strength-bar" id="pwBar4"></div>
+                            </div>
+                            <div class="pw-strength-text" id="pwStrengthText"></div>
+                        </div>
+                        <div class="input-group">
+                            <label>Confirmar contraseña <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="password" id="signupConfirm" class="form-input" placeholder="Repite tu contraseña" required autocomplete="new-password">
+                                <i class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-pw" onclick="togglePw('signupConfirm', this)" aria-label="Mostrar/ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <p style="font-size:0.74rem;color:var(--muted);margin-bottom:14px;line-height:1.5">
+                            Al crear tu cuenta aceptas los <a href="#" style="color:var(--accent);font-weight:500">Términos de Uso</a> y la <a href="#" style="color:var(--accent);font-weight:500">Política de Privacidad</a> de SaborMap. Tu email nunca se muestra públicamente.
+                        </p>
+                        <button type="submit" class="auth-submit" id="signupBtn">
+                            <span class="btn-text">Crear mi cuenta</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                    <div class="auth-divider"><span>¿ya tienes cuenta?</span></div>
+                    <p class="auth-switch"><a onclick="showView('login')">Inicia sesión</a></p>
+                </div>
+
+                <!-- FORGOT -->
+                <div id="forgotView" class="auth-form-inner" style="display:none">
+                    <div class="auth-message" id="forgotMessage">
+                        <i class="fas fa-info-circle"></i>
+                        <span></span>
+                    </div>
+                    <form onsubmit="handleFoodieForgot(event)" novalidate>
+                        <div class="input-group">
+                            <label>Email <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="email" id="forgotEmail" class="form-input" placeholder="tu@email.com" required autocomplete="email">
+                                <i class="fas fa-envelope field-icon"></i>
+                            </div>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5">
+                            Te enviaremos un enlace para crear una nueva contraseña. El enlace es válido durante 1 hora.
+                        </p>
+                        <button type="submit" class="auth-submit" id="forgotBtn">
+                            <span class="btn-text">Enviar enlace</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                    <div class="auth-divider"><span>o</span></div>
+                    <p class="auth-switch"><a onclick="showView('login')"><i class="fas fa-arrow-left" style="margin-right:4px"></i>Volver a iniciar sesión</a></p>
+                </div>
+
+                <!-- RESET (nueva contraseña, tras clic en el enlace del email) -->
+                <div id="resetView" class="auth-form-inner" style="display:none">
+                    <div class="auth-message" id="resetMessage">
+                        <i class="fas fa-info-circle"></i>
+                        <span></span>
+                    </div>
+                    <form onsubmit="handleFoodieResetPassword(event)" novalidate>
+                        <div class="input-group">
+                            <label>Nueva contraseña <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="password" id="resetPassword" class="form-input" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password">
+                                <i class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-pw" onclick="togglePw('resetPassword', this)" aria-label="Mostrar/ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Repetir contraseña <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <input type="password" id="resetPassword2" class="form-input" placeholder="Repite la nueva contraseña" required minlength="8" autocomplete="new-password">
+                                <i class="fas fa-lock field-icon"></i>
+                                <button type="button" class="toggle-pw" onclick="togglePw('resetPassword2', this)" aria-label="Mostrar/ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5">
+                            Tu nueva contraseña debe tener al menos 8 caracteres. Te pediremos iniciar sesión de nuevo tras cambiarla.
+                        </p>
+                        <button type="submit" class="auth-submit" id="resetBtn">
+                            <span class="btn-text">Guardar nueva contraseña</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="auth-footer">
+                <a href="dashboard.html" rel="nofollow" class="auth-footer-link">
+                    <i class="fas fa-store"></i>¿Eres dueño de un local? Acceso para dueños
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="appToast" role="alert" aria-live="polite"></div>
+
+    <!-- ═══ Scripts ═══ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
+    <script src="foodies-app.js?v=6"></script>
+    <script>
+        // Tema inicial — mismo sistema que la home (localStorage sabormap-theme)
+        (function() {
+            try {
+                const saved = localStorage.getItem('sabormap-theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+
+        // Toggle de tema — mismo comportamiento que toggleTheme() de app.js
+        function toggleAuthTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('sabormap-theme', next); } catch (e) {}
+            // Actualizar TODAS las meta theme-color (mismo que la home)
+            document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+                m.setAttribute('content', next === 'dark' ? '#0b0e17' : '#7c3aed');
+            });
+            showToast(next === 'dark' ? 'Tema oscuro activado' : 'Tema claro activado');
+        }
+        window.toggleAuthTheme = toggleAuthTheme;
+
+        // Si ya hay sesión activa, ir directo al panel
+        (async function() {
+            if (!sbFoodies) return;
+            const params = new URLSearchParams(window.location.search);
+            // [v2.0.28/S-02] PKCE: si la URL trae ?code= (reset de contraseña) o
+            //   ?error=, intercambiar/limpiar ANTES de getSession().
+            //   handlePkceRedirect dispara onAuthStateChange(PASSWORD_RECOVERY)
+            //   que muestra resetView; en ese caso NO redirigir al panel.
+            if (typeof window.handlePkceRedirect === 'function') {
+                const recovery = await window.handlePkceRedirect();
+                if (recovery) return;
+            }
+            try {
+                const { data: { session } } = await sbFoodies.auth.getSession();
+                if (session) {
+                    // [v2.0.28/S-02] Si ?view=reset y hay sesión de recovery
+                    //   (vino de PASSWORD_RECOVERY en otra página), mostrar el
+                    //   form de nueva contraseña en vez de mandar al panel.
+                    if (params.get('view') === 'reset') {
+                        showView('reset');
+                        return;
+                    }
+                    // [FIX favoritos] si venimos de ?return=home (favorito pendiente
+                    // marcado desde el corazón de la home), volver a index.html para
+                    // que applyPendingFavorite() lo consuma; si no, al panel.
+                    window.location.href = (typeof window.authReturnTarget === 'function')
+                        ? window.authReturnTarget() : 'mi-sabormap.html';
+                    return;
+                }
+            } catch (e) {}
+            // Si la URL trae ?view=forgot o ?view=signup, activar esa tab
+            const v = params.get('view');
+            if (v === 'signup' || v === 'forgot') showView(v);
+        })();
+
+        // Toggle de tabs: actualizar aria-selected y clase active
+        const origShowView = window.showView;
+        window.showView = function(view) {
+            document.querySelectorAll('.auth-tab').forEach(t => {
+                const active = t.getAttribute('onclick') === `showView('${view}')`;
+                t.classList.toggle('active', active);
+                t.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            origShowView(view);
+        };
+
+        // Enter/Espacio activa los <a role="button">
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const t = e.target;
+            if (t && t.matches && t.matches('a[onclick]')) {
+                e.preventDefault();
+                t.click();
+            }
+        });
+    </script>
+</body>
+</html>
