@@ -75,7 +75,7 @@ function toggleTheme() {
     const current = html.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
-    localStorage.setItem('sabormap-theme', next);
+    try { localStorage.setItem('sabormap-theme', next); } catch (e) { console.warn('[theme] No se pudo guardar la preferencia:', e); }
 
     // [T-11] Actualizar TODAS las meta theme-color (hay una por esquema de color)
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
@@ -136,7 +136,13 @@ function handleMobileThemeToggle() {
         mobileToggle.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
     }
 }
-window.addEventListener('resize', handleMobileThemeToggle);
+// [v2.0.30/P-UUX] resize sin debounce disparaba decenas de getElementById+style
+//   por segundo durante el arrastre. rAF coalesce: a lo sumo 1 ejecución/frame.
+let _mttRaf = 0;
+window.addEventListener('resize', () => {
+    if (_mttRaf) cancelAnimationFrame(_mttRaf);
+    _mttRaf = requestAnimationFrame(() => { _mttRaf = 0; handleMobileThemeToggle(); });
+});
 document.addEventListener('DOMContentLoaded', handleMobileThemeToggle);
 
 // ★ staticPlaces pasa a ser `let` para poder agregar los locales que vengan de Supabase.
@@ -338,6 +344,57 @@ function renderOpenBadge(p) {
     const sub = st.label ? `<span class="badge-sub">· ${st.label}</span>` : '';
     return `<span class="open-badge ${cls}"><span class="pulse"></span>${main}${sub}</span>`;
 }
+// [v2.0.30/P-RND] Actualización in-place del badge: NO recrea el nodo .pulse
+//   (antes badge.outerHTML = renderOpenBadge(p) reiniciaba la animación `pulse`
+//   cada 60s y destrozaba el nodo). Aquí mutamos clase + texto preservando
+//   .pulse, con short-circuit si el estado no cambió (la mayoría de los ticks
+//   no mutan nada → cero escrituras al DOM).
+function updateOpenBadgeInPlace(badge, p) {
+    if (!badge) return;
+    const st = getPlaceStatus(p);
+    const cls = st.open ? 'open' : 'closed';
+    const wantSub = st.label ? '· ' + st.label : '';
+    const subEl = badge.querySelector('.badge-sub');
+    const curSub = subEl ? subEl.textContent : '';
+    if (badge.classList.contains(cls) && wantSub === curSub) return; // sin cambios
+    if (!badge.classList.contains(cls)) {
+        badge.classList.remove('open', 'closed');
+        badge.classList.add(cls);
+    }
+    const pulse = badge.querySelector('.pulse');
+    Array.from(badge.childNodes).forEach(n => { if (n !== pulse) n.remove(); });
+    badge.appendChild(document.createTextNode(st.open ? 'Abierto' : 'Cerrado'));
+    if (st.label) {
+        const sub = document.createElement('span');
+        sub.className = 'badge-sub';
+        sub.textContent = '· ' + st.label;
+        badge.appendChild(sub);
+    }
+    if (!pulse) { // badge legacy sin .pulse: lo creamos al frente
+        const pl = document.createElement('span');
+        pl.className = 'pulse';
+        badge.insertBefore(pl, badge.firstChild);
+    }
+}
+// [v2.0.30/P-RND] Cuerpo del refresco de badges extraído a función para
+//   reutilizarlo desde el intervalo de 60s Y desde visibilitychange. Usa un
+//   Map id→place (O(n+m)) en vez de staticPlaces.find por tarjeta (O(n×m)).
+function refreshOpenBadgesNow() {
+    if (document.hidden) return;
+    if (currentView === 'grid') {
+        const byId = new Map();
+        for (const pl of staticPlaces) byId.set(String(pl.id), pl);
+        document.querySelectorAll('.place-card').forEach(card => {
+            const p = byId.get(card.dataset.placeId);
+            if (!p) return;
+            updateOpenBadgeInPlace(card.querySelector('.open-badge'), p);
+        });
+    }
+    if (currentModalPlace) {
+        document.querySelectorAll('.drawer-meta-row .open-badge')
+            .forEach(b => updateOpenBadgeInPlace(b, currentModalPlace));
+    }
+}
 
 /* ═══════════════════════════════════════════
    ESTADO GLOBAL
@@ -444,6 +501,281 @@ try {
 } catch (e) {
     console.warn('Supabase no disponible, usando solo staticPlaces:', e);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   [v2.0.19] FOODIES — Proyecto Supabase SEPARADO para comensales
+   ───────────────────────────────────────────────────────────────────
+   La home pública ahora maneja DOS clientes Supabase:
+     · sb        → proyecto actual (cfmqwnfimpfuivqmsxju): places, collections
+     · sbFoodies → proyecto NUEVO (comensales): auth, favorites, reviews
+
+   ⚠️  REEMPLAZAR estas dos constantes con los valores de TU proyecto nuevo
+       (los mismos que ponés en foodies-app.js de cuenta.html y mi-sabormap.html).
+   ═══════════════════════════════════════════════════════════════════ */
+const FOODIES_SUPABASE_URL = 'https://twzxrjvdwvwyzitfqcfn.supabase.co';
+const FOODIES_SUPABASE_KEY = 'sb_publishable_AHu_5c3rx8M0Ge03Y6DzuQ_KLnwJ2cP';
+let sbFoodies = null;
+try {
+    if (window.supabase && window.supabase.createClient) {
+        sbFoodies = window.supabase.createClient(FOODIES_SUPABASE_URL, FOODIES_SUPABASE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' }
+        });
+    }
+} catch (e) {
+    console.warn('Supabase Foodies no disponible (favoritos y reseñas desactivados):', e);
+}
+let currentFoodie = null;            // auth.users del proyecto foodies (null si no logueado)
+let foodieFavorites = new Set();      // Set de place_id strings ( Strings ) favoritos del usuario
+let foodieReviewsCache = new Map();   // place_id → reviews[] (cache de reseñas por local)
+
+/* ═══════════════════════════════════════════════════════════════════
+   [v2.0.19] CSS inline para favoritos y reseñas (inyectado una vez)
+   ───────────────────────────────────────────────────────────────────
+   En lugar de tocar index.html, inyectamos un <style> con las reglas
+   nuevas (.fav-btn, .drawer-reviews, .review-form-inline, etc.).
+   Respeta el tema activo (data-theme="light"/"dark") vía variables CSS
+   que ya existen en index.html.
+   ═══════════════════════════════════════════════════════════════════ */
+(function injectFoodiesStyles() {
+    const style = document.createElement('style');
+    style.id = 'sabormap-foodies-styles';
+    style.textContent = `
+        /* Botón corazón en tarjetas de la home */
+        .fav-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(11, 14, 23, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            z-index: 3;
+            transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+            padding: 0;
+        }
+        [data-theme="light"] .fav-btn { background: rgba(255, 255, 255, 0.85); color: var(--muted); }
+        .fav-btn:hover { transform: scale(1.12); background: rgba(11, 14, 23, 0.85); }
+        [data-theme="light"] .fav-btn:hover { background: rgba(255, 255, 255, 0.95); color: var(--accent); }
+        .fav-btn.favorited {
+            color: #f43f5e;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        [data-theme="light"] .fav-btn.favorited { color: #e11d48; background: rgba(255, 255, 255, 0.98); }
+        /* [v2.0.30/UUX] heartPop atado a .favorited se re-disparaba en cada
+           re-render de la tarjeta (filtro, paginación, carga de Supabase). Ahora
+           es one-shot vía clase .heart-pop, añadida en el onclick solo al AÑADIR
+           favorito (no al quitar). toggleFavorite actualiza el botón in-place
+           (no re-renderiza la grilla) → la animación se ve completa. */
+        .fav-btn.heart-pop i { animation: heartPop 0.35s ease; }
+        @keyframes heartPop {
+            0%   { transform: scale(1); }
+            45%  { transform: scale(1.35); }
+            100% { transform: scale(1); }
+        }
+        .fav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Botón corazón en el drawer */
+        .drawer-fav-btn {
+            position: relative; /* [FIX favoritos] quedar encima de los overlays absolutos del banner (::before/::after) para recibir el clic. Antes era estático y ::before se lo comía. */
+            z-index: 2;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            transition: all 0.25s;
+            padding: 0;
+        }
+        .drawer-fav-btn:hover { border-color: #f43f5e; color: #f43f5e; }
+        .drawer-fav-btn.favorited { background: rgba(244, 63, 94, 0.1); border-color: #f43f5e; color: #f43f5e; }
+        .drawer-fav-btn.favorited i { animation: heartPop 0.35s ease; }
+
+        /* Sección de reseñas dentro del drawer */
+        .drawer-reviews { padding: 0; margin-bottom: 24px; }
+        .drawer-reviews-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .drawer-reviews-title {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .drawer-reviews-title i { color: var(--amber); }
+        .drawer-reviews-count {
+            font-size: 0.78rem;
+            color: var(--muted);
+            background: var(--card);
+            padding: 3px 10px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+        }
+        .drawer-review-card {
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: var(--card);
+        }
+        .drawer-review-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .drawer-review-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f43f5e, #f97316);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.78rem;
+            flex-shrink: 0;
+        }
+        .drawer-review-author { font-size: 0.86rem; font-weight: 600; }
+        .drawer-review-date { font-size: 0.72rem; color: var(--muted); }
+        .drawer-review-stars { color: var(--amber); font-size: 0.82rem; letter-spacing: 2px; margin-bottom: 6px; }
+        .drawer-review-body {
+            font-size: 0.86rem;
+            line-height: 1.55;
+            color: var(--cream);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .drawer-review-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+        .drawer-review-report {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 0.72rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: color 0.2s;
+        }
+        .drawer-review-report:hover { color: var(--accent); }
+
+        /* Formulario inline de reseña */
+        .review-form-inline {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card);
+            display: none;
+        }
+        .review-form-inline.open { display: block; animation: panelIn 0.3s ease; }
+        .review-form-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; }
+        .review-star-input { display: flex; gap: 6px; margin-bottom: 12px; }
+        .review-star-input i {
+            font-size: 1.5rem;
+            color: var(--border);
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+        .review-star-input i.active { color: var(--amber); }
+        .review-star-input i:hover { color: var(--amber); }
+        .review-textarea {
+            width: 100%;
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: var(--cream);
+            font-family: inherit;
+            font-size: 0.86rem;
+            resize: vertical;
+            min-height: 90px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .review-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1); }
+        .review-form-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .review-btn {
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--cream);
+            font-family: inherit;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .review-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .review-btn-primary {
+            background: linear-gradient(135deg, #f43f5e, #f97316);
+            color: #fff;
+            border: none;
+        }
+        .review-btn-primary:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(244, 63, 94, 0.25); }
+
+        .review-login-cta {
+            text-align: center;
+            padding: 16px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+        .review-login-cta a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        .review-login-cta a:hover { text-decoration: underline; }
+
+        .drawer-write-review-btn {
+            width: 100%;
+            padding: 11px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--cream);
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .drawer-write-review-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .drawer-write-review-btn i { color: var(--amber); }
+    `;
+    document.head.appendChild(style);
+})();
 
 // Mapea un local de la DB al formato que usa esta página (mismas propiedades que staticPlaces).
 function mapDbPlaceToPublic(p) {
@@ -585,34 +917,38 @@ function loadCachedPublishedPlaces() {
    El dashboard también llama esta función cuando publica/edita un local. */
 function saveCachedPublishedPlaces(dbPlaces) {
     if (!Array.isArray(dbPlaces)) return;
+    // Minimalizar: solo campos necesarios para renderizar + metadata.
+    // [FIX v2.0.27] `minimal` se declara FUERA del try: si setItem lanza
+    // QuotaExceededError, el catch hace purge+reintento reusando `minimal`.
+    // Antes estaba dentro del try → inaccesible en el catch (scope léxico)
+    // → ReferenceError → el reintento tras purge quedaba roto para siempre.
+    const minimal = dbPlaces.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        neighborhood: p.neighborhood,
+        address: p.address,
+        phone: p.phone,
+        description: p.description,
+        price_range: p.price_range,
+        schedule: p.schedule,
+        must_order: p.must_order,
+        editor_note: p.editor_note,
+        tags: p.tags,
+        images: p.images,
+        menu: p.menu,
+        links: p.links,
+        lat: p.lat,
+        lng: p.lng,
+        plus_code: p.plus_code,
+        // ★ [v2.0.18] gmaps_url: opcional, puede no existir la columna en
+        //   Supabase todavía. Lo guardamos en el cache para que la home
+        //   lo vea offline; si llega como undefined, || '' lo deja en ''.
+        gmaps_url: p.gmaps_url || '',
+        delivery_enabled: p.delivery_enabled,
+        status: p.status
+    }));
     try {
-        // Minimalizar: solo campos necesarios para renderizar + metadata
-        const minimal = dbPlaces.map(p => ({
-            id: p.id,
-            name: p.name,
-            category: p.category,
-            neighborhood: p.neighborhood,
-            address: p.address,
-            phone: p.phone,
-            description: p.description,
-            price_range: p.price_range,
-            schedule: p.schedule,
-            must_order: p.must_order,
-            editor_note: p.editor_note,
-            tags: p.tags,
-            images: p.images,
-            menu: p.menu,
-            links: p.links,
-            lat: p.lat,
-            lng: p.lng,
-            plus_code: p.plus_code,
-            // ★ [v2.0.18] gmaps_url: opcional, puede no existir la columna en
-            //   Supabase todavía. Lo guardamos en el cache para que la home
-            //   lo vea offline; si llega como undefined, || '' lo deja en ''.
-            gmaps_url: p.gmaps_url || '',
-            delivery_enabled: p.delivery_enabled,
-            status: p.status
-        }));
         const payload = {
             savedAt: Date.now(),
             version: 1,
@@ -705,57 +1041,74 @@ window.sabormapInvalidatePublishedCache = function() {
     refreshStaticPlacesFromCache();
 };
 
+// [v2.0.30/RES] Reintento con backoff exponencial (300ms, 900ms, 2.7s): la red
+//   intermitente y los resets de conexión de Supabase fallaban en el primer
+//   intento y dejaban placesLoadPromise resuelto a undefined para siempre. Ahora
+//   se reintenta hasta 3 veces y, solo si TODO falla Y no hay locales estáticos,
+//   se avisa al usuario. Devuelve true (éxito/empty-válido) / false (falló).
 async function loadPlacesFromSupabase() {
-    if (!sb) { console.warn('Supabase client no inicializado'); return; }
-    try {
-        const { data, error } = await sb
-            .from('places')
-            .select('*')
-            .eq('status', 'published')
-            .order('created_at', { ascending: false });
+    if (!sb) { console.warn('Supabase client no inicializado'); return false; }
+    const MAX_ATTEMPTS = 3;
+    let lastErr = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+            const { data, error } = await sb
+                .from('places')
+                .select('*')
+                .eq('status', 'published')
+                .order('created_at', { ascending: false });
 
-        if (error) { console.warn('Supabase places fetch error:', error); return; }
-        if (!Array.isArray(data) || data.length === 0) {
-            console.info('No hay locales publicados en Supabase todavía');
-            // Aunque no haya datos en Supabase, guardamos cache vacío para
-            // sobrescribir cualquier cache anterior que tenga locales ya borrados.
-            saveCachedPublishedPlaces([]);
-            return;
+            if (error) throw error; // reintentable (PostgREST transitorio)
+
+            if (!Array.isArray(data) || data.length === 0) {
+                console.info('No hay locales publicados en Supabase todavía');
+                // Cache vacío: sobrescribe cualquier cache con locales ya borrados.
+                saveCachedPublishedPlaces([]);
+                return true;
+            }
+
+            // ★ [v2.0.21] Guardar en localStorage para que la próxima sesión
+            //   offline tenga estos locales disponibles sin conexión.
+            saveCachedPublishedPlaces(data);
+
+            // IDs que ya existen (los estáticos tienen id numérico 1..N, los de DB son uuid strings)
+            const existingIds = new Set(staticPlaces.map(p => String(p.id)));
+            let added = 0;
+            data.forEach(p => {
+                const mapped = mapDbPlaceToPublic(p);
+                if (!mapped) return;
+                if (existingIds.has(String(mapped.id))) return;   // evita duplicados
+                staticPlaces.push(mapped);
+                existingIds.add(String(mapped.id));
+                added++;
+            });
+            console.info(`Supabase: ${added} locales publicados cargados (intento ${attempt}, total: ${staticPlaces.length})`);
+
+            // Re-poblar el dropdown de barrios y volver a renderizar la grilla
+            if (typeof populateBarrios === 'function') populateBarrios();
+            if (typeof renderPlaces  === 'function') renderPlaces();
+            // ★ FIX [v2.0.7]: NO volver a llamar animateStats() aquí. Antes, esta
+            //   llamada recreaba el IntersectionObserver y re-animaba el contador
+            //   desde 0 hasta el nuevo total, provocando el salto visible
+            //   "256 → 257" cuando llegaba el local de Supabase. Ahora usamos
+            //   updateStatNumbers() que solo ajusta el valor final sin animar.
+            if (added > 0 && typeof updateStatNumbers === 'function') {
+                updateStatNumbers();
+            }
+            return true;
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[places] intento ${attempt}/${MAX_ATTEMPTS} falló:`, err);
+            if (attempt < MAX_ATTEMPTS) {
+                await new Promise(r => setTimeout(r, 300 * Math.pow(3, attempt - 1))); // 300, 900, (2700)
+            }
         }
-
-        // ★ [v2.0.21] Guardar en localStorage para que la próxima sesión
-        //   offline tenga estos locales disponibles sin conexión.
-        saveCachedPublishedPlaces(data);
-
-        // IDs que ya existen (los estáticos tienen id numérico 1..N, los de DB son uuid strings)
-        const existingIds = new Set(staticPlaces.map(p => String(p.id)));
-        let added = 0;
-        data.forEach(p => {
-            const mapped = mapDbPlaceToPublic(p);
-            if (!mapped) return;
-            if (existingIds.has(String(mapped.id))) return;   // evita duplicados
-            staticPlaces.push(mapped);
-            existingIds.add(String(mapped.id));
-            added++;
-        });
-        console.info(`Supabase: ${added} locales publicados cargados (total: ${staticPlaces.length})`);
-
-        // Re-poblar el dropdown de barrios y volver a renderizar la grilla
-        if (typeof populateBarrios === 'function') populateBarrios();
-        if (typeof renderPlaces  === 'function') renderPlaces();
-        // ★ FIX [v2.0.7]: NO volver a llamar animateStats() aquí. Antes, esta
-        //   llamada recreaba el IntersectionObserver y re-animaba el contador
-        //   desde 0 hasta el nuevo total, provocando el salto visible
-        //   "256 → 257" cuando llegaba el local de Supabase. Ahora usamos
-        //   updateStatNumbers() que solo ajusta el valor final sin animar.
-        if (added > 0 && typeof updateStatNumbers === 'function') {
-            updateStatNumbers();
-        }
-    } catch (err) {
-        console.warn('Error cargando locales desde Supabase:', err);
-        // Si la red falló, NO tocamos el cache: seguimos usando el último válido.
-        // Si tampoco hay cache, staticPlaces ya tiene los locales estáticos.
     }
+    // Todos los intentos fallaron: NO tocamos el cache (seguimos con el último
+    // válido) ni los locales estáticos. Avisamos al usuario solo si no hay NADA.
+    console.warn('Error cargando locales desde Supabase tras reintentos:', lastErr);
+    if (staticPlaces.length === 0) showToast('No se pudieron cargar los locales. Revisa tu conexión.');
+    return false;
 }
 
 /* ★ FIX [v2.0.12]: actualiza los contadores de stats SIN re-animar.
@@ -802,14 +1155,61 @@ function updateStatNumbers() {
 /* ═══════════════════════════════════════════
    INICIALIZACIÓN
    ═══════════════════════════════════════════ */
+/* ───────────────────────────────────────────────────────────────────
+   Deep-link ?place=<id> — abre la ficha del local al cargar la home.
+   Lo usa mi-sabormap.html (botón "Ver en mapa" en Favoritos): al volver
+   a la home con ?place=<id>, se abre automáticamente el drawer del local.
+   Funciona con locales estáticos (disponibles en el primer render) y con
+   locales de Supabase (se awaita placesLoadPromise si no se hallan de inmediato).
+   ─────────────────────────────────────────────────────────────────── */
+let placesLoadPromise = null; // captura la carga inicial de Supabase para poder awaitarla
+
+function cleanPlaceParam() {
+    try {
+        const u = new URL(window.location.href);
+        u.searchParams.delete('place');
+        history.replaceState(null, '', u.pathname + u.search + u.hash);
+    } catch (e) { /* ignore */ }
+}
+
+async function openPlaceFromUrl() {
+    let rawId = null;
+    try { rawId = new URLSearchParams(window.location.search).get('place'); }
+    catch (e) { return; }
+    if (!rawId) return;
+    const placeId = String(rawId).trim();
+    if (!placeId) return;
+
+    const findPlace = () => staticPlaces.find(pl => String(pl.id) === placeId);
+
+    // 1) Intento inmediato: local estático o ya en cache local.
+    if (findPlace()) { openModal(placeId); cleanPlaceParam(); return; }
+
+    // 2) No hallado: podría ser un local de Supabase aún no cargado.
+    //    Esperar a que loadPlacesFromSupabase() termine y reintentar.
+    if (placesLoadPromise) {
+        try { await placesLoadPromise; } catch (e) { /* ya logueado dentro */ }
+    }
+    if (findPlace()) {
+        openModal(placeId);
+    } else {
+        // [v2.0.30/RES] Antes fallaba en silencio: ?place=<id-borrado-o-inexistente>
+        //   limpiaba la URL y no pasaba nada. Ahora se avisa al usuario.
+        showToast('No encontramos ese local');
+    }
+    // Limpiar ?place= tanto si se abrió como si no (una recarga no reabre el modal).
+    cleanPlaceParam();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     renderCollections();
     renderPlaces();
     populateBarrios();
     // [A-03] Estado inicial: overlay y drawer fuera del árbol de accesibilidad
-    document.getElementById('modalOverlay').setAttribute('aria-hidden', 'true');
-    document.getElementById('modalDrawer').setAttribute('aria-hidden', 'true');
-    document.getElementById('modalDrawer').setAttribute('inert', '');
+    const _mo = document.getElementById('modalOverlay');
+    if (_mo) _mo.setAttribute('aria-hidden', 'true');
+    const _md = document.getElementById('modalDrawer');
+    if (_md) { _md.setAttribute('aria-hidden', 'true'); _md.setAttribute('inert', ''); }
     closeMobileMenu();
     setupSearch();
     setupScrollReveal();
@@ -829,36 +1229,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // ★ Cargar locales publicados desde Supabase (async, no bloquea el render
     //   inicial que ya tiene el cache local). Cuando termina, actualiza el
     //   cache y refresca la grilla si hay cambios.
-    loadPlacesFromSupabase();
+    placesLoadPromise = loadPlacesFromSupabase();
     // ★ Cargar colecciones dinamicas desde Supabase ★
     loadCollectionsFromSupabase();
+    // [v2.0.19] Cargar sesión del comensal (proyecto foodies) y sus favoritos
+    initFoodieSession();
+    // [Deep-link] ?place=<id> → abrir la ficha del local al cargar (botón
+    //   "Ver en mapa" de Favoritos en mi-sabormap.html). Fire-and-forget:
+    //   si el local no está aún (Supabase), awaita placesLoadPromise dentro.
+    openPlaceFromUrl();
     /* [P-01/U-06] Refresca SOLO los badges "Abierto/Cerrado" cada 60 s, sin
-       reconstruir la grilla (antes se re-renderizaban 258 tarjetas: parpadeo,
-       pérdida de scroll y de foco). [P-09] Se omite si la pestaña está oculta. */
-    setInterval(() => {
-        if (document.hidden) return;
-        if (currentView === 'grid') {
-            document.querySelectorAll('.place-card').forEach(card => {
-                const p = staticPlaces.find(pl => String(pl.id) === card.dataset.placeId);
-                if (!p) return;
-                const badge = card.querySelector('.open-badge');
-                if (badge) badge.outerHTML = renderOpenBadge(p);
-            });
-        }
-        if (currentModalPlace) {
-            // Si hay un modal abierto, actualiza solo el badge dentro del drawer
-            const badges = document.querySelectorAll('.drawer-meta-row .open-badge');
-            if (badges.length) {
-                const st = getPlaceStatus(currentModalPlace);
-                const main = st.open ? 'Abierto' : 'Cerrado';
-                const sub = st.label ? `<span class="badge-sub">· ${st.label}</span>` : '';
-                badges.forEach(b => {
-                    b.className = 'open-badge ' + (st.open ? 'open' : 'closed');
-                    b.innerHTML = '<span class="pulse"></span>' + main + sub;
-                });
-            }
-        }
-    }, 60000);
+       reconstruir la grilla. [v2.0.30/P-RND] updateOpenBadgeInPlace preserva el
+       nodo .pulse (antes outerHTML reiniciaba la animación cada minuto) y hace
+       short-circuit si el estado no cambió. Índice por id (Map) → O(n+m) en vez
+       de O(n×m). [P-09] Se omite si la pestaña está oculta. */
+    setInterval(refreshOpenBadgesNow, 60000);
+    /* [v2.0.30/RES] Al volver a la pestaña: refresca badges al instante (un
+       local pudo abrir/cerrar mientras estuvo oculta) y, si llevaba >5 min
+       oculta, re-fetch suave de places para recoger cambios de schedule/hours
+       (el tick de 60s solo rederiva el badge del schedule cacheado → stale). */
+    let _lastVisibleTS = Date.now();
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { _lastVisibleTS = Date.now(); return; }
+        refreshOpenBadgesNow();
+        if (Date.now() - _lastVisibleTS > 5 * 60 * 1000) loadPlacesFromSupabase();
+    });
 });
 
 /* ═══════════════════════════════════════════
@@ -867,19 +1262,23 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderCollections() {
     const container = document.getElementById('collectionsScroll');
     if (!container) return;
-    container.innerHTML = collections.map(c => `
-        <div class="collection-card" style="--collection-color:${c.color};--collection-bg:${c.bg};--collection-border:${c.border};"
+    container.innerHTML = collections.map(c => {
+        const _id = escAttr(c.id), _title = escapeHtmlLight(c.title), _desc = escapeHtmlLight(c.desc);
+        const _icon = escAttr(c.icon), _color = escAttr(c.color), _bg = escAttr(c.bg), _border = escAttr(c.border);
+        return `
+        <div class="collection-card" style="--collection-color:${_color};--collection-bg:${_bg};--collection-border:${_border};"
              role="button" tabindex="0" aria-pressed="false"
-             aria-label="Colección ${c.title}. ${c.desc}. ${getCollectionCount(c)} lugares"
-             onclick="toggleCollection('${c.id}')"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCollection('${c.id}')}"
-             id="col-${c.id}">
-            <div class="collection-icon"><i class="fas ${c.icon}" aria-hidden="true"></i></div>
-            <div class="collection-title">${c.title}</div>
-            <div class="collection-desc">${c.desc}</div>
+             aria-label="Colección ${_title}. ${_desc}. ${getCollectionCount(c)} lugares"
+             data-cid="${_id}"
+             onclick="toggleCollection(this.dataset.cid)"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCollection(this.dataset.cid)}"
+             id="col-${_id}">
+            <div class="collection-icon"><i class="fas ${_icon}" aria-hidden="true"></i></div>
+            <div class="collection-title">${_title}</div>
+            <div class="collection-desc">${_desc}</div>
             <div class="collection-count"><i class="fas fa-store" aria-hidden="true"></i> ${getCollectionCount(c)} lugares</div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 function toggleCollection(id) {
@@ -911,7 +1310,16 @@ function clearCollection() {
 /* ═══════════════════════════════════════════
    RENDERIZAR LUGARES
    ═══════════════════════════════════════════ */
+// [v2.0.30/P-MEMO] Memo por turno del event loop: renderPlaces + renderMapMarkers
+//   (×2) llamaban a getFilteredPlaces hasta 3 veces por acción de usuario, cada
+//   una re-filtrando staticPlaces (spread + chain de .filter + buildSearchBlob
+//   por lugar). Ahora el resultado se cachea con clave de filtros y se invalida
+//   en el próximo microtask (queueMicrotask) → nunca stale entre turnos, pero
+//   elimina la recomputación redundante dentro del mismo turno.
+let _filteredCache = { key: null, result: null, scheduled: false };
 function getFilteredPlaces() {
+    const key = `${staticPlaces.length}|${currentFilter}|${currentBarrio}|${openNowOnly}|${searchQuery}|${activeCollection || ''}`;
+    if (_filteredCache.key === key) return _filteredCache.result;
     let places = [...staticPlaces];
     if (activeCollection) {
         const col = collections.find(c => c.id === activeCollection);
@@ -926,6 +1334,12 @@ function getFilteredPlaces() {
         const q = searchQuery.toLowerCase();
         // [U-04] La búsqueda cubre también platos, cartas, mustOrder y descripción
         places = places.filter(p => buildSearchBlob(p).includes(q));
+    }
+    _filteredCache.key = key;
+    _filteredCache.result = places;
+    if (!_filteredCache.scheduled) {
+        _filteredCache.scheduled = true;
+        queueMicrotask(() => { _filteredCache.key = null; _filteredCache.result = null; _filteredCache.scheduled = false; });
     }
     return places;
 }
@@ -963,26 +1377,32 @@ function cardHTML(p) {
             `<span class="price-dot ${i < p.priceLevel ? 'filled' : 'empty'}"></span>`
         ).join('');
 
+        // [v2.0.19] Botón corazón: se rellena si el comensal logueado tiene este place en favoritos.
+        const pid = String(p.id);
+        const isFav = foodieFavorites.has(pid);
+        const favBtnHTML = `<button class="fav-btn ${isFav ? 'favorited' : ''}" data-place-id="${escAttr(pid)}" onclick="event.stopPropagation();if(!this.classList.contains('favorited')){this.classList.add('heart-pop');setTimeout(()=>this.classList.remove('heart-pop'),360);}toggleFavorite('${escAttr(pid)}')" aria-label="${isFav ? 'Quitar de favoritos' : 'Guardar en favoritos'}" aria-pressed="${isFav ? 'true' : 'false'}"><i class="${isFav ? 'fas' : 'far'} fa-heart"></i></button>`;
+
         return `
-        <article class="place-card${p.featured ? ' featured' : ''}" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)" tabindex="0"
-                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.placeId)}" role="button" aria-label="Ver ${p.name}">
+        <article class="place-card${p.featured ? ' featured' : ''}" data-place-id="${escAttr(p.id)}" onclick="openModal(this.dataset.placeId)" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.placeId)}" role="button" aria-label="Ver ${escAttr(p.name)}">
             <div class="card-img-wrapper">
                 <span class="cat-badge ${meta.cssClass}"><i class="fas ${meta.icon}" style="margin-right:4px;font-size:0.6rem;"></i>${meta.label}</span>
-                ${p.images[0] ? `<img class="card-img" src="${p.images[0]}" alt="${p.name}" loading="lazy">` :
+                ${favBtnHTML}
+                ${p.images[0] ? `<img class="card-img" src="${escAttr(p.images[0])}" alt="${escAttr(p.name)}" width="400" height="300" loading="lazy" decoding="async">` :
                 `<div class="card-img" style="background:linear-gradient(135deg, var(--card), var(--card-hover));display:flex;align-items:center;justify-content:center;"><i class="fas ${meta.icon}" style="font-size:2.5rem;color:var(--border);"></i></div>`}
             </div>
             <div style="padding:20px;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
-                        <h3 style="font-weight:700;font-size:1.1rem;line-height:1.3;">${p.name}</h3>
+                        <h3 style="font-weight:700;font-size:1.1rem;line-height:1.3;">${escapeHtmlLight(p.name)}</h3>
                         ${renderOpenBadge(p)}
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--muted);margin-bottom:8px;">
-                        <span><i class="fas fa-map-pin" style="margin-right:4px;font-size:0.7rem;"></i>${p.neighborhood}</span>
+                        <span><i class="fas fa-map-pin" style="margin-right:4px;font-size:0.7rem;"></i>${escapeHtmlLight(p.neighborhood)}</span>
                         <span style="display:flex;align-items:center;gap:3px;"><i class="fas fa-star rating-star" style="font-size:0.7rem;"></i>${p.rating}</span>
                         <span style="display:flex;align-items:center;gap:2px;">${priceDots}</span>
                     </div>
-                    <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.description}</p>
-                    ${p.mustOrder ? `<div class="must-order-badge"><i class="fas fa-fire"></i>${p.mustOrder}</div>` : ''}
+                    <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtmlLight(p.description)}</p>
+                    ${p.mustOrder ? `<div class="must-order-badge"><i class="fas fa-fire"></i>${escapeHtmlLight(p.mustOrder)}</div>` : ''}
                 </div>
         </article>`;
     }
@@ -1149,9 +1569,9 @@ function renderMapMarkers(places) {
         const marker = L.marker([p.lat, p.lng], { icon }).addTo(map);
         marker.bindPopup(`
             <div class="map-popup-content">
-                <div class="map-popup-title">${p.name}</div>
-                <div class="map-popup-info"><i class="fas fa-star" style="color:var(--secondary);font-size:0.7rem;"></i> ${p.rating} &middot; ${p.neighborhood}</div>
-                <button class="map-popup-btn" data-place-id="${p.id}" onclick="openModal(this.dataset.placeId)">Ver detalle</button>
+                <div class="map-popup-title">${escapeHtmlLight(p.name)}</div>
+                <div class="map-popup-info"><i class="fas fa-star" style="color:var(--secondary);font-size:0.7rem;"></i> ${p.rating} &middot; ${escapeHtmlLight(p.neighborhood)}</div>
+                <button class="map-popup-btn" data-place-id="${escAttr(p.id)}" onclick="openModal(this.dataset.placeId)">Ver detalle</button>
             </div>
         `);
         markers.push(marker);
@@ -1253,7 +1673,7 @@ function openModal(id) {
         html += `
         <div class="swiper" id="modalSwiper" style="aspect-ratio:16/10;">
             <div class="swiper-wrapper">
-                ${validImages.map(img => `<div class="swiper-slide"><img src="${img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;"></div>`).join('')}
+                ${validImages.map(img => `<div class="swiper-slide"><img src="${escAttr(img)}" alt="${escAttr(p.name)}" style="width:100%;height:100%;object-fit:cover;"></div>`).join('')}
             </div>
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
@@ -1268,14 +1688,19 @@ function openModal(id) {
         <div class="drawer-cat-chip ${meta.cssClass}">
             <i class="fas ${meta.icon}"></i> ${meta.label}
         </div>
-        <h2 class="drawer-place-name" id="drawerPlaceName">${p.name}</h2>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h2 class="drawer-place-name" id="drawerPlaceName" style="flex:1;min-width:0;">${escapeHtmlLight(p.name)}</h2>
+            <button class="drawer-fav-btn ${foodieFavorites.has(String(p.id)) ? 'favorited' : ''}" id="drawerFavBtn" data-place-id="${escAttr(String(p.id))}" onclick="toggleFavorite('${escAttr(String(p.id))}', true)" aria-label="${foodieFavorites.has(String(p.id)) ? 'Quitar de favoritos' : 'Guardar en favoritos'}" aria-pressed="${foodieFavorites.has(String(p.id)) ? 'true' : 'false'}">
+                <i class="${foodieFavorites.has(String(p.id)) ? 'fas' : 'far'} fa-heart"></i>
+            </button>
+        </div>
         <div class="drawer-meta-row">
             <span class="drawer-rating-pill"><i class="fas fa-star" aria-hidden="true"></i> ${p.rating}</span>
             <span class="drawer-meta-item">
                 ${renderOpenBadge(p)}
             </span>
             <span class="drawer-meta-item" style="display:flex;align-items:center;gap:3px;">${priceDots}</span>
-            <span class="drawer-meta-item"><i class="fas fa-map-pin" aria-hidden="true"></i> ${p.neighborhood}</span>
+            <span class="drawer-meta-item"><i class="fas fa-map-pin" aria-hidden="true"></i> ${escapeHtmlLight(p.neighborhood)}</span>
         </div>
     </div>`;
 
@@ -1286,7 +1711,7 @@ function openModal(id) {
                 <div class="drawer-must-order-icon"><i class="fas fa-fire" aria-hidden="true"></i></div>
                 <div>
                     <div class="drawer-must-order-label">Lo que tienes que pedir</div>
-                    <div class="drawer-must-order-text">${p.mustOrder}</div>
+                    <div class="drawer-must-order-text">${escapeHtmlLight(p.mustOrder)}</div>
                 </div>
             </div>
         </div>`;
@@ -1297,7 +1722,7 @@ function openModal(id) {
         <div class="drawer-section" style="animation-delay:0.15s;">
             <div class="drawer-editor-note">
                 <div class="editor-note-label" style="margin-bottom:6px;"><i class="fas fa-pen-nib" aria-hidden="true" style="font-size:0.6rem;"></i> Nota del editor</div>
-                ${p.editorNote}
+                ${escapeHtmlLight(p.editorNote)}
             </div>
         </div>`;
     }
@@ -1306,7 +1731,7 @@ function openModal(id) {
         html += `
         <div class="drawer-section" style="animation-delay:0.2s;">
             <div class="drawer-section-label">Sobre el lugar</div>
-            <p style="font-size:0.9rem;color:var(--muted);line-height:1.7;">${p.description}</p>
+            <p style="font-size:0.9rem;color:var(--muted);line-height:1.7;">${escapeHtmlLight(p.description)}</p>
         </div>`;
     }
 
@@ -1315,7 +1740,7 @@ function openModal(id) {
         <div class="drawer-section" style="animation-delay:0.25s;">
             <div class="drawer-section-label">Especialidades</div>
             <div class="drawer-tags">
-                ${p.tags.map(t => `<span class="drawer-tag">${t}</span>`).join('')}
+                ${p.tags.map(t => `<span class="drawer-tag">${escapeHtmlLight(t)}</span>`).join('')}
             </div>
         </div>`;
     }
@@ -1329,7 +1754,7 @@ function openModal(id) {
                 <div class="drawer-info-icon"><i class="fas fa-clock" aria-hidden="true"></i></div>
                 <div>
                     <div class="drawer-info-label">Horario</div>
-                    <div class="drawer-info-value">${p.hours}</div>
+                    <div class="drawer-info-value">${escapeHtmlLight(p.hours)}</div>
                 </div>
             </div>` : ''}
             ${p.address ? `
@@ -1337,7 +1762,7 @@ function openModal(id) {
                 <div class="drawer-info-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></div>
                 <div>
                     <div class="drawer-info-label">Dirección</div>
-                    <button type="button" class="drawer-info-value copy-address" data-address="${escAttr(p.address)}" onclick="copyText(this.dataset.address);event.stopPropagation();" aria-label="Copiar dirección">${p.address} <i class="fas fa-copy" aria-hidden="true" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></button>
+                    <button type="button" class="drawer-info-value copy-address" data-address="${escAttr(p.address)}" onclick="copyText(this.dataset.address);event.stopPropagation();" aria-label="Copiar dirección">${escapeHtmlLight(p.address)} <i class="fas fa-copy" aria-hidden="true" style="font-size:0.7rem;color:var(--muted);margin-left:4px;"></i></button>
                 </div>
             </div>` : ''}
             ${p.phone && p.phone !== '#' ? `
@@ -1345,11 +1770,59 @@ function openModal(id) {
                 <div class="drawer-info-icon"><i class="fas fa-phone" aria-hidden="true"></i></div>
                 <div>
                     <div class="drawer-info-label">Teléfono</div>
-                    <div class="drawer-info-value"><a href="tel:${p.phone}" style="color:var(--secondary);text-decoration:none;">${p.phone}</a></div>
+                    <div class="drawer-info-value"><a href="tel:${escAttr(p.phone)}" style="color:var(--secondary);text-decoration:none;">${escapeHtmlLight(p.phone)}</a></div>
                 </div>
             </div>` : ''}
         </div>
     </div>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // [v2.0.19] SECCIÓN DE RESEÑAS — sprint 1+2
+    // Aparece después de "Información práctica" y antes de "Ubicación".
+    // Muestra:
+    //   · Botón "Escribir reseña" (inline form, requiere login de comensal)
+    //   · Lista de reseñas publicadas (de cualquier comensal) con rating, autor, fecha
+    //   · Botón "Reportar" en cada reseña (requiere login)
+    // ═══════════════════════════════════════════════════════════════════
+    const placeId = String(p.id);
+    const placeSource = p._fromDb ? 'supabase' : 'static';
+    // [v2.0.29] "Añadir a lista" + "Subir foto" deshabilitados en el drawer (se
+    //   desarrollarán más adelante). openAddToList / triggerDrawerPhotoUpload /
+    //   createCollection / addPlaceToCollection / uploadPlacePhoto quedan dormidos
+    //   en app.js para reactivación futura.
+    html += `
+    <div class="drawer-section drawer-reviews" id="drawerReviewsSection" style="animation-delay:0.31s;">
+        <div class="drawer-reviews-head">
+            <div class="drawer-reviews-title"><i class="fas fa-star" aria-hidden="true"></i> Reseñas de la comunidad</div>
+            <span class="drawer-reviews-count" id="drawerReviewsCount">—</span>
+        </div>
+        <div id="drawerReviewsList">
+            <!-- [v2.0.30/UUX] Skeleton shimmer en vez de texto plano "Cargando
+                 reseñas…". El span sr-only mantiene el anuncio para lectores. -->
+            <span class="sr-only" role="status" aria-live="polite">Cargando reseñas</span>
+            <div class="review-skeleton" aria-hidden="true"></div>
+            <div class="review-skeleton" aria-hidden="true"></div>
+        </div>
+        <button class="drawer-write-review-btn" id="drawerWriteReviewBtn" onclick="openReviewFormInline('${escAttr(placeId)}', '${placeSource}', '${escAttr(p.name)}')" style="margin-top:14px">
+            <i class="fas fa-pen-to-square"></i> Escribir reseña
+        </button>
+        <div class="review-form-inline" id="reviewFormInline" data-place-id="${escAttr(placeId)}" data-place-source="${placeSource}" data-place-name="${escAttr(p.name)}">
+            <div class="review-form-title">Tu reseña</div>
+            <div class="review-star-input" id="reviewStarInput" role="group" aria-label="Puntuación de la reseña">
+                <i class="far fa-star" data-value="1" tabindex="0" role="button" aria-label="1 estrella" aria-pressed="false"></i>
+                <i class="far fa-star" data-value="2" tabindex="0" role="button" aria-label="2 estrellas" aria-pressed="false"></i>
+                <i class="far fa-star" data-value="3" tabindex="0" role="button" aria-label="3 estrellas" aria-pressed="false"></i>
+                <i class="far fa-star" data-value="4" tabindex="0" role="button" aria-label="4 estrellas" aria-pressed="false"></i>
+                <i class="far fa-star" data-value="5" tabindex="0" role="button" aria-label="5 estrellas" aria-pressed="false"></i>
+            </div>
+            <textarea class="review-textarea" id="reviewBodyInput" maxlength="2000" placeholder="Cuenta tu experiencia: qué pediste, cómo fue el servicio, qué destacarías…"></textarea>
+            <div class="review-form-actions">
+                <button class="review-btn" onclick="closeReviewFormInline()">Cancelar</button>
+                <button class="review-btn review-btn-primary" onclick="submitReviewInline()"><i class="fas fa-paper-plane" style="margin-right:4px"></i>Publicar</button>
+            </div>
+        </div>
+    </div>`;
+
 
     // ═══════════════════════════════════════════
     // BOTÓN UBICACIÓN — Google Maps
@@ -1400,8 +1873,8 @@ function openModal(id) {
             <div class="drawer-section-label">Delivery y reservas</div>
             <div class="drawer-delivery">
                 ${p.links.map(l => `
-                    <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                        <i class="${iconPrefix(l.icon)} ${l.icon}"></i> ${l.platform}
+                    <a href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer" class="delivery-link ${escAttr(l.cssClass)}">
+                        <i class="${iconPrefix(l.icon)} ${escAttr(l.icon)}"></i> ${escapeHtmlLight(l.platform)}
                     </a>
                 `).join('')}
             </div>
@@ -1412,8 +1885,8 @@ function openModal(id) {
             <div class="drawer-section-label">Delivery y reservas</div>
             <div class="drawer-delivery">
                 ${p.links.map(l => `
-                    <span class="delivery-link delivery-off ${l.cssClass}" aria-disabled="true" title="No disponible por ahora">
-                        <i class="${iconPrefix(l.icon)} ${l.icon}" aria-hidden="true"></i> ${l.platform}
+                    <span class="delivery-link delivery-off ${escAttr(l.cssClass)}" aria-disabled="true" title="No disponible por ahora">
+                        <i class="${iconPrefix(l.icon)} ${escAttr(l.icon)}" aria-hidden="true"></i> ${escapeHtmlLight(l.platform)}
                     </span>
                 `).join('')}
             </div>
@@ -1427,8 +1900,8 @@ function openModal(id) {
             <div class="drawer-section-label">Delivery y reservas</div>
             <div class="drawer-delivery">
                 ${p.links.map(l => `
-                    <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="delivery-link ${l.cssClass}">
-                        <i class="${iconPrefix(l.icon)} ${l.icon}"></i> ${l.platform}
+                    <a href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer" class="delivery-link ${escAttr(l.cssClass)}">
+                        <i class="${iconPrefix(l.icon)} ${escAttr(l.icon)}"></i> ${escapeHtmlLight(l.platform)}
                     </a>
                 `).join('')}
             </div>
@@ -1481,8 +1954,22 @@ function openModal(id) {
 
     openDrawerUI();
 
+    // [v2.0.19] Cargar reseñas del place desde el proyecto foodies (async, no bloquea el drawer)
+    if (sbFoodies) {
+        renderReviewsInDrawer(String(p.id));
+    } else {
+        // Sin cliente foodies → mostrar mensaje suave (no romper la experiencia)
+        const list = document.getElementById('drawerReviewsList');
+        if (list) list.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0">Las reseñas estarán disponibles pronto.</p>';
+        const count = document.getElementById('drawerReviewsCount');
+        if (count) count.textContent = '0';
+        const writeBtn = document.getElementById('drawerWriteReviewBtn');
+        if (writeBtn) writeBtn.style.display = 'none';
+    }
+
     if (hasImages && validImages.length > 1 && typeof Swiper !== 'undefined') {
-        setTimeout(() => {
+        const _mdEl = document.getElementById('modalDrawer');
+        const t = setTimeout(() => {
             swiperInstance = new Swiper('#modalSwiper', {
                 loop: true, grabCursor: true,
                 pagination: { el: '.swiper-pagination', clickable: true },
@@ -1490,6 +1977,7 @@ function openModal(id) {
                 autoplay: { delay: 4000, disableOnInteraction: true },
             });
         }, 100);
+        if (_mdEl) _mdEl._swiperTimer = t; // [FIX v2.0.27] limpiar en closeModal si cierra antes de 100ms → evita Swiper huérfano
     }
 
     document.getElementById('modalDrawerScroll').scrollTop = 0;
@@ -1497,6 +1985,8 @@ function openModal(id) {
 
 function closeModal() {
     closeDrawerUI();
+    const _mdEl = document.getElementById('modalDrawer');
+    if (_mdEl && _mdEl._swiperTimer) { clearTimeout(_mdEl._swiperTimer); _mdEl._swiperTimer = null; } // [FIX v2.0.27] Swiper huérfano si cierras antes de los 100ms
     if (swiperInstance) { swiperInstance.destroy(); swiperInstance = null; }
     currentModalPlace = null;
     // [U-11] Si el modal legal pisó el detalle de un local, se restaura el drawer
@@ -1511,6 +2001,14 @@ function closeModal() {
 function escAttr(s) {
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
                     .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// [FIX v2.0.27] Sanitiza URLs para atributos href: solo permite http(s):, tel:, mailto:.
+// Evita javascript: y data: inyectados por un dueño de local malicioso en p.links[].url.
+function safeHref(u) {
+    const s = String(u == null ? '' : u).trim();
+    if (/^(https?:|tel:|mailto:)/i.test(s)) return escAttr(s);
+    return '#';
 }
 
 /* ═══════════════════════════════════════════
@@ -1661,9 +2159,9 @@ function openMenuSubModal() {
         // para que el título (.menu-section-title) y el botón "siguiente"
         // puedan referenciarlo vía var(--section-color).
         const secColor = getSectionColorVars(i);
-        html += `<div class="menu-section" id="${section._id}"
-                    style="--section-color: ${secColor.color}; --section-glow: ${secColor.glow};">
-            <h3 class="menu-section-title">${section.category}</h3>`;
+        html += `<div class="menu-section" id="${escAttr(section._id)}"
+                    style="--section-color: ${secColor.color}; --section-glow: ${secColor.glow};}">
+            <h3 class="menu-section-title">${escapeHtmlLight(section.category)}</h3>`;
         section.items.forEach(item => {
             /* ★ v2.0.24: Si el plato está marcado como agotado en el
                dashboard, se muestra tachado con badge "Agotado". */
@@ -1686,10 +2184,10 @@ function openMenuSubModal() {
             const priceLabel = '<span class="menu-price-currency">' + currency + '</span>';
             html += `<div class="${dishClass}">
                 <div class="menu-dish-info">
-                    <div class="menu-dish-name">${item.name}${soldOutBadge}</div>
-                    <div class="menu-dish-desc">${item.desc}</div>
+                    <div class="menu-dish-name">${escapeHtmlLight(item.name)}${soldOutBadge}</div>
+                    <div class="menu-dish-desc">${escapeHtmlLight(item.desc)}</div>
                 </div>
-                <div class="menu-dish-price ${priceCurrencyClass}">${item.price}${priceLabel}</div>
+                <div class="menu-dish-price ${priceCurrencyClass}">${escapeHtmlLight(item.price)}${priceLabel}</div>
             </div>`;
         });
         // [v2.0.9/2.0.10/2.0.11] Botón "Siguiente categoría →" al final de cada sección.
@@ -1774,8 +2272,9 @@ function openMenuSubModal() {
         }).join('');
         // [v2.0.9] Contador "X / Y" discreto al final de la barra.
         nav.innerHTML = chipsHtml +
-            `<span class="menu-cat-counter" aria-live="polite">
+            `<span class="menu-cat-counter">
                 <span class="num" id="menuCatCurrent">1</span> / ${sections.length}
+                <span class="sr-only" id="menuCatAnnounce" aria-live="polite" role="status"></span>
             </span>`;
         nav.classList.remove('hidden');
         // Guardar el total para el updateCounter
@@ -1847,6 +2346,18 @@ function setActiveMenuChip(index) {
     // [v2.0.9] Actualizar también el contador "X / Y"
     const counter = document.getElementById('menuCatCurrent');
     if (counter) counter.textContent = index + 1;
+    // [v2.0.30/A11Y] Anuncio accesible con NOMBRE de la sección, no solo un
+    //   número suelto ("3"). El span sr-only con aria-live lee "Sección 3 de 5:
+    //   Entradas". El chip activo ya contiene el nombre visible.
+    const announce = document.getElementById('menuCatAnnounce');
+    const chip = document.querySelector('.menu-cat-chip[data-index="' + index + '"]');
+    // data-total lo pone setupMenuCatNavObserver en #menuCatNav (nav), no en el
+    // contador; subir hasta el nav para leerlo.
+    const navEl = counter ? counter.closest('#menuCatNav') : null;
+    const total = navEl ? navEl.dataset.total : '';
+    if (announce && chip) {
+        announce.textContent = `Sección ${index + 1}${total ? ' de ' + total : ''}: ${chip.textContent.trim()}`;
+    }
 }
 
 /* ★ [v2.0.8] IntersectionObserver que resalta el chip de la categoría
@@ -1857,18 +2368,25 @@ function setupMenuCatNavObserver() {
     if (_menuCatObserver) { _menuCatObserver.disconnect(); _menuCatObserver = null; }
     const sections = document.querySelectorAll('#menuSubBody .menu-section');
     if (!sections.length) return;
-    _menuCatObserver = new IntersectionObserver((entries) => {
-        // Encontrar la entrada más alta que esté intersectando
-        const visible = entries
-            .filter(e => e.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length === 0) return;
-        const target = visible[0].target;
-        const idx = parseInt(target.id.match(/^menu-sec-(\d+)-/)[1], 10);
-        setActiveMenuChip(idx);
+    _menuCatObserver = new IntersectionObserver(() => {
+        // [v2.0.30/UUX] Cálculo determinista de la sección activa por posición,
+        //   no por el batch de entries. Antes, un scroll rápido dejaba batches
+        //   sin ninguna entry isIntersecting (rootMargin -60% abajo) → return
+        //   temprano → chip desincronizado; y secciones cortas podían saltarse
+        //   sin activar su chip. Ahora recorremos TODAS las secciones y elegimos
+        //   la última cuyo top esté en/por encima de la banda pegajosa (110px).
+        const root = document.getElementById('menuSubBody');
+        if (!root) return;
+        const rootTop = root.getBoundingClientRect().top;
+        const band = 111;
+        let activeIdx = -1;
+        sections.forEach((s, i) => {
+            if (s.getBoundingClientRect().top - rootTop <= band) activeIdx = i;
+        });
+        if (activeIdx >= 0) setActiveMenuChip(activeIdx);
     }, {
         root: document.getElementById('menuSubBody'),
-        rootMargin: '-110px 0px -60% 0px', // el chip se activa cuando la sección pasa la barra pegajosa
+        rootMargin: '-110px 0px -60% 0px', // dispara el callback al entrar en la banda
         threshold: 0
     });
     sections.forEach(s => _menuCatObserver.observe(s));
@@ -1904,8 +2422,30 @@ function scrollMenuToTop() {
 /* ═══════════════════════════════════════════
    UTILIDADES
    ═══════════════════════════════════════════ */
+// [v2.0.30/A11Y-RES] navigator.clipboard requiere contexto seguro (HTTPS) y
+//   permiso; en HTTP / navegadores antiguos / sin permiso lanzaba o rechazaba
+//   sin alternativa. Fallback a execCommand('copy') vía <textarea> oculta.
+function _fallbackCopy(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    } catch (e) { return false; }
+}
+function _copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(() => true).catch(() => _fallbackCopy(text));
+    }
+    return Promise.resolve(_fallbackCopy(text));
+}
 function copyText(text) {
-    navigator.clipboard.writeText(text).then(() => showToast('Dirección copiada')).catch(() => showToast('No se pudo copiar'));
+    _copyToClipboard(text).then(ok => showToast(ok ? 'Dirección copiada' : 'No se pudo copiar'));
 }
 
 function sharePlace(id) {
@@ -1915,8 +2455,8 @@ function sharePlace(id) {
     if (navigator.share) {
         navigator.share({ title: p.name, text, url: window.location.href }).catch(() => {});
     } else {
-        navigator.clipboard.writeText(text + ' ' + window.location.href)
-            .then(() => showToast('Enlace copiado')).catch(() => showToast('No se pudo copiar'));
+        _copyToClipboard(text + ' ' + window.location.href)
+            .then(ok => showToast(ok ? 'Enlace copiado' : 'No se pudo copiar'));
     }
 }
 
@@ -1936,8 +2476,8 @@ function openLegalModal(type) {
         terminos: '<p style="color:var(--muted);line-height:1.8;">Al usar Sabormap aceptas que la información de locales, precios y horarios puede variar y es referencial. No nos responsabilizamos por cambios en los comercios listados.</p>',
         privacidad: '<p style="color:var(--muted);line-height:1.8;">Respetamos tu privacidad. No recopilamos datos personales sin tu consentimiento. Las cookies se usan únicamente para mejorar la experiencia de navegación.</p>'
     };
+    legalReturnPlace = currentModalPlace; // [U-11] recordar si había un local abierto (¡ANTES de nullear!)
     currentModalPlace = null;
-    legalReturnPlace = currentModalPlace; // [U-11] recordar si había un local abierto
     const html = `
         <div class="drawer-cat-banner cat-bar" style="padding-top:60px;">
             <div class="drawer-cat-orb" style="width:180px;height:180px;top:-40px;right:-30px;"></div>
@@ -2072,6 +2612,862 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+/* ═══════════════════════════════════════════════════════════════════
+   [v2.0.19] FOODIES — Sesión del comensal, favoritos y reseñas
+   ───────────────────────────────────────────────────────────────────
+   Estas funciones se conectan al PROYECTO SUPABASE SEPARADO (sbFoodies).
+   No tocan para nada el `sb` (proyecto principal de places/collections).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Helper de escape para atributos HTML */
+function _escFoodieAttr(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* Helper de escape para contenido HTML (anti-XSS en reseñas) */
+function _escFoodieHtml(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+let foodieFavoritesLoaded = false; // true tras una carga exitosa; detecta cargas fallidas y evita recargas redundantes
+
+/* initFoodieSession — al cargar la home, verifica si hay sesión de comensal
+   activa. Si la hay, carga sus favoritos + perfil y actualiza el botón "Entrar"/"Mi cuenta".
+   ★ [FIX favoritos] Maneja INITIAL_SESSION y TOKEN_REFRESHED (no solo SIGNED_IN):
+     en supabase-js v2.49.4 el callback dispara INITIAL_SESSION al suscribirse y
+     TOKEN_REFRESHED cuando el token persistido estaba expirado y se renueva. Si
+     getSession() devolvió null en el primer instante (carga lenta / token a
+     refrescar) y luego llega uno de estos eventos con la sesión real, hay que
+     activarla aquí; si no, currentFoodie queda null, los corazones nunca se
+     rellenan y el click redirige a login aunque el usuario esté logueado. */
+async function initFoodieSession() {
+    if (!sbFoodies) {
+        console.info('[foodies] sbFoodies no configurado — favoritos y reseñas desactivados.');
+        updateAuthButton(false);
+        return;
+    }
+    try {
+        const { data: { session } } = await sbFoodies.auth.getSession();
+        if (session && session.user) {
+            currentFoodie = session.user;
+            // Cargar favoritos Y perfil (para mostrar avatar en el botón de la home)
+            await Promise.all([
+                loadFoodieFavorites(),
+                loadFoodieProfileForHome()
+            ]);
+            updateAuthButton(true);
+            // Re-renderizar la grilla para que los corazones aparezcan rellenos
+            if (typeof renderPlaces === 'function' && currentView === 'grid') {
+                renderPlaces();
+            }
+            // [FIX favoritos] Consumir intención pendiente (favorito marcado antes
+            //   de iniciar sesión). Antes se seteaba sabormap_fav_pending pero
+            //   nunca se leía, así que la intención se perdía tras el login.
+            applyPendingFavorite();
+        } else {
+            updateAuthButton(false);
+        }
+        // Escuchar cambios de sesión (login desde otra pestaña, logout, refresh, etc.)
+        sbFoodies.auth.onAuthStateChange((event, session) => {
+            const user = session && session.user;
+            if (user) {
+                const idChanged = !currentFoodie || currentFoodie.id !== user.id;
+                currentFoodie = user;
+                // (Re)cargar favoritos/perfil solo si cambió la identidad o si la
+                // carga anterior falló (foodieFavoritesLoaded === false). Así no
+                // recargamos en cada TOKEN_REFRESHED del mismo usuario, pero sí
+                // recuperamos la sesión si getSession() había devuelto null.
+                if (idChanged || !foodieFavoritesLoaded) {
+                    Promise.all([
+                        loadFoodieFavorites(),
+                        loadFoodieProfileForHome()
+                    ]).then(() => {
+                        updateAuthButton(true);
+                        if (typeof renderPlaces === 'function' && currentView === 'grid') renderPlaces();
+                        applyPendingFavorite();
+                    }).catch(e => console.warn('[foodies] onAuthStateChange reload:', e));
+                } else {
+                    updateAuthButton(true);
+                }
+            } else if (event === 'SIGNED_OUT') {
+                currentFoodie = null;
+                foodieFavorites = new Set();
+                foodieFavoritesLoaded = false;
+                foodieProfileForHome = null;
+                updateAuthButton(false);
+                if (typeof renderPlaces === 'function' && currentView === 'grid') renderPlaces();
+            }
+        });
+    } catch (e) {
+        console.warn('[foodies] initFoodieSession:', e);
+        updateAuthButton(false);
+    }
+}
+
+/* applyPendingFavorite — [FIX favoritos] consume la intención de favorito
+   guardada en sessionStorage('sabormap_fav_pending') cuando un usuario sin
+   sesión clickeó el corazón y fue redirigido a login. Se llama tras detectar
+   una sesión válida (initFoodieSession + onAuthStateChange). Solo añade (nunca
+   quita): si el place ya está en favoritos, simplemente limpia el flag. */
+async function applyPendingFavorite() {
+    if (!currentFoodie || !sbFoodies) return;
+    let pid = null;
+    try { pid = sessionStorage.getItem('sabormap_fav_pending'); } catch (e) { return; }
+    if (!pid) return;
+    try { sessionStorage.removeItem('sabormap_fav_pending'); } catch (e) {}
+    pid = String(pid);
+    if (foodieFavorites.has(pid)) return; // ya está favorito, nada que hacer
+    try {
+        await toggleFavorite(pid);
+    } catch (e) {
+        console.warn('[foodies] applyPendingFavorite:', e);
+    }
+}
+
+/* foodieProfileForHome — cache mínimo del perfil del comensal para
+   mostrar el avatar en el botón "Mi cuenta" de la home sin tener
+   que llamar a loadFoodieProfile (que está en foodies-app.js y no
+   está disponible aquí). Solo nos interesa avatar_url y display_name. */
+let foodieProfileForHome = null;
+
+async function loadFoodieProfileForHome() {
+    if (!sbFoodies || !currentFoodie) return;
+    try {
+        const { data, error } = await sbFoodies
+            .from('foodies')
+            .select('display_name, avatar_url')
+            .eq('id', currentFoodie.id)
+            .maybeSingle();
+        if (error) {
+            console.warn('[foodies] loadFoodieProfileForHome:', error);
+            return;
+        }
+        foodieProfileForHome = data || { display_name: null, avatar_url: null };
+    } catch (e) {
+        console.warn('[foodies] loadFoodieProfileForHome:', e);
+    }
+}
+
+/* loadFoodieFavorites — trae los favoritos del comensal y los guarda en
+   el Set `foodieFavorites` (de place_id como string). */
+async function loadFoodieFavorites() {
+    if (!sbFoodies || !currentFoodie) return;
+    try {
+        const { data, error } = await sbFoodies
+            .from('favorites')
+            .select('place_id')
+            .eq('foodie_id', currentFoodie.id);
+        if (error) throw error;
+        foodieFavorites = new Set((data || []).map(f => String(f.place_id)));
+        foodieFavoritesLoaded = true; // [FIX favoritos] marca carga OK; si esto queda false, onAuthStateChange reintentará
+    } catch (e) {
+        // [FIX favoritos] dejar foodieFavoritesLoaded=false para que el próximo
+        //   evento de auth (INITIAL_SESSION/TOKEN_REFRESHED) reintente la carga
+        //   en vez de quedarse con un Set vacío que causaría violaciones UNIQUE
+        //   al re-favoritar (bug "no se pudo actualizar el favorito").
+        foodieFavoritesLoaded = false;
+        console.warn('[foodies] loadFoodieFavorites:', e);
+    }
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   MIS LISTAS + MIS FOTOS — funciones para el drawer de la home.
+   La home NO carga foodies-app.js (solo app.js), así que estas funciones
+   duplican la lógica del panel usando el mismo sbFoodies + currentFoodie.
+   ─────────────────────────────────────────────────────────────────── */
+async function loadFoodieCollections() {
+    if (!sbFoodies || !currentFoodie) return [];
+    const { data, error } = await sbFoodies
+        .from('collections')
+        .select('*, list_items(*)')
+        .eq('foodie_id', currentFoodie.id)
+        .order('created_at', { ascending: false });
+    if (error) { console.warn('[foodies] loadFoodieCollections:', error.message); return []; }
+    (data || []).forEach(c => {
+        if (Array.isArray(c.list_items)) c.list_items.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
+        else c.list_items = [];
+    });
+    return data || [];
+}
+window.loadFoodieCollections = loadFoodieCollections;
+
+async function createCollection(name) {
+    if (!sbFoodies || !currentFoodie) return null;
+    const clean = (name || '').trim();
+    if (!clean) { showToast('Escribe un nombre para la lista'); return null; }
+    if (clean.length > 60) { showToast('Máximo 60 caracteres'); return null; }
+    const { data, error } = await sbFoodies
+        .from('collections')
+        .insert({ foodie_id: currentFoodie.id, name: clean })
+        .select().single();
+    if (error) { showToast('No se pudo crear la lista: ' + error.message); return null; }
+    return data;
+}
+window.createCollection = createCollection;
+
+async function addPlaceToCollection(collectionId, placeId, placeSource, placeName) {
+    if (!sbFoodies || !currentFoodie) return false;
+    const { error } = await sbFoodies
+        .from('list_items')
+        .upsert({
+            collection_id: collectionId,
+            foodie_id: currentFoodie.id,
+            place_id: String(placeId),
+            place_source: placeSource || 'static',
+            place_name_snapshot: placeName || null
+        }, { onConflict: 'collection_id,place_id,place_source' });
+    if (error) {
+        const m = (error.message || '').toLowerCase();
+        if (m.includes('duplicate') || m.includes('unique')) { showToast('Ya está en esta lista'); return true; }
+        showToast('No se pudo añadir: ' + error.message); return false;
+    }
+    return true;
+}
+window.addPlaceToCollection = addPlaceToCollection;
+
+// Redimensiona manteniendo ratio (fit). Reutiliza AVATAR_QUALITY si está
+// definido (foodies-app.js lo define; en la home no, hence el fallback 0.85).
+function _resizePlacePhotoFile(file, maxW) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) return reject(new Error('No es una imagen'));
+        const img = new Image();
+        const objUrl = URL.createObjectURL(file);
+        const q = (typeof AVATAR_QUALITY !== 'undefined') ? AVATAR_QUALITY : 0.85;
+        img.onload = function () {
+            URL.revokeObjectURL(objUrl);
+            try {
+                let w = img.naturalWidth || img.width;
+                let h = img.naturalHeight || img.height;
+                if (w > maxW) { h = Math.max(1, Math.round(h * maxW / w)); w = maxW; }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob(function (blob) {
+                    if (!blob) return reject(new Error('No se pudo generar el blob'));
+                    resolve(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+                }, 'image/jpeg', q);
+            } catch (e) { reject(e); }
+        };
+        img.onerror = function () { URL.revokeObjectURL(objUrl); reject(new Error('No se pudo cargar la imagen')); };
+        img.src = objUrl;
+    });
+}
+
+async function uploadPlacePhoto(file, placeId, placeSource, placeName, caption) {
+    if (!sbFoodies || !currentFoodie) return { ok: false, error: 'Sin sesión' };
+    if (!file) return { ok: false, error: 'No se recibió archivo' };
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) return { ok: false, error: 'Formato no soportado. Usa JPG, PNG o WebP.' };
+    if (file.size > 5 * 1024 * 1024) return { ok: false, error: 'La foto supera los 5 MB.' };
+    try {
+        const resized = await _resizePlacePhotoFile(file, 1280);
+        if (!resized) return { ok: false, error: 'No se pudo procesar la imagen.' };
+        const path = currentFoodie.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+        const { error: upErr } = await sbFoodies.storage
+            .from('place-photos').upload(path, resized, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false });
+        if (upErr) throw upErr;
+        const { data: urlData } = sbFoodies.storage.from('place-photos').getPublicUrl(path);
+        if (!urlData || !urlData.publicUrl) throw new Error('No se pudo obtener la URL pública');
+        const finalUrl = urlData.publicUrl + '?t=' + Date.now();
+        const { data: row, error: insErr } = await sbFoodies
+            .from('place_photos')
+            .insert({ foodie_id: currentFoodie.id, place_id: String(placeId), place_source: placeSource || 'static', place_name_snapshot: placeName || null, url: finalUrl, caption: (caption || '').trim() || null, status: 'pending' })
+            .select().single();
+        if (insErr) throw insErr;
+        return { ok: true, photo: row };
+    } catch (e) {
+        console.error('[foodies] uploadPlacePhoto:', e);
+        const msg = (e.message || '').toLowerCase();
+        if (msg.includes('policy') || msg.includes('permission') || msg.includes('rls'))
+            return { ok: false, error: 'El bucket "place-photos" no tiene RLS configurado. Ejecuta el SQL.' };
+        if (msg.includes('bucket not found') || msg.includes('not found'))
+            return { ok: false, error: 'El bucket "place-photos" no existe. Créalo en Supabase → Storage.' };
+        return { ok: false, error: e.message || 'No se pudo subir la foto' };
+    }
+}
+window.uploadPlacePhoto = uploadPlacePhoto;
+
+/* updateAuthButton — cambia el botón #foodieAuthBtn del header según
+   si hay sesión o no. Muestra avatar mini si hay foto, icono si no.
+   El botón debe existir en index.html (ver README). */
+function updateAuthButton(isLoggedIn) {
+    const btn = document.getElementById('foodieAuthBtn');
+    if (!btn) return; // Si la home no incluye el botón, no hacer nada
+    if (isLoggedIn) {
+        const avatarUrl = foodieProfileForHome && foodieProfileForHome.avatar_url;
+        if (avatarUrl) {
+            // Botón con avatar mini circular
+            btn.innerHTML =
+                '<img src="' + _escFoodieAttr(avatarUrl) + '" alt="" ' +
+                'style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.2);margin-right:6px" ' +
+                'onerror="this.style.display=\'none\';this.parentNode.querySelector(\'i\').style.display=\'\'"> ' +
+                '<i class="fas fa-user-circle" style="font-size:0.85rem;margin-right:4px;display:none"></i>' +
+                '<span>Mi cuenta</span>';
+        } else {
+            btn.innerHTML = '<i class="fas fa-user-circle" style="font-size:0.85rem;margin-right:4px"></i><span>Mi cuenta</span>';
+        }
+        btn.setAttribute('href', 'mi-sabormap.html');
+        btn.setAttribute('aria-label', 'Ir a Mi SaborMap');
+    } else {
+        btn.innerHTML = '<i class="fas fa-sign-in-alt" style="font-size:0.82rem;margin-right:4px"></i> <span>Entrar</span>';
+        btn.setAttribute('href', 'cuenta.html');
+        btn.setAttribute('aria-label', 'Iniciar sesión como comensal');
+    }
+}
+
+/* toggleFavorite — añade o quita un place de los favoritos del comensal.
+   - Si no hay sesión, redirige a cuenta.html (con retorno a la home).
+   - Actualiza el Set foodieFavorites y el UI de TODOS los botones corazón
+     que correspondan a este place (cards + drawer).
+   - `fromDrawer` (bool) indica si el click vino del botón del drawer; en
+     ese caso no hay que refrescar la grilla. */
+async function toggleFavorite(placeId, fromDrawer) {
+    if (!sbFoodies) {
+        showToast('Función no disponible por el momento');
+        return;
+    }
+    if (!currentFoodie) {
+        showToast('Inicia sesión para guardar favoritos');
+        // Guardar intención: tras login, volver a la home
+        try { sessionStorage.setItem('sabormap_fav_pending', String(placeId)); } catch (e) {}
+        setTimeout(() => { window.location.href = 'cuenta.html?return=home'; }, 1000);
+        return;
+    }
+    const pid = String(placeId);
+    const place = staticPlaces.find(p => String(p.id) === pid);
+    const placeName = place ? place.name : '';
+    const placeSource = place && place._fromDb ? 'supabase' : 'static';
+
+    try {
+        if (foodieFavorites.has(pid)) {
+            const { error } = await sbFoodies
+                .from('favorites')
+                .delete()
+                .eq('foodie_id', currentFoodie.id)
+                .eq('place_id', pid);
+            if (error) throw error;
+            foodieFavorites.delete(pid);
+            showToast('Quitado de favoritos');
+        } else {
+            // [FIX favoritos] upsert idempotente con ignoreDuplicates. Antes era
+            //   .insert() plano: si el Set estaba stale (carga fallida, o favorito
+            //   creado desde otra pestaña/dispositivo), el INSERT chocaba con el
+            //   UNIQUE(foodie_id, place_id) → error "No se pudo actualizar el
+            //   favorito". Ahora, si la fila ya existe, no se inserta ni se
+            //   errora; simplemente marcamos como favorito en el Set y la UI.
+            const { error } = await sbFoodies
+                .from('favorites')
+                .upsert(
+                    {
+                        foodie_id: currentFoodie.id,
+                        place_id: pid,
+                        place_name_snapshot: placeName,
+                        place_source: placeSource
+                    },
+                    { onConflict: 'foodie_id,place_id', ignoreDuplicates: true }
+                );
+            if (error) throw error;
+            foodieFavorites.add(pid);
+            showToast('Añadido a favoritos ❤');
+        }
+        // Actualizar UI: cards + drawer
+        document.querySelectorAll('.fav-btn[data-place-id="' + _escFoodieAttr(pid) + '"]').forEach(btn => {
+            const isFav = foodieFavorites.has(pid);
+            btn.classList.toggle('favorited', isFav);
+            btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+            btn.setAttribute('aria-label', isFav ? 'Quitar de favoritos' : 'Guardar en favoritos');
+            const icon = btn.querySelector('i');
+            if (icon) icon.className = (isFav ? 'fas' : 'far') + ' fa-heart';
+        });
+        const drawerBtn = document.getElementById('drawerFavBtn');
+        if (drawerBtn && drawerBtn.dataset.placeId === pid) {
+            const isFav = foodieFavorites.has(pid);
+            drawerBtn.classList.toggle('favorited', isFav);
+            drawerBtn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+            drawerBtn.setAttribute('aria-label', isFav ? 'Quitar de favoritos' : 'Guardar en favoritos');
+            const icon = drawerBtn.querySelector('i');
+            if (icon) icon.className = (isFav ? 'fas' : 'far') + ' fa-heart';
+        }
+    } catch (e) {
+        // [FIX favoritos] extraer code/message del error de Supabase/PostgREST
+        //   para que el fallo deje huella diagnosticable (antes solo se logueaba
+        //   el objeto y el toast era genérico → sensación de "falla silenciosa").
+        const code = e && e.code;
+        const msg = e && e.message;
+        console.error('[foodies] toggleFavorite failed:', {
+            code, message: msg, pid,
+            foodieId: currentFoodie && currentFoodie.id,
+            wasFav: foodieFavorites.has(pid),
+            error: e
+        });
+        showToast('No se pudo actualizar el favorito' + (code ? ` (${code})` : ''), true);
+        // [FIX favoritos] Si falló un alta/baja pero el Set quedó inconsistente
+        //   con la DB (p.ej. la fila ya existía por otro camino), recargar para
+        //   sincronizar y reflejar el estado real en corazones y drawer.
+        if (currentFoodie) {
+            loadFoodieFavorites().then(() => {
+                document.querySelectorAll('.fav-btn[data-place-id="' + _escFoodieAttr(pid) + '"]').forEach(btn => {
+                    const isFav = foodieFavorites.has(pid);
+                    btn.classList.toggle('favorited', isFav);
+                    btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+                    btn.setAttribute('aria-label', isFav ? 'Quitar de favoritos' : 'Guardar en favoritos');
+                    const icon = btn.querySelector('i');
+                    if (icon) icon.className = (isFav ? 'fas' : 'far') + ' fa-heart';
+                });
+                const drawerBtn = document.getElementById('drawerFavBtn');
+                if (drawerBtn && drawerBtn.dataset.placeId === pid) {
+                    const isFav = foodieFavorites.has(pid);
+                    drawerBtn.classList.toggle('favorited', isFav);
+                    drawerBtn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+                    drawerBtn.setAttribute('aria-label', isFav ? 'Quitar de favoritos' : 'Guardar en favoritos');
+                    const icon = drawerBtn.querySelector('i');
+                    if (icon) icon.className = (isFav ? 'fas' : 'far') + ' fa-heart';
+                }
+            }).catch(() => {});
+        }
+    }
+}
+window.toggleFavorite = toggleFavorite;
+
+/* ───────────────────────────────────────────────────────────────────
+   Drawer — "Añadir a lista" + "Subir foto"  (Mis listas / Mis fotos)
+   El modal se construye en JS (sin tocar el HTML de index.html) y su
+   CSS se inyecta una sola vez en <head>.
+   ─────────────────────────────────────────────────────────────────── */
+(function injectComensalDrawerCSS() {
+    if (document.getElementById('comensal-drawer-css')) return;
+    const css = `
+    .drawer-comensal-actions { margin-bottom: 24px; }
+    .drawer-action-row { display:flex; gap:10px; flex-wrap:wrap; }
+    .drawer-action-btn {
+        flex:1; min-width:150px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+        padding:11px 14px; border-radius:12px; border:1px solid var(--border);
+        background:var(--card); color:var(--cream); font-size:0.85rem; font-weight:600; cursor:pointer;
+        transition:all .2s;
+    }
+    .drawer-action-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft, rgba(139,92,246,0.08)); }
+    .atl-overlay {
+        position:fixed; inset:0; z-index:100000; background:rgba(5,7,15,0.7);
+        display:flex; align-items:center; justify-content:center; padding:20px;
+        animation: atlFadeIn .2s ease;
+    }
+    .atl-modal {
+        width:100%; max-width:440px; max-height:85vh; overflow:auto; background:#111628;
+        border:1px solid #2a2f4a; border-radius:18px; padding:24px;
+        box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    }
+    .atl-title { font-size:1.2rem; font-weight:700; color:#f1f5f9; margin:0 0 4px; }
+    .atl-sub { font-size:0.82rem; color:#94a3b8; margin:0 0 16px; }
+    .atl-create-row { display:flex; gap:8px; margin-bottom:16px; }
+    .atl-create-input {
+        flex:1; padding:10px 12px; border-radius:10px; border:1px solid #2a2f4a;
+        background:#171d35; color:#f1f5f9; font-size:0.88rem;
+    }
+    .atl-create-input:focus { outline:none; border-color:#8b5cf6; }
+    .atl-list { display:flex; flex-direction:column; gap:8px; }
+    .atl-item {
+        display:flex; align-items:center; justify-content:space-between; gap:10px;
+        padding:12px 14px; border-radius:11px; border:1px solid #2a2f4a;
+        background:#171d35; cursor:pointer; transition:all .15s;
+    }
+    .atl-item:hover { border-color:#8b5cf6; background:rgba(139,92,246,0.08); }
+    .atl-item-name { font-size:0.92rem; font-weight:600; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .atl-item-count { font-size:0.74rem; color:#94a3b8; flex-shrink:0; }
+    .atl-close { margin-top:18px; width:100%; padding:11px; border-radius:11px; border:1px solid #2a2f4a; background:transparent; color:#94a3b8; cursor:pointer; font-size:0.88rem; }
+    @keyframes atlFadeIn { from { opacity:0 } to { opacity:1 } }
+    `;
+    const style = document.createElement('style');
+    style.id = 'comensal-drawer-css';
+    style.textContent = css;
+    document.head.appendChild(style);
+})();
+
+let _addToListContext = null; // { placeId, placeSource, placeName }
+let _atlToken = 0;            // [FIX v2.0.27] abort token: descarta renders de aperturas anteriores
+let _atlEscInstalled = false; // [FIX v2.0.27] el handler de Esc se instala una sola vez
+
+function escapeHtmlLight(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+async function openAddToList(placeId, placeSource, placeName) {
+    if (!sbFoodies) { showToast('Función no disponible por el momento'); return; }
+    if (!currentFoodie) {
+        showToast('Inicia sesión para usar tus listas');
+        try { sessionStorage.setItem('sabormap_atl_pending', JSON.stringify({ placeId: String(placeId), placeSource: placeSource, placeName: placeName })); } catch (e) {}
+        setTimeout(() => { window.location.href = 'cuenta.html?return=home'; }, 1000);
+        return;
+    }
+    const token = ++_atlToken; // [FIX v2.0.27] invalida aperturas anteriores
+    _addToListContext = { placeId: String(placeId), placeSource: placeSource || 'static', placeName: placeName || '' };
+    _installAtlEscOnce();
+    _renderAddToListModal([], true);
+    const cols = await loadFoodieCollections();
+    if (token !== _atlToken) return; // otra apertura la canceló: no pintar datos stale
+    _renderAddToListModal(cols, false);
+}
+window.openAddToList = openAddToList;
+
+// [FIX v2.0.27] Handler de Esc único para el modal "Añadir a lista".
+// Se instala una sola vez y comprueba si el overlay existe antes de actuar.
+function _installAtlEscOnce() {
+    if (_atlEscInstalled) return;
+    _atlEscInstalled = true;
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('atlOverlay')) _closeAddToList();
+    });
+}
+
+function _renderAddToListModal(cols, loading) {
+    const old = document.getElementById('atlOverlay');
+    if (old) old.remove();
+    const ctx = _addToListContext || { placeId: '', placeSource: 'static', placeName: '' };
+    const overlay = document.createElement('div');
+    overlay.id = 'atlOverlay';
+    overlay.className = 'atl-overlay';
+    overlay.innerHTML = `
+        <div class="atl-modal" role="dialog" aria-modal="true" aria-label="Añadir a lista">
+            <h3 class="atl-title">Añadir a una lista</h3>
+            <p class="atl-sub">${ctx.placeName ? escapeHtmlLight(ctx.placeName) : 'Este local'}</p>
+            <div class="atl-create-row">
+                <input type="text" id="atlNewName" class="atl-create-input" placeholder="Crear lista nueva…" maxlength="60">
+                <button class="btn btn-primary" id="atlCreateBtn">Crear</button>
+            </div>
+            <div class="atl-list" id="atlList">
+                ${loading ? '<p style="color:#94a3b8;font-size:0.85rem;text-align:center;padding:12px">Cargando tus listas…</p>' :
+                  cols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem;text-align:center;padding:12px">Aún no tienes listas. Crea una arriba.</p>' :
+                  cols.map(c => `
+                    <div class="atl-item" data-cid="${c.id}">
+                        <span class="atl-item-name">${escapeHtmlLight(c.name)}</span>
+                        <span class="atl-item-count">${(c.list_items || []).length} lug.</span>
+                    </div>`).join('')}
+            </div>
+            <button class="atl-close" id="atlClose">Cerrar</button>
+        </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) _closeAddToList(); });
+    document.getElementById('atlClose').addEventListener('click', _closeAddToList);
+    document.getElementById('atlCreateBtn').addEventListener('click', _handleAtlCreate);
+    overlay.querySelectorAll('.atl-item').forEach(el => {
+        el.addEventListener('click', () => _handleAtlPick(el.dataset.cid, el.querySelector('.atl-item-name').textContent));
+    });
+    const inp = document.getElementById('atlNewName');
+    if (inp) {
+        inp.focus();
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') _handleAtlCreate(); });
+    }
+    // [FIX v2.0.27] El handler de Esc se instala una sola vez vía _installAtlEscOnce
+    // (antes se registraba por cada render → 2 listeners/apertura que no se quitaban
+    // al cerrar con botón/overlay → leak + race entre aperturas).
+}
+
+async function _handleAtlCreate() {
+    const inp = document.getElementById('atlNewName');
+    if (!inp) return;
+    const name = inp.value.trim();
+    if (!name) { showToast('Escribe un nombre para la lista'); inp.focus(); return; }
+    const created = await createCollection(name);
+    if (created) {
+        if (_addToListContext) {
+            const ok = await addPlaceToCollection(created.id, _addToListContext.placeId, _addToListContext.placeSource, _addToListContext.placeName);
+            showToast(ok ? 'Lista creada y local añadido' : 'Lista creada');
+        } else {
+            showToast('Lista creada');
+        }
+        _closeAddToList();
+    }
+}
+
+async function _handleAtlPick(cid, cname) {
+    if (!_addToListContext) return;
+    const ok = await addPlaceToCollection(cid, _addToListContext.placeId, _addToListContext.placeSource, _addToListContext.placeName);
+    if (ok) showToast('Añadido a "' + cname + '"');
+    _closeAddToList();
+}
+
+function _closeAddToList() {
+    const o = document.getElementById('atlOverlay');
+    if (o) o.remove();
+    _addToListContext = null;
+}
+
+// Subir foto: crea un <input type=file> efímero y dispara la subida
+function triggerDrawerPhotoUpload(placeId, placeSource, placeName) {
+    if (!sbFoodies) { showToast('Función no disponible por el momento'); return; }
+    if (!currentFoodie) {
+        showToast('Inicia sesión para subir fotos');
+        setTimeout(() => { window.location.href = 'cuenta.html?return=home'; }, 1000);
+        return;
+    }
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+    input.style.display = 'none';
+    input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (file) handleDrawerPhotoUpload(file, String(placeId), placeSource || 'static', placeName || '');
+        input.remove();
+    });
+    input.addEventListener('cancel', () => input.remove()); // [FIX v2.0.27] limpia el input si el usuario cancela el picker
+    document.body.appendChild(input);
+    input.click();
+}
+window.triggerDrawerPhotoUpload = triggerDrawerPhotoUpload;
+
+async function handleDrawerPhotoUpload(file, placeId, placeSource, placeName) {
+    showToast('Subiendo foto…');
+    const result = await uploadPlacePhoto(file, placeId, placeSource, placeName, '');
+    if (result.ok) {
+        showToast('Foto subida. Se publicará tras moderación.');
+    } else {
+        showToast(result.error || 'No se pudo subir la foto');
+    }
+}
+window.handleDrawerPhotoUpload = handleDrawerPhotoUpload;
+
+/* renderReviewsInDrawer — fetchea las reseñas publicadas de un place
+   y las pinta en el contenedor #drawerReviewsList del drawer.
+   También actualiza el contador #drawerReviewsCount. */
+async function renderReviewsInDrawer(placeId) {
+    const list = document.getElementById('drawerReviewsList');
+    const countEl = document.getElementById('drawerReviewsCount');
+    if (!list || !sbFoodies) return;
+    const pid = String(placeId);
+    // Cache por sesión de drawer
+    if (foodieReviewsCache.has(pid)) {
+        _paintReviewsInDrawer(foodieReviewsCache.get(pid), list, countEl);
+        return;
+    }
+    try {
+        const { data, error } = await sbFoodies
+            .from('reviews')
+            .select('id, foodie_id, rating, body, status, created_at')
+            .eq('place_id', pid)
+            .eq('status', 'published')
+            .order('created_at', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        const reviews = data || [];
+        foodieReviewsCache.set(pid, reviews);
+        _paintReviewsInDrawer(reviews, list, countEl);
+    } catch (e) {
+        console.warn('[foodies] renderReviewsInDrawer:', e);
+        list.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0">No se pudieron cargar las reseñas. Revisa tu conexión.</p>';
+        if (countEl) countEl.textContent = '—';
+    }
+}
+
+function _paintReviewsInDrawer(reviews, listEl, countEl) {
+    if (countEl) countEl.textContent = String(reviews.length);
+    if (reviews.length === 0) {
+        listEl.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0">Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia!</p>';
+        return;
+    }
+    listEl.innerHTML = reviews.map(r => {
+        const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        const date = new Date(r.created_at).toLocaleDateString('es-CU', { day: '2-digit', month: 'short', year: 'numeric' });
+        const authorInitials = '★'; // No traemos display_name para no exponer otros usuarios sin consentimiento explícito; sprint 2 lo deja como "Comensal" + fecha
+        // Para mostrar el apodo del autor habría que hacer un join con foodies via RPC; por ahora "Comensal verificado"
+        const authorLabel = currentFoodie && currentFoodie.id === r.foodie_id
+            ? '<strong>Tu reseña</strong>'
+            : 'Comensal de SaborMap';
+        const reportBtn = (currentFoodie && currentFoodie.id !== r.foodie_id)
+            ? `<button class="drawer-review-report" onclick="reportReview('${_escFoodieAttr(r.id)}')">Reportar</button>`
+            : '';
+        return `
+            <div class="drawer-review-card">
+                <div class="drawer-review-head">
+                    <div class="drawer-review-avatar">${authorInitials}</div>
+                    <div>
+                        <div class="drawer-review-author">${authorLabel}</div>
+                        <div class="drawer-review-date">${date}</div>
+                    </div>
+                </div>
+                <div class="drawer-review-stars">${stars}</div>
+                ${r.body ? `<div class="drawer-review-body">${_escFoodieHtml(r.body)}</div>` : ''}
+                <div class="drawer-review-actions">${reportBtn}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+/* openReviewFormInline — abre el formulario inline de reseña en el drawer.
+   Si no hay sesión, redirige a cuenta.html. */
+function openReviewFormInline(placeId, placeSource, placeName) {
+    if (!sbFoodies) { showToast('Función no disponible', true); return; }
+    if (!currentFoodie) {
+        showToast('Inicia sesión para escribir una reseña');
+        try { sessionStorage.setItem('sabormap_review_pending', JSON.stringify({ placeId, placeSource, placeName })); } catch (e) {}
+        setTimeout(() => { window.location.href = 'cuenta.html?return=home'; }, 1000);
+        return;
+    }
+    const form = document.getElementById('reviewFormInline');
+    if (!form) return;
+    form.classList.add('open');
+    // Reset
+    document.getElementById('reviewBodyInput').value = '';
+    _setReviewStars(0); // [v2.0.28/A-05] clases + aria-pressed
+    _reviewFormRating = 0;
+    // Scroll al formulario
+    setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+}
+window.openReviewFormInline = openReviewFormInline;
+
+function closeReviewFormInline() {
+    const form = document.getElementById('reviewFormInline');
+    if (form) form.classList.remove('open');
+}
+window.closeReviewFormInline = closeReviewFormInline;
+
+let _reviewFormRating = 0;
+// [v2.0.28/A-05] helper: refresca clases + aria-pressed de las estrellas inline.
+function _setReviewStars(rating) {
+    document.querySelectorAll('#reviewStarInput i').forEach(s => {
+        const v = parseInt(s.dataset.value, 10);
+        const active = v <= rating;
+        s.className = active ? 'fas fa-star active' : 'far fa-star';
+        s.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+// Star input: click + hover
+document.addEventListener('click', (e) => {
+    const star = e.target.closest('#reviewStarInput i');
+    if (!star) return;
+    _reviewFormRating = parseInt(star.dataset.value, 10);
+    _setReviewStars(_reviewFormRating);
+});
+// [v2.0.28/A-05] teclado: Enter/Espacio selecciona; flechas suben/bajan y
+//   mueven el foco. Delegado en document como click/hover (las estrellas se
+//   recrean al abrir el drawer de cada place).
+document.addEventListener('keydown', (e) => {
+    const star = e.target.closest && e.target.closest('#reviewStarInput i');
+    if (!star) return;
+    const v = parseInt(star.dataset.value, 10);
+    let next = v;
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        next = v;
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        next = Math.min(5, v + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        next = Math.max(1, v - 1);
+    } else {
+        return;
+    }
+    _reviewFormRating = next;
+    _setReviewStars(_reviewFormRating);
+    const tgt = document.querySelector(`#reviewStarInput i[data-value="${next}"]`);
+    if (tgt) { try { tgt.focus(); } catch (e2) {} }
+});
+document.addEventListener('mousemove', (e) => {
+    const star = e.target.closest('#reviewStarInput i');
+    if (!star) return;
+    const v = parseInt(star.dataset.value, 10);
+    document.querySelectorAll('#reviewStarInput i').forEach(s => {
+        const sv = parseInt(s.dataset.value, 10);
+        s.className = sv <= v ? 'fas fa-star' : 'far fa-star';
+    });
+});
+// ★ FIX [v2.0.19-audit]: mouseleave NO burbujea en el DOM, así que un listener
+//   en `document` nunca se dispara cuando el mouse sale del #reviewStarInput.
+//   Cambiamos a `mouseout` (que SÍ burbujea) y verificamos que el mouse
+//   realmente está saliendo del contenedor del star-input (no solo moviéndose
+//   entre estrellas hijas). Esto hace que el reset de estrellas funcione.
+document.addEventListener('mouseout', (e) => {
+    const starInput = document.getElementById('reviewStarInput');
+    if (!starInput) return;
+    // Solo resetear si el mouse sale del star-input (no si se mueve entre estrellas)
+    if (starInput.contains(e.target) && !starInput.contains(e.relatedTarget)) {
+        _setReviewStars(_reviewFormRating); // [v2.0.28/A-05] clases + aria-pressed
+    }
+});
+
+/* submitReviewInline — publica la reseña del comensal para el place
+   actualmente abierto en el drawer. */
+async function submitReviewInline() {
+    if (!sbFoodies || !currentFoodie) {
+        showToast('Inicia sesión para escribir una reseña', true);
+        return;
+    }
+    const form = document.getElementById('reviewFormInline');
+    if (!form) return;
+    const placeId = form.dataset.placeId;
+    const placeSource = form.dataset.placeSource;
+    const placeName = form.dataset.placeName;
+    const body = (document.getElementById('reviewBodyInput').value || '').trim();
+    if (_reviewFormRating < 1) { showToast('Selecciona una puntuación (1-5 estrellas)', true); return; }
+    if (body.length > 2000) { showToast('La reseña no puede exceder 2000 caracteres', true); return; }
+    if (body.length > 0 && body.length < 10) { showToast('La reseña debe tener al menos 10 caracteres (o déjala vacía)', true); return; }
+
+    try {
+        const { data, error } = await sbFoodies
+            .from('reviews')
+            .insert({
+                foodie_id: currentFoodie.id,
+                place_id: placeId,
+                place_name_snapshot: placeName,
+                place_source: placeSource,
+                rating: _reviewFormRating,
+                body: body || null,
+                status: 'published',
+                photos: []
+            })
+            .select('id, foodie_id, rating, body, status, created_at');
+        if (error) throw error;
+        // Invalidar cache y re-renderizar
+        foodieReviewsCache.delete(placeId);
+        await renderReviewsInDrawer(placeId);
+        closeReviewFormInline();
+        showToast('¡Reseña publicada! Gracias por compartir tu experiencia.');
+    } catch (e) {
+        console.error('[foodies] submitReviewInline:', e);
+        const msg = (e.message || '').includes('maximum of 5')
+            ? 'Has publicado el máximo de 5 reseñas en las últimas 24 horas. Intenta más tarde.'
+            : 'No se pudo publicar la reseña: ' + (e.message || 'error desconocido');
+        showToast(msg, true);
+    }
+}
+window.submitReviewInline = submitReviewInline;
+
+/* reportReview — abre un prompt para reportar una reseña abusiva.
+   El reporte se inserta en review_reports; el admin lo ve via service_role. */
+async function reportReview(reviewId) {
+    if (!sbFoodies || !currentFoodie) {
+        showToast('Inicia sesión para reportar una reseña', true);
+        return;
+    }
+    const reason = prompt('¿Por qué reportas esta reseña? (mín. 5 caracteres)\n\nEj: lenguaje ofensivo, spam, contenido falso, datos personales de terceros.');
+    if (!reason) return;
+    if (reason.trim().length < 5) { showToast('El motivo debe tener al menos 5 caracteres', true); return; }
+    try {
+        const { error } = await sbFoodies
+            .from('review_reports')
+            .insert({
+                review_id: reviewId,
+                reporter_id: currentFoodie.id,
+                reason: reason.trim().substring(0, 500),
+                status: 'open'
+            });
+        if (error) throw error;
+        showToast('Reporte enviado. Nuestro equipo lo revisará en menos de 48 horas.');
+    } catch (e) {
+        console.error('[foodies] reportReview:', e);
+        showToast('No se pudo enviar el reporte: ' + (e.message || ''), true);
+    }
+}
+window.reportReview = reportReview;
 
 /* ═══════════════════════════════════════════
    SERVICE WORKER + OFFLINE
