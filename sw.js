@@ -215,7 +215,7 @@
    Para publicar una versión nueva: sube el valor de VERSION.
    ═══════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2.0.30'; // ↑ súbelo en cada despliegue — v2.0.30: AUDIT SENIOR FRONTEND. PERF: getFilteredPlaces memo (queueMicrotask); badge refresh in-place preserva .pulse + Map O(n+m) + short-circuit; card img +decoding/width/height; resize rAF. RES: visibilitychange refresh badges + re-fetch places tras >5min oculta (hours staleness); loadPlaces retry×3 backoff; openPlaceFromUrl toast not-found. A11Y: toast role=status aria-live; copyText fallback execCommand; menú section announce sr-only; .sr-only util. UI/UX: heartPop one-shot click-gated; menuCatNav observer determinista por posición; skeleton shimmer reseñas; tokens --green+glows definidos. Diferido: star-input radio, IndexedDB cache, srcset, accent-on-dark-card contraste. v2.0.29: deshabilitar UI Mis listas/fotos. v2.0.28: cierre 6 audit (CSP/PKCE/race/N+1/a11y/RLS)
+const VERSION = 'v2.0.32'; // ↑ súbelo en cada despliegue — v2.0.32: AUTH UNIFICADO [auth-menu.js v2.1.0]: un solo botón #foodieAuthBtn en el header que despliega popover #authMenu (Entrar/Crear cuenta · o Mis favoritos/Reseñas/Cerrar sesión si logueado). WCAG 2.1 AA (role=menu, aria-haspopup/expanded/controls, flechas↑↓, Esc, focus trap, targets ≥44px). index.html: 2 botones <a> → authWrap+button+popover+CSS+noscript. app.js [v2.1.2] bridge: Object.defineProperty getters exponen window.currentFoodie/foodieProfileForHome (la home no carga foodies-app.js); handleFoodieLogout nuevo (signOut + reset). auth-menu.js sobrescribe window.updateAuthButton con updateAuthUI. Cache-buster auth-menu.js?v=1. network-first para auth-menu.js (lógica de auth). v2.0.31: RULETA "¿Dónde comemos hoy?" [app.js v2.2.0]: FAB flotante + modal canvas animado (easeOutCubic, 4.5s, 5–7 vueltas, ángulo ganador a priori), max 12 porciones, ganador uniforme sobre TODOS los candidatos, bulk-fetch de display_name+is_public para reseñas ajenas (elimina "Comensal de SaborMap" del drawer), accesibilidad (focus trap, Esc, aria-live, prefers-reduced-motion), responsive móvil, tema claro/oscuro. Bump cache-buster app.js?v=20261124 + mi-sabormap.html welcomeName placeholder. v2.0.30: AUDIT SENIOR FRONTEND. PERF: getFilteredPlaces memo (queueMicrotask); badge refresh in-place preserva .pulse + Map O(n+m) + short-circuit; card img +decoding/width/height; resize rAF. RES: visibilitychange refresh badges + re-fetch places tras >5min oculta (hours staleness); loadPlaces retry×3 backoff; openPlaceFromUrl toast not-found. A11Y: toast role=status aria-live; copyText fallback execCommand; menú section announce sr-only; .sr-only util. UI/UX: heartPop one-shot click-gated; menuCatNav observer determinista por posición; skeleton shimmer reseñas; tokens --green+glows definidos. Diferido: star-input radio, IndexedDB cache, srcset, accent-on-dark-card contraste. v2.0.29: deshabilitar UI Mis listas/fotos. v2.0.28: cierre 6 audit (CSP/PKCE/race/N+1/a11y/RLS)
 const STATIC_CACHE = `sabormap-static-${VERSION}`;
 const RUNTIME_CACHE = `sabormap-runtime-${VERSION}`;
 
@@ -328,11 +328,13 @@ self.addEventListener('fetch', (event) => {
         //   por lo que los fixes de iconos y menú nunca llegaban al usuario.
         // ★ v2.0.19: añadimos foodies-app.js al mismo grupo (misma razón:
         //   cambios en la lógica de auth/favoritos/reseñas no pueden servirse stale).
-        // ★ v2.0.19: añadimos cuenta.html y mi-sabormap.html para que los
+        // ★ v2.0.32: añadimos auth-menu.js al mismo grupo (lógica de auth del
+        //   popover unificado: open/close/teclado/override de updateAuthButton).
         //   cambios de UI (botones, formularios, etc.) siempre lleguen frescos.
         if (url.pathname.endsWith('/places.js') ||
             url.pathname.endsWith('/app.js') ||
             url.pathname.endsWith('/foodies-app.js') ||
+            url.pathname.endsWith('/auth-menu.js') ||
             url.pathname.endsWith('/cuenta.html') ||
             url.pathname.endsWith('/mi-sabormap.html') ||
             url.pathname.endsWith('/dashboard.html') ||
