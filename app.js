@@ -2699,6 +2699,7 @@ async function initFoodieSession() {
                 foodieFavorites = new Set();
                 foodieFavoritesLoaded = false;
                 foodieProfileForHome = null;
+                currentFoodieDisplayName = ''; // [v2.1.1] reset del nombre del navbar
                 updateAuthButton(false);
                 if (typeof renderPlaces === 'function' && currentView === 'grid') renderPlaces();
             }
@@ -2708,6 +2709,28 @@ async function initFoodieSession() {
         updateAuthButton(false);
     }
 }
+
+/* [v2.1.1] visibilitychange — cuando el usuario vuelve a la pestaña (tras
+   editar su perfil en mi-sabormap.html en otra pestaña, o tras volver
+   del navegador a la home), refresca el nombre del navbar. Es ligero:
+   solo recarga el perfil si hay sesión y si el nombre cambió en otro
+   lado. Evita flashes: usa currentFoodie como fuente de verdad inmediata
+   y el display_name como refinamiento. */
+let _foodieProfileRefreshPending = false;
+document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    if (!currentFoodie || !sbFoodies) return;
+    if (_foodieProfileRefreshPending) return; // ya hay una recarga en curso
+    _foodieProfileRefreshPending = true;
+    // Re-render inmediato con el nombre ya en caché (sin flash)
+    renderFoodieIdentity();
+    // Recargar el perfil en background por si cambió en otra pestaña
+    loadFoodieProfileForHome().catch(function (e) {
+        console.warn('[foodies] visibilitychange reload:', e);
+    }).finally(function () {
+        _foodieProfileRefreshPending = false;
+    });
+});
 
 /* applyPendingFavorite — [FIX favoritos] consume la intención de favorito
    guardada en sessionStorage('sabormap_fav_pending') cuando un usuario sin
@@ -2730,10 +2753,65 @@ async function applyPendingFavorite() {
 }
 
 /* foodieProfileForHome — cache mínimo del perfil del comensal para
-   mostrar el avatar en el botón "Mi cuenta" de la home sin tener
+   mostrar el avatar en el botón de la home sin tener
    que llamar a loadFoodieProfile (que está en foodies-app.js y no
    está disponible aquí). Solo nos interesa avatar_url y display_name. */
 let foodieProfileForHome = null;
+
+/* [v2.1.1] currentFoodieDisplayName — nombre/apodo resuelto del comensal
+   logueado, para mostrarlo en el navbar en lugar del placeholder
+   "Mi cuenta". Se setea en loadFoodieProfileForHome() con un fallback
+   en cascada si falta el dato. */
+let currentFoodieDisplayName = '';
+
+/* [v2.1.1] resolveFoodieDisplayName — devuelve el nombre/apodo a mostrar
+   en el navbar, con fallback en cascada:
+     a) foodieProfileForHome.display_name  (tabla `foodies`)
+     b) currentFoodie.user_metadata.display_name  (auth metadata al signup)
+     c) currentFoodie.user_metadata.full_name     (compatibilidad futura)
+     d) parte local del email (antes del @)
+     e) 'Comensal'  (último recurso, nunca null)
+   No lanza excepciones; siempre devuelve un string no vacío si hay sesión. */
+function resolveFoodieDisplayName() {
+    if (!currentFoodie) return '';
+    // a) display_name de la tabla foodies
+    if (foodieProfileForHome && foodieProfileForHome.display_name) {
+        return String(foodieProfileForHome.display_name).trim();
+    }
+    // b) user_metadata.display_name (lo que puso en el formulario de signup)
+    const meta = currentFoodie.user_metadata || {};
+    if (meta.display_name && String(meta.display_name).trim()) {
+        return String(meta.display_name).trim();
+    }
+    // c) user_metadata.full_name (compatibilidad con dashboard/owners)
+    if (meta.full_name && String(meta.full_name).trim()) {
+        return String(meta.full_name).trim();
+    }
+    // d) parte local del email
+    if (currentFoodie.email) {
+        const local = String(currentFoodie.email).split('@')[0];
+        if (local && local.trim()) return local.trim();
+    }
+    // e) último recurso
+    return 'Comensal';
+}
+
+/* [v2.1.1] renderFoodieIdentity — actualiza el botón #foodieAuthBtn del
+   navbar con el nombre/apodo del comensal logueado. Reutiliza
+   updateAuthButton() para la estructura y refina el texto. Es
+   idempotente: se puede llamar cuantas veces sea necesario.
+   Escape: usa _escFoodieAttr() para el atributo y escapeHtmlLight()
+   para el contenido texto, evitando XSS. */
+function renderFoodieIdentity() {
+    if (!currentFoodie) {
+        updateAuthButton(false);
+        return;
+    }
+    // Resolver el nombre y guardarlo en la variable global
+    currentFoodieDisplayName = resolveFoodieDisplayName();
+    // Llamar a updateAuthButton(true) que ahora usa currentFoodieDisplayName
+    updateAuthButton(true);
+}
 
 async function loadFoodieProfileForHome() {
     if (!sbFoodies || !currentFoodie) return;
@@ -2748,6 +2826,10 @@ async function loadFoodieProfileForHome() {
             return;
         }
         foodieProfileForHome = data || { display_name: null, avatar_url: null };
+        // [v2.1.1] Resolver y cachear el display name para el navbar
+        currentFoodieDisplayName = resolveFoodieDisplayName();
+        // Re-render del navbar con el nombre ya resuelto
+        renderFoodieIdentity();
     } catch (e) {
         console.warn('[foodies] loadFoodieProfileForHome:', e);
     }
@@ -2897,29 +2979,49 @@ window.uploadPlacePhoto = uploadPlacePhoto;
 
 /* updateAuthButton — cambia el botón #foodieAuthBtn del header según
    si hay sesión o no. Muestra avatar mini si hay foto, icono si no.
+   [v2.1.1] Cuando hay sesión, muestra el nombre/apodo del comensal
+   (currentFoodieDisplayName) en lugar del placeholder "Mi cuenta".
+   El nombre se trunca con CSS (text-overflow: ellipsis) para no romper
+   el layout del navbar. Si currentFoodieDisplayName está vacío (perfil
+   aún cargando), cae a "Mi cuenta" como placeholder temporal.
    El botón debe existir en index.html (ver README). */
 function updateAuthButton(isLoggedIn) {
     const btn = document.getElementById('foodieAuthBtn');
     if (!btn) return; // Si la home no incluye el botón, no hacer nada
     if (isLoggedIn) {
         const avatarUrl = foodieProfileForHome && foodieProfileForHome.avatar_url;
+        // [v2.1.1] Resolver el nombre a mostrar con placeholder temporal
+        const rawName = currentFoodieDisplayName || resolveFoodieDisplayName() || 'Mi cuenta';
+        const safeName = escapeHtmlLight(rawName);
+        const isNameReady = rawName && rawName !== 'Mi cuenta' && rawName !== 'Comensal';
+        const label = isNameReady ? 'Hola, ' + safeName : safeName;
+        const ariaLabel = isNameReady
+            ? 'Sesión de ' + safeName + ' — Ir a Mi SaborMap'
+            : 'Ir a Mi SaborMap';
+        // Span con truncamiento CSS para nombres largos (max 140px ≈ 20 chars)
+        const nameSpanStyle = 'max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle';
         if (avatarUrl) {
-            // Botón con avatar mini circular
+            // Botón con avatar mini circular + nombre
             btn.innerHTML =
                 '<img src="' + _escFoodieAttr(avatarUrl) + '" alt="" ' +
                 'style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.2);margin-right:6px" ' +
                 'onerror="this.style.display=\'none\';this.parentNode.querySelector(\'i\').style.display=\'\'"> ' +
                 '<i class="fas fa-user-circle" style="font-size:0.85rem;margin-right:4px;display:none"></i>' +
-                '<span>Mi cuenta</span>';
+                '<span id="navUserName" style="' + nameSpanStyle + '">' + label + '</span>';
         } else {
-            btn.innerHTML = '<i class="fas fa-user-circle" style="font-size:0.85rem;margin-right:4px"></i><span>Mi cuenta</span>';
+            btn.innerHTML = '<i class="fas fa-user-circle" style="font-size:0.85rem;margin-right:4px"></i>' +
+                '<span id="navUserName" style="' + nameSpanStyle + '">' + label + '</span>';
         }
         btn.setAttribute('href', 'mi-sabormap.html');
-        btn.setAttribute('aria-label', 'Ir a Mi SaborMap');
+        btn.setAttribute('aria-label', ariaLabel);
+        btn.setAttribute('title', isNameReady ? 'Hola, ' + rawName : 'Mi cuenta');
     } else {
+        // [v2.1.1] Sin sesión: comportamiento original
+        currentFoodieDisplayName = '';
         btn.innerHTML = '<i class="fas fa-sign-in-alt" style="font-size:0.82rem;margin-right:4px"></i> <span>Entrar</span>';
         btn.setAttribute('href', 'cuenta.html');
         btn.setAttribute('aria-label', 'Iniciar sesión como comensal');
+        btn.setAttribute('title', 'Entra a tu cuenta de comensal');
     }
 }
 
@@ -3238,14 +3340,60 @@ window.handleDrawerPhotoUpload = handleDrawerPhotoUpload;
 /* renderReviewsInDrawer — fetchea las reseñas publicadas de un place
    y las pinta en el contenedor #drawerReviewsList del drawer.
    También actualiza el contador #drawerReviewsCount. */
+/* [v2.1.2] _initialsFromName — devuelve las iniciales (máx 2) de un
+   nombre/apodo. Se usa para el avatar del autor de la reseña cuando no
+   hay foto. Versión local (getInitials está en foodies-app.js, no
+   disponible en la home). */
+function _initialsFromName(name) {
+    if (!name) return '?';
+    return String(name).trim().split(/\s+/)
+        .map(function (w) { return w[0] || ''; })
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+}
+
+/* [v2.1.2] _fetchReviewAuthorNames — bulk-fetch de display_name e
+   is_public para los autores de las reseñas visibles en el drawer.
+   Devuelve un objeto { foodie_id: { display_name, is_public } }.
+   No lanza excepciones; en caso de error devuelve objeto vacío y el
+   caller cae a "Comensal" (nunca "Comensal de SaborMap"). */
+async function _fetchReviewAuthorNames(reviews) {
+    const authorMap = {};
+    if (!sbFoodies || !reviews || reviews.length === 0) return authorMap;
+    // Recolectar foodie_ids únicos (excluir null/undefined)
+    const seen = {};
+    const foodieIds = [];
+    for (let i = 0; i < reviews.length; i++) {
+        const fid = reviews[i].foodie_id;
+        if (fid && !seen[fid]) { seen[fid] = true; foodieIds.push(fid); }
+    }
+    if (foodieIds.length === 0) return authorMap;
+    try {
+        const { data, error } = await sbFoodies
+            .from('foodies')
+            .select('id, display_name, is_public')
+            .in('id', foodieIds);
+        if (error) {
+            console.warn('[foodies] _fetchReviewAuthorNames:', error);
+            return authorMap;
+        }
+        (data || []).forEach(function (a) { authorMap[a.id] = a; });
+    } catch (e) {
+        console.warn('[foodies] _fetchReviewAuthorNames:', e);
+    }
+    return authorMap;
+}
+
 async function renderReviewsInDrawer(placeId) {
     const list = document.getElementById('drawerReviewsList');
     const countEl = document.getElementById('drawerReviewsCount');
     if (!list || !sbFoodies) return;
     const pid = String(placeId);
-    // Cache por sesión de drawer
+    // Cache por sesión de drawer: { reviews, authorMap }
     if (foodieReviewsCache.has(pid)) {
-        _paintReviewsInDrawer(foodieReviewsCache.get(pid), list, countEl);
+        const cached = foodieReviewsCache.get(pid);
+        _paintReviewsInDrawer(cached.reviews || cached, list, countEl, cached.authorMap);
         return;
     }
     try {
@@ -3258,8 +3406,10 @@ async function renderReviewsInDrawer(placeId) {
             .limit(50);
         if (error) throw error;
         const reviews = data || [];
-        foodieReviewsCache.set(pid, reviews);
-        _paintReviewsInDrawer(reviews, list, countEl);
+        // [v2.1.2] Bulk-fetch de los display_name de los autores
+        const authorMap = await _fetchReviewAuthorNames(reviews);
+        foodieReviewsCache.set(pid, { reviews: reviews, authorMap: authorMap });
+        _paintReviewsInDrawer(reviews, list, countEl, authorMap);
     } catch (e) {
         console.warn('[foodies] renderReviewsInDrawer:', e);
         list.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0">No se pudieron cargar las reseñas. Revisa tu conexión.</p>';
@@ -3267,20 +3417,35 @@ async function renderReviewsInDrawer(placeId) {
     }
 }
 
-function _paintReviewsInDrawer(reviews, listEl, countEl) {
+function _paintReviewsInDrawer(reviews, listEl, countEl, authorMap) {
     if (countEl) countEl.textContent = String(reviews.length);
     if (reviews.length === 0) {
         listEl.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0">Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia!</p>';
         return;
     }
+    authorMap = authorMap || {};
     listEl.innerHTML = reviews.map(r => {
         const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
         const date = new Date(r.created_at).toLocaleDateString('es-CU', { day: '2-digit', month: 'short', year: 'numeric' });
-        const authorInitials = '★'; // No traemos display_name para no exponer otros usuarios sin consentimiento explícito; sprint 2 lo deja como "Comensal" + fecha
-        // Para mostrar el apodo del autor habría que hacer un join con foodies via RPC; por ahora "Comensal verificado"
-        const authorLabel = currentFoodie && currentFoodie.id === r.foodie_id
-            ? '<strong>Tu reseña</strong>'
-            : 'Comensal de SaborMap';
+        // [v2.1.2] Resolver el label del autor con el nombre real:
+        //   - Reseña propia → "Tu reseña"
+        //   - Autor con perfil público + display_name → nombre real
+        //   - Autor sin perfil público o sin display_name → "Comensal"
+        //   NUNCA "Comensal de SaborMap" (eliminado v2.1.2).
+        const isOwnReview = currentFoodie && currentFoodie.id === r.foodie_id;
+        const author = authorMap[r.foodie_id];
+        let authorLabel, authorInitials;
+        if (isOwnReview) {
+            authorLabel = '<strong>Tu reseña</strong>';
+            authorInitials = '★';
+        } else if (author && author.display_name && author.is_public !== false) {
+            const safeName = escapeHtmlLight(author.display_name);
+            authorLabel = '<strong>' + safeName + '</strong>';
+            authorInitials = escapeHtmlLight(_initialsFromName(author.display_name));
+        } else {
+            authorLabel = 'Comensal';
+            authorInitials = '★';
+        }
         const reportBtn = (currentFoodie && currentFoodie.id !== r.foodie_id)
             ? `<button class="drawer-review-report" onclick="reportReview('${_escFoodieAttr(r.id)}')">Reportar</button>`
             : '';
