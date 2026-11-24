@@ -3681,3 +3681,652 @@ window.addEventListener('offline', () => {
         }
     }
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   RULETA "¿Dónde comemos hoy?"  [v2.2.0]
+   Ruleta animada (canvas) que selecciona un local al azar de entre
+   los disponibles (filtrados o todos) y abre su ficha con openModal().
+   Sin dependencias externas; respeta tema claro/oscuro, accesibilidad
+   (focus trap, Esc, aria-live) y prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Estado interno (null cuando no hay modal abierto). */
+var _rouletteState = null;
+
+/* Paleta de colores para las porciones. Se usan valores hex directos
+   porque las variables CSS no se resuelven dentro de canvas fillStyle.
+   La paleta sigue el mismo orden cromático que MENU_SECTION_PALETTE. */
+var _ROULETTE_COLORS = [
+    '#8b5cf6', // violeta (--accent)
+    '#06b6d4', // cian (--secondary)
+    '#ec4899', // rosa (--pink)
+    '#f59e0b', // ámbar (--amber)
+    '#22c55e', // verde (--green)
+    '#a855f7', // púrpura
+    '#3b82f6', // azul
+];
+
+/* Máximo de porciones visibles (más de 12 no se lee). */
+var _ROULETTE_MAX_SLICES = 12;
+
+/* initRoulette — inyecta estilos y crea el FAB flotante. Idempotente. */
+function initRoulette() {
+    _injectRouletteStyles();
+    _createRouletteFab();
+}
+
+/* Inyectar estilos una sola vez (mismo patrón que injectFoodiesStyles). */
+function _injectRouletteStyles() {
+    if (document.getElementById('sabormap-roulette-styles')) return;
+    var style = document.createElement('style');
+    style.id = 'sabormap-roulette-styles';
+    style.textContent = `
+        /* Botón flotante disparador */
+        .roulette-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent, #8b5cf6), var(--secondary, #06b6d4));
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px var(--accent-glow, rgba(139,92,246,0.3)), 0 2px 8px rgba(0,0,0,0.25);
+            transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease;
+        }
+        .roulette-fab:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 12px 32px var(--accent-glow, rgba(139,92,246,0.4));
+        }
+        .roulette-fab:active { transform: scale(0.97); }
+        .roulette-fab i { font-size: 1.05rem; }
+
+        /* En móvil: solo icono, más compacto (no tapar otros elementos) */
+        @media (max-width: 640px) {
+            .roulette-fab {
+                bottom: 20px;
+                right: 20px;
+                padding: 14px;
+                gap: 0;
+            }
+            .roulette-fab span { display: none; }
+        }
+
+        /* Overlay del modal */
+        .roulette-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100001;
+            background: rgba(5, 7, 15, 0.78);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .roulette-overlay.open { opacity: 1; }
+
+        [data-theme="light"] .roulette-overlay {
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        /* Panel centrado */
+        .roulette-panel {
+            background: var(--card, #0f1320);
+            border: 1px solid var(--border, #272d3f);
+            border-radius: 20px;
+            padding: 24px 22px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+            transform: scale(0.88);
+            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .roulette-overlay.open .roulette-panel { transform: scale(1); }
+
+        .roulette-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--cream, #f1f5f9);
+            margin: 0 0 2px;
+            letter-spacing: -0.01em;
+        }
+        .roulette-subtitle {
+            font-size: 0.78rem;
+            color: var(--muted, #94a3b8);
+            margin: 0 0 14px;
+        }
+
+        /* Contenedor del canvas + aguja */
+        .roulette-canvas-wrap {
+            position: relative;
+            width: 320px;
+            max-width: 100%;
+            aspect-ratio: 1;
+            margin: 0 auto 12px;
+        }
+        .roulette-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px var(--border, #272d3f), 0 8px 24px rgba(0,0,0,0.35);
+        }
+        /* Aguja/puntero fijo arriba (triángulo que apunta hacia abajo) */
+        .roulette-pointer {
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-top: 22px solid var(--accent, #8b5cf6);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+            z-index: 2;
+        }
+
+        /* Panel de resultado (aria-live polite) */
+        .roulette-result {
+            min-height: 26px;
+            margin-bottom: 14px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--cream, #f1f5f9);
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .roulette-result.empty { color: transparent; }
+
+        /* Botones */
+        .roulette-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .roulette-btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .roulette-btn-primary {
+            background: linear-gradient(135deg, var(--accent, #8b5cf6), var(--secondary, #06b6d4));
+            color: #fff;
+            box-shadow: 0 4px 14px var(--accent-glow, rgba(139,92,246,0.3));
+        }
+        .roulette-btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow, rgba(139,92,246,0.45));
+        }
+        .roulette-btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        .roulette-btn-secondary {
+            background: var(--surface, #1a1f2e);
+            color: var(--cream, #f1f5f9);
+            border: 1px solid var(--border, #272d3f);
+        }
+        .roulette-btn-secondary:hover {
+            border-color: var(--accent, #8b5cf6);
+        }
+
+        /* Responsive: panel más pequeño en pantallas muy bajas */
+        @media (max-height: 640px) {
+            .roulette-panel { padding: 16px; }
+            .roulette-canvas-wrap { width: 240px; }
+            .roulette-title { font-size: 1.05rem; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+/* Crear el botón flotante (FAB) una sola vez. */
+function _createRouletteFab() {
+    if (document.getElementById('rouletteFab')) return;
+    var btn = document.createElement('button');
+    btn.id = 'rouletteFab';
+    btn.className = 'roulette-fab';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Abrir ruleta de locales');
+    btn.title = '¿Dónde comemos hoy?';
+    btn.innerHTML = '<i class="fas fa-dice" aria-hidden="true"></i><span>¿Dónde comemos?</span>';
+    btn.addEventListener('click', openRoulette);
+    document.body.appendChild(btn);
+}
+
+/* openRoulette — entrada pública (expuesta como window.openRoulette).
+   Selecciona candidatos y abre el modal. */
+function openRoulette() {
+    /* Si ya está abierto, cerrar (toggle) */
+    if (_rouletteState) { _closeRoulette(); return; }
+
+    /* Selección de candidatos:
+       - Si hay filtros activos y el resultado es un subconjunto (< total),
+         usar los filtrados (la ruleta respeta el contexto del usuario).
+       - Si no, usar staticPlaces (todos los locales). */
+    var filtered = (typeof getFilteredPlaces === 'function') ? getFilteredPlaces() : [];
+    var total = (typeof staticPlaces !== 'undefined') ? staticPlaces.length : 0;
+    var candidates;
+    if (filtered && filtered.length >= 2 && filtered.length < total) {
+        candidates = filtered;
+    } else {
+        candidates = (typeof staticPlaces !== 'undefined') ? staticPlaces : [];
+    }
+    /* Excluir locales sin id (openModal no podría abrirlos) */
+    candidates = candidates.filter(function (p) {
+        return p && p.id != null && p.id !== '';
+    });
+    if (candidates.length < 2) {
+        showToast('No hay suficientes locales para la ruleta');
+        return;
+    }
+    _openRouletteModal(candidates);
+}
+window.openRoulette = openRoulette;
+
+/* Abrir el modal con los candidatos dados. */
+function _openRouletteModal(candidates) {
+    /* --- Elegir ganador uniformemente entre TODOS los candidatos ---
+       (no solo entre los 12 dibujados: el sorteo es justo sobre el total). */
+    var winnerIdx = Math.floor(Math.random() * candidates.length);
+    var winner = candidates[winnerIdx];
+
+    /* --- Construir porciones visibles (máx 12) --- */
+    var slices;
+    if (candidates.length <= _ROULETTE_MAX_SLICES) {
+        slices = candidates.slice();
+    } else {
+        /* Elegir 12 al azar (Fisher-Yates parcial) */
+        var pool = candidates.slice();
+        for (var i = pool.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+        }
+        slices = pool.slice(0, _ROULETTE_MAX_SLICES);
+        /* Si el ganador no está entre los 12 dibujados, sustituir una
+           porción al azar por él ANTES de girar (sin corrección visual
+           rara: el usuario ve el nombre del ganador en la ruleta desde
+           el principio). */
+        var inSlices = slices.some(function (s) { return String(s.id) === String(winner.id); });
+        if (!inSlices) {
+            var replaceIdx = Math.floor(Math.random() * _ROULETTE_MAX_SLICES);
+            slices[replaceIdx] = winner;
+        }
+    }
+    /* Índice de la porción ganadora dentro del array dibujado */
+    var winSliceIdx = slices.findIndex(function (s) {
+        return String(s.id) === String(winner.id);
+    });
+
+    /* --- Construir DOM --- */
+    var overlay = document.createElement('div');
+    overlay.className = 'roulette-overlay';
+    overlay.id = 'rouletteOverlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'rouletteTitle');
+
+    overlay.innerHTML = '\
+        <div class="roulette-panel" role="document">\
+            <h2 class="roulette-title" id="rouletteTitle">¿Dónde comemos hoy?</h2>\
+            <p class="roulette-subtitle">' + candidates.length + ' locales participantes</p>\
+            <div class="roulette-canvas-wrap">\
+                <div class="roulette-pointer" aria-hidden="true"></div>\
+                <canvas class="roulette-canvas" id="rouletteCanvas" aria-hidden="true"></canvas>\
+            </div>\
+            <div class="roulette-result empty" id="rouletteResult" aria-live="polite" role="status">&nbsp;</div>\
+            <div class="roulette-actions">\
+                <button type="button" class="roulette-btn roulette-btn-primary" id="rouletteSpinBtn" aria-busy="false">\
+                    <i class="fas fa-rotate-right" aria-hidden="true"></i> Girar\
+                </button>\
+                <button type="button" class="roulette-btn roulette-btn-secondary" id="rouletteCloseBtn">Cerrar</button>\
+            </div>\
+        </div>';
+    document.body.appendChild(overlay);
+
+    /* --- Configurar canvas con DPR para nitidez en retina --- */
+    var canvas = document.getElementById('rouletteCanvas');
+    var displaySize = 320;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = displaySize * dpr;
+    canvas.height = displaySize * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var spinBtn = document.getElementById('rouletteSpinBtn');
+    var closeBtn = document.getElementById('rouletteCloseBtn');
+    var resultEl = document.getElementById('rouletteResult');
+
+    /* --- Estado --- */
+    _rouletteState = {
+        overlay: overlay,
+        canvas: canvas,
+        ctx: ctx,
+        spinBtn: spinBtn,
+        closeBtn: closeBtn,
+        resultEl: resultEl,
+        slices: slices,
+        winner: winner,
+        winSliceIdx: winSliceIdx,
+        candidates: candidates,
+        displaySize: displaySize,
+        currentRot: 0,
+        rafId: null,
+        resultTimer: null,
+        spinning: false,
+        closed: false,
+        triggerEl: document.getElementById('rouletteFab'),
+        escHandler: null,
+        focusTrapHandler: null,
+    };
+
+    /* Dibujar ruleta inicial (sin rotación, sin resaltado) */
+    _drawWheel(ctx, slices, 0, -1, displaySize);
+
+    /* Forzar reflow + abrir con fade */
+    void overlay.offsetWidth;
+    overlay.classList.add('open');
+
+    /* Foco inicial en "Girar" (accesibilidad) */
+    setTimeout(function () { if (_rouletteState) spinBtn.focus(); }, 60);
+
+    /* --- Listeners --- */
+    spinBtn.addEventListener('click', _spinRoulette);
+    closeBtn.addEventListener('click', function () { _closeRoulette(); });
+
+    /* Click en overlay (fuera del panel) cierra */
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) _closeRoulette();
+    });
+
+    /* Esc cierra (captura para preceder a otros handlers) */
+    _rouletteState.escHandler = function (e) {
+        if (e.key === 'Escape' && _rouletteState && !_rouletteState.closed) {
+            e.preventDefault();
+            e.stopPropagation();
+            _closeRoulette();
+        }
+    };
+    document.addEventListener('keydown', _rouletteState.escHandler, true);
+
+    /* Trampa de foco (Tab / Shift+Tab) */
+    _rouletteState.focusTrapHandler = function (e) {
+        if (!_rouletteState || _rouletteState.closed) return;
+        if (e.key !== 'Tab') return;
+        var focusables = [spinBtn, closeBtn];
+        var active = document.activeElement;
+        var idx = focusables.indexOf(active);
+        if (idx === -1) { e.preventDefault(); spinBtn.focus(); return; }
+        if (e.shiftKey && idx === 0) {
+            e.preventDefault();
+            focusables[focusables.length - 1].focus();
+        } else if (!e.shiftKey && idx === focusables.length - 1) {
+            e.preventDefault();
+            focusables[0].focus();
+        }
+    };
+    document.addEventListener('keydown', _rouletteState.focusTrapHandler);
+}
+
+/* _spinRoulette — arranca la animación del giro.
+   El ángulo final se calcula a priori para que la aguja (fija arriba)
+   caiga exactamente en el centro de la porción ganadora. */
+function _spinRoulette() {
+    var s = _rouletteState;
+    if (!s || s.spinning || s.closed) return;
+
+    s.spinning = true;
+    s.spinBtn.disabled = true;
+    s.spinBtn.setAttribute('aria-busy', 'true');
+    s.spinBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Girando…';
+    s.resultEl.textContent = '';
+    s.resultEl.classList.add('empty');
+
+    var numSlices = s.slices.length;
+    var sliceAngle = (2 * Math.PI) / numSlices;
+    var w = s.winSliceIdx;
+
+    /* === Cálculo del ángulo final ===
+       Las porciones se dibujan desde -π/2 (arriba, 12 en punto). El
+       centro de la porción w está en: -π/2 + w*sliceAngle + sliceAngle/2.
+       La aguja está fija en -π/2 (arriba). Tras rotar 'finalRot'
+       (sentido horario), queremos que el centro de w coincida con la
+       aguja:
+         (-π/2 + w*sliceAngle + sliceAngle/2) + finalRot ≡ -π/2 (mod 2π)
+         → finalRot ≡ -(w*sliceAngle + sliceAngle/2) (mod 2π)
+       Además queremos mínimo 'numTurns' vueltas completas y que el
+       giro sea siempre hacia adelante (delta > 0). */
+    var TWO_PI = 2 * Math.PI;
+    var targetMod = -((w * sliceAngle) + (sliceAngle / 2)); /* posición deseada mod 2π */
+    targetMod = ((targetMod % TWO_PI) + TWO_PI) % TWO_PI;   /* normalizar a [0, 2π) */
+    var startRot = s.currentRot;
+    var startMod = ((startRot % TWO_PI) + TWO_PI) % TWO_PI;
+    var deltaOne = targetMod - startMod;
+    if (deltaOne <= 0) deltaOne += TWO_PI; /* asegurar avance positivo dentro de una vuelta */
+    var numTurns = 5 + Math.floor(Math.random() * 3); /* 5–7 vueltas completas */
+    var delta = deltaOne + TWO_PI * numTurns;
+    var finalRot = startRot + delta;
+
+    var duration = 4500; /* ~4.5 s */
+    var startTime = performance.now();
+
+    /* prefers-reduced-motion: resultado inmediato, sin animación */
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        s.currentRot = finalRot;
+        _drawWheel(s.ctx, s.slices, finalRot, w, s.displaySize);
+        _onSpinEnd(s);
+        return;
+    }
+
+    function frame(now) {
+        if (!s || s.closed) return; /* cerrado a mitad del giro → parar */
+        var elapsed = now - startTime;
+        var t = Math.min(elapsed / duration, 1);
+        /* easeOutCubic: desaceleración suave al final */
+        var eased = 1 - Math.pow(1 - t, 3);
+        s.currentRot = startRot + delta * eased;
+        _drawWheel(s.ctx, s.slices, s.currentRot, -1, s.displaySize);
+        if (t < 1) {
+            s.rafId = requestAnimationFrame(frame);
+        } else {
+            s.currentRot = finalRot;
+            _drawWheel(s.ctx, s.slices, finalRot, w, s.displaySize);
+            _onSpinEnd(s);
+        }
+    }
+    s.rafId = requestAnimationFrame(frame);
+}
+
+/* _onSpinEnd — al terminar el giro: anunciar resultado, resaltar
+   porción ganadora y programar la apertura de la ficha. */
+function _onSpinEnd(s) {
+    if (!s || s.closed) return;
+    s.spinning = false;
+    s.spinBtn.disabled = false;
+    s.spinBtn.setAttribute('aria-busy', 'false');
+    s.spinBtn.innerHTML = '<i class="fas fa-rotate-right" aria-hidden="true"></i> Girar de nuevo';
+    /* Anunciar resultado (aria-live="polite" lo lee el lector de pantalla) */
+    var name = _truncRouletteName(s.winner.name || 'Este local', 40);
+    s.resultEl.textContent = '¡Te toca! ' + name;
+    s.resultEl.classList.remove('empty');
+    /* Redibujar con la porción ganadora resaltada */
+    _drawWheel(s.ctx, s.slices, s.currentRot, s.winSliceIdx, s.displaySize);
+    /* Tras 1.2 s, cerrar el modal y abrir la ficha del local ganador */
+    s.resultTimer = setTimeout(function () {
+        if (!s || s.closed) return;
+        var wid = String(s.winner.id);
+        _closeRoulette();
+        if (typeof openModal === 'function') {
+            openModal(wid);
+        }
+    }, 1200);
+}
+
+/* _drawWheel — dibuja la ruleta en el canvas.
+   rotation: ángulo acumulado (rad, sentido horario).
+   highlightIdx: índice de la porción a resaltar (-1 = ninguna).
+   size: tamaño lógico del canvas (px, antes de DPR). */
+function _drawWheel(ctx, slices, rotation, highlightIdx, size) {
+    var cx = size / 2;
+    var cy = size / 2;
+    var radius = cx - 2;
+    var numSlices = slices.length;
+    var sliceAngle = (2 * Math.PI) / numSlices;
+    /* Las porciones empiezan desde arriba (-π/2) */
+    var startOffset = -Math.PI / 2;
+
+    ctx.clearRect(0, 0, size, size);
+
+    /* Porciones */
+    for (var i = 0; i < numSlices; i++) {
+        var a0 = startOffset + i * sliceAngle + rotation;
+        var a1 = a0 + sliceAngle;
+        var color = _ROULETTE_COLORS[i % _ROULETTE_COLORS.length];
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, a0, a1);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        /* Resaltar porción ganadora (overlay blanco translúcido) */
+        if (highlightIdx === i) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, a0, a1);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            ctx.fill();
+        }
+
+        /* Borde de la porción */
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    /* Borde exterior */
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    /* Texto radial (nombres truncados) */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    ctx.font = 'bold 11px "Noto Sans SC", system-ui, -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+
+    for (var j = 0; j < numSlices; j++) {
+        var angle = startOffset + j * sliceAngle + sliceAngle / 2;
+        ctx.save();
+        ctx.rotate(angle);
+        /* El eje x local apunta al centro de la porción j.
+           Texto alineado a la derecha (hacia el borde), legible desde
+           el centro hacia afuera. */
+        ctx.textAlign = 'right';
+        ctx.fillText(_truncRouletteName(slices[j].name, 14), radius - 6, 0);
+        ctx.restore();
+    }
+    ctx.restore();
+
+    /* Centro decorativo (eje de la ruleta) */
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, 2 * Math.PI);
+    ctx.fillStyle = '#0f1320';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    /* Pequeño círculo interior (acento del color ganador) */
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = _ROULETTE_COLORS[highlightIdx >= 0 ? highlightIdx % _ROULETTE_COLORS.length : 0];
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+}
+
+/* _closeRoulette — limpia todo (cancela animación, listeners, DOM).
+   Devuelve el foco al botón disparador. No abre ningún local
+   (si se cierra a mitad del giro, el resultado se descarta). */
+function _closeRoulette() {
+    var s = _rouletteState;
+    if (!s) return;
+    s.closed = true; /* marcar antes para que callbacks pendientes no actúen */
+
+    /* Cancelar animación */
+    if (s.rafId) {
+        cancelAnimationFrame(s.rafId);
+        s.rafId = null;
+    }
+    /* Cancelar timer de resultado */
+    if (s.resultTimer) {
+        clearTimeout(s.resultTimer);
+        s.resultTimer = null;
+    }
+    /* Limpiar listeners */
+    if (s.escHandler) document.removeEventListener('keydown', s.escHandler, true);
+    if (s.focusTrapHandler) document.removeEventListener('keydown', s.focusTrapHandler);
+
+    /* Cerrar overlay con fade */
+    s.overlay.classList.remove('open');
+    var ov = s.overlay;
+    setTimeout(function () {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+    }, 300);
+
+    /* Devolver foco al botón disparador */
+    if (s.triggerEl) {
+        try { s.triggerEl.focus(); } catch (e) {}
+    }
+
+    _rouletteState = null;
+}
+
+/* _truncRouletteName — trunca un nombre a 'max' caracteres con "…". */
+function _truncRouletteName(name, max) {
+    if (!name) return '';
+    name = String(name);
+    if (name.length <= max) return name;
+    return name.substring(0, max - 1) + '…';
+}
+
+/* Listener independiente: la ruleta se inicializa aunque el DOMContentLoaded
+   principal falle antes de llegar a ella (robustez). try/catch para no
+   romper nada si algo falla. */
+document.addEventListener('DOMContentLoaded', function () {
+    try { initRoulette(); }
+    catch (e) { console.warn('[roulette] initRoulette:', e); }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   FIN SECCIÓN RULETA
+   ═══════════════════════════════════════════════════════════════ */
