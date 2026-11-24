@@ -867,6 +867,99 @@ pointer-events: none; /* [FIX favorites] absolute overlay inset:0: without this,
         .mobile-menu a { color: var(--cream); text-decoration: none; font-size: 1.3rem; font-weight: 600; }
         .mobile-menu-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--cream); font-size: 1.5rem; cursor: pointer; }
 
+        /* ═══ [v2.1.0] Auth unificado — popover de un solo botón ═══
+           Reemplaza los dos CTAs separados ("Entrar" + "Crear cuenta")
+           por UN botón con popover. Variables CSS existentes (--accent,
+           --card, --border, --muted, --cream, --surface, --accent-glow).
+           Targets ≥ 44×44 px (WCAG 2.5.5). Contraste ≥ 4.5:1. */
+        .auth-wrap { position: relative; display: inline-flex; }
+        .auth-trigger {
+            display: inline-flex; align-items: center; gap: 6px;
+            min-height: 44px; padding: 8px 16px;
+            background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04));
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 10px;
+            color: var(--cream);
+            font-family: inherit; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .auth-trigger:hover, .auth-trigger:focus-visible {
+            background: linear-gradient(135deg, rgba(139,92,246,0.20), rgba(139,92,246,0.08));
+            border-color: var(--accent);
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+        .auth-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .auth-trigger[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 4px 14px var(--accent-glow); }
+        .auth-trigger[aria-expanded="true"] .auth-trigger-chevron { transform: rotate(180deg); }
+        .auth-trigger-chevron { transition: transform 0.25s ease; font-size: 0.65rem; opacity: 0.7; }
+        .auth-avatar {
+            width: 24px; height: 24px; border-radius: 50%;
+            object-fit: cover; border: 1px solid rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.7rem; font-weight: 700; overflow: hidden;
+            flex-shrink: 0;
+        }
+        .auth-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Popover */
+        .auth-popover {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            min-width: 220px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 20px 60px -15px rgba(0,0,0,0.4), 0 0 30px var(--accent-glow);
+            padding: 6px;
+            z-index: 55;
+            opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+        }
+        .auth-popover.open {
+            opacity: 1; visibility: visible; transform: translateY(0) scale(1);
+        }
+        .auth-popover-item {
+            display: flex; align-items: center; gap: 10px;
+            min-height: 44px; padding: 10px 14px;
+            color: var(--cream); text-decoration: none;
+            font-size: 0.88rem; font-weight: 500;
+            border-radius: 10px;
+            transition: background 0.18s ease, color 0.18s ease;
+            cursor: pointer; background: transparent; border: none;
+            font-family: inherit; width: 100%; text-align: left;
+        }
+        .auth-popover-item:hover, .auth-popover-item:focus-visible {
+            background: rgba(139,92,246,0.14);
+            color: var(--accent);
+        }
+        .auth-popover-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+        .auth-popover-item i { width: 18px; text-align: center; font-size: 0.85rem; opacity: 0.85; }
+        .auth-popover-divider { height: 1px; background: var(--border); margin: 4px 0; }
+        .auth-popover-header {
+            padding: 8px 14px 6px; font-size: 0.72rem; color: var(--muted);
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .auth-popover-header .auth-popover-header-email {
+            display: block; font-size: 0.82rem; color: var(--cream);
+            text-transform: none; letter-spacing: 0; font-weight: 500;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 200px;
+        }
+
+        /* Tablet: target más compacto */
+        @media (max-width: 1023px) and (min-width: 769px) {
+            .auth-trigger { padding: 8px 12px; font-size: 0.8rem; }
+            .auth-popover { min-width: 200px; }
+        }
+        /* Móvil: popover se vuelve bottom-sheet centrado para no salir del viewport */
+        @media (max-width: 768px) {
+            .auth-popover { position: fixed; top: auto; bottom: 24px; left: 16px; right: 16px;
+                transform: translateY(20px) scale(0.98); transform-origin: bottom center; }
+            .auth-popover.open { transform: translateY(0) scale(1); }
+        }
+
         /* ═══════════════════════════════════════════════════
            BOTON TOGGLE DE TEMA
            ═══════════════════════════════════════════════════ */
@@ -983,17 +1076,45 @@ pointer-events: none; /* [FIX favorites] absolute overlay inset:0: without this,
                 <span style="font-weight:700;font-size:1.15rem;">Sabormap</span>
             </a>
             <div class="nav-desktop" style="display:flex;align-items:center;gap:14px;">
-                <!-- ═══ [v2.0.19] Acceso comensales (proyecto foodies) ═══
-                     El botón "Entrar" se auto-actualiza a "Mi cuenta" si hay
-                     sesión activa. Lo maneja foodies-app.js → updateAuthButton().
-                     "Crear cuenta" es estático, lleva directo a la tab de
-                     registro en cuenta.html. -->
-                <a href="cuenta.html?view=signup" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--cream);text-decoration:none;font-family:inherit;font-size:0.82rem;font-weight:500;transition:all 0.3s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--cream)'" aria-label="Crear cuenta de comensal" title="Crea tu cuenta gratis en 1 minuto">
-                    <i class="fas fa-user-plus" style="font-size:0.78rem;"></i> Crear cuenta
-                </a>
-                <a href="cuenta.html" id="foodieAuthBtn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04));border:1px solid rgba(139,92,246,0.3);border-radius:10px;color:var(--cream);text-decoration:none;font-family:inherit;font-size:0.85rem;font-weight:600;transition:all 0.3s ease;" onmouseover="this.style.background='linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.08))';this.style.borderColor='var(--accent)';this.style.boxShadow='0 4px 14px var(--accent-glow)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))';this.style.borderColor='rgba(139,92,246,0.3)';this.style.boxShadow='none'" aria-label="Iniciar sesión como comensal" title="Entra a tu cuenta de comensal">
-                    <i class="fas fa-sign-in-alt" style="font-size:0.82rem;"></i> <span>Entrar</span>
-                </a>
+                <!-- ═══ [v2.1.0] Acceso unificado de comensales (proyecto foodies) ═══
+                     Un solo botón primario con popover que contiene
+                     "Iniciar sesión" y "Crear cuenta". Si hay sesión
+                     activa, el MISMO botón se transforma en "Mi cuenta"
+                     (avatar/iniciales) con menú: "Mis favoritos",
+                     "Mis reseñas", "Cerrar sesión".
+                     Lo maneja app.js → updateAuthButton() (contenido del
+                     botón y del popover) + auth-menu.js (apertura/cierre/teclado).
+                     Degradación: si JS falla, el <button> cae al <a href>
+                     dentro de <noscript>. -->
+                <div class="auth-wrap" id="authWrap">
+                    <button id="foodieAuthBtn"
+                            type="button"
+                            class="auth-trigger"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="authMenu"
+                            aria-label="Iniciar sesión o crear cuenta"
+                            title="Entra o crea tu cuenta de comensal"
+                            onclick="openAuthMenu(event)"
+                            onkeydown="handleAuthTriggerKeydown(event)">
+                        <i class="fas fa-sign-in-alt auth-trigger-icon" aria-hidden="true" style="font-size:0.82rem;"></i>
+                        <span class="auth-trigger-label">Entrar</span>
+                        <i class="fas fa-chevron-down auth-trigger-chevron" aria-hidden="true"></i>
+                    </button>
+                    <!-- [Degradación] Si JS está deshabilitado, este <a> da salida -->
+                    <noscript>
+                        <a href="cuenta.html" class="auth-trigger" style="text-decoration:none;">Entrar</a>
+                    </noscript>
+                    <!-- Popover (role=menu). Los items los renderiza updateAuthButton() -->
+                    <div id="authMenu"
+                         class="auth-popover"
+                         role="menu"
+                         aria-labelledby="foodieAuthBtn"
+                         aria-hidden="true"
+                         inert>
+                        <!-- Items inyectados por JS -->
+                    </div>
+                </div>
                 <!-- [S-06] el panel privado no debería enlazarse ni rastrearse desde la home -->
                 <a href="dashboard.html" rel="nofollow" class="nav-link" style="opacity:0.6;font-size:0.78rem;padding-left:12px;border-left:1px solid var(--border);"><i class="fas fa-store" style="margin-right:4px;font-size:0.7rem;"></i>Dueños</a>
                 <a href="#directorios" class="nav-link">Directorio</a>
@@ -1029,12 +1150,9 @@ pointer-events: none; /* [FIX favorites] absolute overlay inset:0: without this,
     <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
         <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Cerrar menu"><i class="fas fa-times"></i></button>
         <!-- CTA destacado en menu movil -->
-        <!-- Comensales: entrar / crear cuenta -->
-        <a href="cuenta.html" onclick="closeMobileMenu()" style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.06));border:1px solid rgba(139,92,246,0.35);border-radius:14px;color:var(--cream);text-decoration:none;font-weight:700;font-size:1.1rem;">
-            <i class="fas fa-right-to-bracket"></i> Entrar / Mi cuenta
-        </a>
-        <a href="cuenta.html?view=signup" onclick="closeMobileMenu()" style="color:var(--cream);text-decoration:none;font-size:1.05rem;font-weight:500;display:inline-flex;align-items:center;gap:8px;">
-            <i class="fas fa-user-plus" style="font-size:0.85rem;color:var(--accent);"></i> Crear cuenta
+        <!-- [v2.1.0] Comensales: un solo CTA unificado (cuenta.html tiene tabs login/signup) -->
+        <a href="cuenta.html" onclick="closeMobileMenu()" style="display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:14px 28px;background:linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.06));border:1px solid rgba(139,92,246,0.35);border-radius:14px;color:var(--cream);text-decoration:none;font-weight:700;font-size:1.1rem;">
+            <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Entrar / Crear cuenta
         </a>
         <a href="publicar.html" class="cta-add-local-mobile" onclick="closeMobileMenu()">
             <i class="fas fa-store"></i> Añade tu Local
@@ -1215,6 +1333,8 @@ pointer-events: none; /* [FIX favorites] absolute overlay inset:0: without this,
            (antes se seteaba pero nunca se leía).
          · catch loguea code/message y recarga favoritos si quedó inconsistente. -->
     <script src="app.js?v=20261115"></script>
+    <!-- [v2.1.0] Auth unificado: popover accesible para el boton #foodieAuthBtn -->
+    <script src="auth-menu.js?v=20261124" defer></script>
 
 <script>
 /* [S-01] JSON-LD del catálogo generado en runtime desde staticPlaces:
