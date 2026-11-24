@@ -2710,6 +2710,43 @@ async function initFoodieSession() {
     }
 }
 
+/* [v2.1.2] handleFoodieLogout — expuesto en window para auth-menu.js
+   (el popover "Cerrar sesión" lo invoca vía onclick). La home no carga
+   foodies-app.js, así que app.js debe proveer su propio logout.
+   Delega el reset de estado a onAuthStateChange(SIGNED_OUT), que ya
+   limpia currentFoodie, foodieFavorites, foodieProfileForHome y llama
+   a updateAuthButton(false). El forzado final es un cinturón de seguridad
+   por si el evento no dispara (edge cases de red/tokens). */
+async function handleFoodieLogout() {
+    if (!sbFoodies) {
+        currentFoodie = null;
+        foodieFavorites = new Set();
+        foodieProfileForHome = null;
+        currentFoodieDisplayName = '';
+        updateAuthButton(false);
+        if (typeof renderPlaces === 'function' && currentView === 'grid') renderPlaces();
+        return;
+    }
+    try {
+        await sbFoodies.auth.signOut();
+    } catch (e) {
+        console.warn('[foodies] handleFoodieLogout:', e);
+    }
+    // Limpiar intención de favorito pendiente si quedó de una sesión previa
+    try { sessionStorage.removeItem('sabormap_fav_pending'); } catch (e) {}
+    // onAuthStateChange(SIGNED_OUT) debería hacer el reset, pero forzamos
+    // por si el evento no llega (red inestable, token ya expirado, etc.)
+    currentFoodie = null;
+    foodieFavorites = new Set();
+    foodieFavoritesLoaded = false;
+    foodieProfileForHome = null;
+    currentFoodieDisplayName = '';
+    updateAuthButton(false);
+    if (typeof renderPlaces === 'function' && currentView === 'grid') renderPlaces();
+    if (typeof showToast === 'function') showToast('Sesión cerrada');
+}
+window.handleFoodieLogout = handleFoodieLogout;
+
 /* [v2.1.1] visibilitychange — cuando el usuario vuelve a la pestaña (tras
    editar su perfil en mi-sabormap.html en otra pestaña, o tras volver
    del navegador a la home), refresca el nombre del navbar. Es ligero:
@@ -2757,6 +2794,23 @@ async function applyPendingFavorite() {
    que llamar a loadFoodieProfile (que está en foodies-app.js y no
    está disponible aquí). Solo nos interesa avatar_url y display_name. */
 let foodieProfileForHome = null;
+
+/* [v2.1.2] Bridge para auth-menu.js: expone currentFoodie y
+   foodieProfileForHome en window vía getters, siempre sincronizados.
+   auth-menu.js los lee para pintar el popover (avatar/iniciales, email,
+   "Conectado como…"). Sin este bridge, window.currentFoodie sería
+   undefined en la home (foodies-app.js no se carga aquí, solo en
+   cuenta.html/mi-sabormap.html) y el popover mostraría '?' / vacío.
+   Usamos getters (no asignación directa) para no tener que sincronizar
+   a mano en cada uno de los 3 puntos donde currentFoodie muta. */
+Object.defineProperty(window, 'currentFoodie', {
+    get: () => currentFoodie,
+    configurable: true
+});
+Object.defineProperty(window, 'foodieProfileForHome', {
+    get: () => foodieProfileForHome,
+    configurable: true
+});
 
 /* [v2.1.1] currentFoodieDisplayName — nombre/apodo resuelto del comensal
    logueado, para mostrarlo en el navbar en lugar del placeholder
